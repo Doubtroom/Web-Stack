@@ -1,35 +1,51 @@
-import { Pencil, Lightbulb } from "lucide-react";
-import Screenshot from "../assets/Screenshot 2025-02-28 001635.png";
+import { MessageSquare, Lightbulb, Clock } from "lucide-react";
 
-const Card = () => {
+const Card = ({collegeName, img, branch, collegeYear, topic, noOfAnswers, postedOn}) => {
   return (
-    <div className="bg-gradient-to-br from-white to-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-200 rounded-2xl p-5 max-w-3xl border border-gray-200 cursor-pointer">
-      <div className="mb-4">
-        <h2 className="text-[#173f67] font-bold text-lg">NIT Agartala</h2>
-        <p className="text-gray-700 text-sm">Electrical Engineering</p>
-      </div>
-
-      <img
-        src={Screenshot}
-        alt="Climbing stairs"
-        className="w-full h-44 object-cover rounded-xl mb-4 border border-gray-200"
-      />
-
-      <div className="flex items-center gap-4 mb-3">
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 cursor-pointer transition duration-200">
-          <Pencil className="text-gray-700 w-5 h-5" />
-        </div>
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 cursor-pointer transition duration-200">
-          <Lightbulb className="text-gray-700 w-5 h-5" />
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 cursor-pointer group">
+      <div className="p-5 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-[#173f67] font-bold text-xl mb-1">{collegeName}</h2>
+            <p className="text-gray-600 text-sm">{branch}</p>
+          </div>
+          <div className="flex items-center gap-2 text-gray-500">
+            <Clock size={16} />
+            <span className="text-sm">{postedOn}</span>
+          </div>
         </div>
       </div>
 
-      <p className="text-gray-600 text-sm mb-3">5 answers</p>
-      <p className="font-semibold text-base text-gray-900">Network Analysis</p>
-      
-      <p className="text-gray-500 text-xs mt-3">
-        Posted on: <span className="text-black font-medium">2025-01-15</span>
-      </p>
+      {/* Image Section */}
+      <div className="relative">
+        <img
+          src={img}
+          alt="Question Image"
+          className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      </div>
+
+      {/* Content Section */}
+      <div className="p-5">
+        <h3 className="text-gray-900 font-semibold text-lg mb-3 line-clamp-2">{topic}</h3>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+              <MessageSquare className="text-gray-600 w-4 h-4" />
+              <span className="text-sm text-gray-600">Answer</span>
+            </button>
+            <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+              <Lightbulb className="text-gray-600 w-4 h-4" />
+              <span className="text-sm text-gray-600">Hints</span>
+            </button>
+          </div>
+          <div className="text-sm text-gray-500">
+            {noOfAnswers} answers
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

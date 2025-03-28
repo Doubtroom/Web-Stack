@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Button = ({ text,loadingText, onClick, variant = "primary", fullWidth = false, className = "",isLoading,disabled }) => {
+const Button = ({ text,loadingText, onClick, variant = "primary", fullWidth = false, className = "",isLoading,disabled,type }) => {
   const variants = {
     primary: "bg-blue-500 hover:bg-blue-600 text-white",
     secondary: "bg-white hover:bg-gray-100 text-gray-800 border border-gray-300",
@@ -8,7 +8,8 @@ const Button = ({ text,loadingText, onClick, variant = "primary", fullWidth = fa
 
   return (
     <button
-        disabled={disabled}
+      type={type}
+      disabled={disabled}
       onClick={onClick}
       className={`py-3 px-4 rounded-md font-medium transition-colors duration-200 
         ${variants[variant]} 

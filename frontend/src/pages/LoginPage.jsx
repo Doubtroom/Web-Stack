@@ -3,11 +3,15 @@ import InputField from '../components/InputField';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import Button from '../components/Button';
 import GoogleLoginButton from '../components/GoogleLoginButton';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 import authService from '../firebase/AuthService.js'
+import {toast} from "sonner"
+import { useDispatch } from 'react-redux';
+import {login} from '../store/authSlice'
 
 const LoginPage = () => {
+  const dispatch=useDispatch()
   const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: '',
@@ -53,32 +57,31 @@ const LoginPage = () => {
       const user =await authService.login(formData.email,formData.password)
       const userString=JSON.stringify(user)
       localStorage.setItem("userData",userString)
-
-    //   toast.success('Logged in successfully!');
+      localStorage.setItem("authStatus","true")
+      dispatch(login({ userData: { email:user.email, name:"",userID:user.uid } }))
+      toast.success('Logged in successfully!');
       navigate('/home');
     } catch (error) {
-      console.log(error)
-      const errorMessage = error.code.split("auth/")[1] || "unknown-error"
-    //   toast.error(`Login failed: ${errorMessage}`);
+      console.error(error)
+      const errorMessage = error.code?.split("auth/")[1] || "unknown-error"
+      toast.error(`Login failed: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      const user = await authService.signInWithGoogle();
-      if (user) {
-        const userString=JSON.stringify(user)
-        localStorage.setItem("userData",userString)
-        // toast.success('Logged in with Google successfully!');
-      }
-      navigate('/home');
-    } catch (error) {
-      console.error(error)
-      // toast.error('Google login failed. Please try again.');
-    }
-  };
+  // const handleGoogleLogin = async () => {
+  //   try {
+  //     const user = await authService.signInWithGoogle()
+  //       const userString=JSON.stringify(user)
+  //       localStorage.setItem("userData",userString)
+  //       toast.success('Logged in with Google successfully!')
+  //     navigate('/home')
+  //   } catch (error) {
+  //     console.error(error)
+  //     toast.error('Google login failed. Please try again')
+  //   }
+  // };
 
 
   return (
@@ -122,18 +125,18 @@ const LoginPage = () => {
           </div>
 
           <div className="mb-6">
-            <Button text="Login" isLoading={isLoading} loadingText={"Loggingin"} variant="primary" fullWidth disabled={isLoading} />
+            <Button text="Login" isLoading={isLoading} loadingText={"Logging in..."} variant="primary" fullWidth disabled={isLoading} />
           </div>
         </form>
 
-        <div className="relative flex items-center justify-center mb-6">
+        {/* <div className="relative flex items-center justify-center mb-6">
           <div className="border-t border-gray-300 absolute w-full"></div>
           <div className="bg-white px-4 relative text-gray-500 text-sm">OR</div>
         </div>
 
         <div className="mb-6">
           <GoogleLoginButton onClick={handleGoogleLogin} disabled={isLoading} />
-        </div>
+        </div> */}
 
         <div className="text-center text-gray-600">
           Don't have an account?{' '}

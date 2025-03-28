@@ -1,6 +1,6 @@
 import React from 'react';
 
-const InputField = ({ type, placeholder, icon, value, onChange,disabled,id,label }) => {
+const InputField = ({ type, placeholder, icon, value, onChange,disabled,id,label,error,style }) => {
   return (
     <div className="space-y-2 mb-4">
       <label 
@@ -16,6 +16,7 @@ const InputField = ({ type, placeholder, icon, value, onChange,disabled,id,label
           </div>
         )}
       <input
+        style={style}
         id={id}
         type={type}
         className="w-full p-3 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -25,6 +26,11 @@ const InputField = ({ type, placeholder, icon, value, onChange,disabled,id,label
         disabled={disabled}
       />
     </div>
+    {error && (
+        <p className="text-red-600 text-xs text-destructive animate-slide-down">
+          {error}
+        </p>
+      )}
     </div>
   );
 };

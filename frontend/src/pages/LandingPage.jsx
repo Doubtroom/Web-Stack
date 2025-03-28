@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search, Instagram, Youtube, Linkedin } from 'lucide-react';
-import { NavLink } from 'react-router';
+import { NavLink,Link } from 'react-router-dom';
 import Logo from '../assets/logoWhite.png';
 
 
@@ -59,30 +59,20 @@ const SearchBar = () => {
         className="w-full py-3 px-6 pr-12 rounded-full bg-white bg-opacity-20 backdrop-blur-sm text-white placeholder-white outline-none"
       />
       <button className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white p-2 rounded-full">
+        <Link to='/login'>
         <Search size={24} />
+        </Link>
       </button>
     </div>
   );
 };
 
-// Page Indicator Component
-const PageIndicator = () => {
-  return (
-    <div className="flex flex-col items-center space-y-2 absolute right-8 top-1/2 transform -translate-y-1/2">
-      {[1, 2, 3, 4].map((item, index) => (
-        <div 
-          key={index} 
-          className={`w-3 h-3 rounded-full ${index === 0 ? 'bg-white' : 'bg-white bg-opacity-50'} cursor-pointer`}
-        />
-      ))}
-    </div>
-  );
-};
 
 // Social Link Component
 const SocialLink = ({ icon, platform, username }) => {
   return (
-    <div className="flex items-center space-x-4">
+    <Link>
+    <div className="flex items-center space-x-4 hover:scale-105 transition-transform delay-100 cursor-pointer">
       <div className="w-12 h-12 rounded-full border border-white flex items-center justify-center text-white">
         {icon}
       </div>
@@ -91,6 +81,7 @@ const SocialLink = ({ icon, platform, username }) => {
         <p className="font-medium">{username}</p>
       </div>
     </div>
+    </Link>
   );
 };
 
@@ -106,7 +97,7 @@ const Footer = () => {
         </div>
         
         <button className="bg-teal-600 text-white py-3 px-10 rounded-md hover:bg-teal-700 transition-colors">
-          LOG IN
+          <Link to={'/login'}>Login</Link>
         </button>
       </div>
     </footer>

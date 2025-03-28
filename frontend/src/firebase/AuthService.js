@@ -6,21 +6,12 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
+import axios from "axios";
+import app from './firebaseConfig.js'
 
-import { initializeApp } from "firebase/app";
-import config from "../config/config.js";
+const API_URL = "http://localhost:5000";
 
-const firebaseConfig = {
-  apiKey: config.firebaseApiKey,
-  authDomain: config.firebaseAuthDomain,
-  projectId:config.firebaseProjectId ,
-  storageBucket:config.firebaseBucketId ,
-  messagingSenderId:config.firebaseSenderId ,
-  appId:config.firebaseAppId ,
-  measurementId:config.firebaseMeasurementId ,
-};
 
-const app = initializeApp(firebaseConfig);
 const googleProvider = new GoogleAuthProvider();
 
 class AuthService {
@@ -44,7 +35,6 @@ class AuthService {
   }
 
   async login(email, password) {
-    console.log(firebaseConfig)
     try {
       const userCredential = await signInWithEmailAndPassword(
         this.auth,
@@ -60,10 +50,31 @@ class AuthService {
   async signInWithGoogle() {
     try {
       const result = await signInWithPopup(this.auth, googleProvider);
-      return result.user;
+      const user = result.user;
+      
+      // Store user data in localStorage
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL
+      };
+      localStorage.setItem("userData", JSON.stringify(userData));
+      
+      return user;
     } catch (error) {
       console.error("Error signing in with Google:", error);
-      return null;
+      
+      // Handle specific error cases
+      if (error.code === 'auth/popup-closed-by-user') {
+        throw new Error("Sign up was cancelled. Please try again if you want to continue.");
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        throw new Error("Another sign in attempt is in progress. Please wait.");
+      } else if (error.code === 'auth/popup-blocked') {
+        throw new Error("Pop-up was blocked by your browser. Please allow pop-ups for this site.");
+      } else {
+        throw new Error(error.message || "Failed to sign in with Google");
+      }
     }
   }
 
@@ -73,6 +84,24 @@ class AuthService {
       console.log("User logged out");
     } catch (error) {
       throw error;
+    }
+  }
+
+  async sendOtp (email){
+    try {
+      const response = await axios.post(`${API_URL}/send-otp`, { email });
+      return response.data.message;
+    } catch (error) {
+      throw error.response.data.message || "Error sending OTP";
+    }
+  }
+  
+  async verifyOtp(email, otp){
+    try {
+      const response = await axios.post(`${API_URL}/verify-otp`, { email, otp });
+      return response.data.message;
+    } catch (error) {
+      throw error.response.data.message || "OTP verification failed";
     }
   }
 

@@ -6,6 +6,7 @@ const config={
     firebaseSenderId:String(import.meta.env.VITE_MESSAGING_SENDER_ID),
     firebaseAppId:String(import.meta.env.VITE_APP_ID),
     firebaseMeasurementId:String(import.meta.env.VITE_MEASUREMENT_ID),
+    appwriteBucketId:String(import.meta.env.VITE_APPWRITE_BUCKET_ID)
 }
 
 export default config
