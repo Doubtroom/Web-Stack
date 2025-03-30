@@ -146,6 +146,9 @@ const AskQuestion = () => {
   const navigate = useNavigate();
   const dataService = new DataService('questions');
   
+  // Get user data from localStorage
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  
   // Form state
   const [formData, setFormData] = useState({
     question: '',
@@ -153,6 +156,7 @@ const AskQuestion = () => {
     branch: '',
     customBranch: '',
     image: null,
+    collegeName: userData.collegeName || '', // Add college name from user profile
   });
 
   // Error state
@@ -325,6 +329,7 @@ const AskQuestion = () => {
         branch: '',
         customBranch: '',
         image: null,
+        collegeName: userData.collegeName || '', // Keep the college name
       });
       setImagePreview(null);
       setErrors({});

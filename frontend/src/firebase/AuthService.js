@@ -5,12 +5,13 @@ import {
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
+  fetchSignInMethodsForEmail,
+  deleteUser
 } from "firebase/auth";
 import axios from "axios";
 import app from './firebaseConfig.js'
 
 const API_URL = "http://localhost:5000";
-
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -20,7 +21,6 @@ class AuthService {
   constructor() {
     this.auth = getAuth(app);
   }
-
   async signUp(email, password) {
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -87,21 +87,21 @@ class AuthService {
     }
   }
 
-  async sendOtp (email){
+  async sendOtp(email) {
     try {
-      const response = await axios.post(`${API_URL}/send-otp`, { email });
+      const response = await axios.post(`${API_URL}/api/auth/send-otp`, { email });
       return response.data.message;
     } catch (error) {
-      throw error.response.data.message || "Error sending OTP";
+      throw error.response?.data?.message || "Error sending OTP";
     }
   }
   
-  async verifyOtp(email, otp){
+  async verifyOtp(email, otp) {
     try {
-      const response = await axios.post(`${API_URL}/verify-otp`, { email, otp });
+      const response = await axios.post(`${API_URL}/api/auth/verify-otp`, { email, otp });
       return response.data.message;
     } catch (error) {
-      throw error.response.data.message || "OTP verification failed";
+      throw error.response?.data?.message || "OTP verification failed";
     }
   }
 
@@ -109,8 +109,19 @@ class AuthService {
     return this.auth.currentUser;
   }
 
-}
+  async deleteUserByEmail(email) {
+    try {
+        const response = await axios.post(`${API_URL}/api/admin/delete-user`, { email });
+        console.log(response.data.message);
+        return response.data.message;
+    } catch (error) {
+      console.error("Error deleting user by email:", error.response?.data?.error || error.message);
+      throw new Error(error.response?.data?.error || "Error deleting user.");
+    }
+  }
 
+
+}
 
 const authService = new AuthService();
 export default authService;

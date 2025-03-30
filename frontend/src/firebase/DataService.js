@@ -92,6 +92,16 @@ class DataService {
       throw error;
     }
   }
+
+  async getUserData(uid) {
+    try{
+      const docRef=doc(this.collectionRef,uid)
+      const res=await getDoc(docRef)
+      return res.data()
+    }catch{
+      console.log("Error from getUserData::authService",error);
+    }
+  }
 }
 
 export default DataService;

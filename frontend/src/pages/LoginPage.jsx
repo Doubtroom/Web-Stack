@@ -9,6 +9,7 @@ import authService from '../firebase/AuthService.js'
 import {toast} from "sonner"
 import { useDispatch } from 'react-redux';
 import {login} from '../store/authSlice'
+import DataService from '../firebase/DataService.js'
 
 const LoginPage = () => {
   const dispatch=useDispatch()
@@ -54,32 +55,57 @@ const LoginPage = () => {
     setIsLoading(true);
     
     try {
-      const user =await authService.login(formData.email,formData.password)
-      const userString=JSON.stringify(user)
-      localStorage.setItem("userData",userString)
-      localStorage.setItem("authStatus","true")
-      dispatch(login({ userData: { email:user.email, name:"",userID:user.uid } }))
+      const user = await authService.login(formData.email, formData.password);
+      
+      localStorage.setItem("authStatus", "true");
+      
+      dispatch(login({ 
+        userData: { 
+          email: user.email, 
+          name: user.displayName || "", 
+          userID: user.uid 
+        },
+        status: true 
+      }));
+      
       toast.success('Logged in successfully!');
-      navigate('/home');
+      
+      // Get redirect path if it exists
+      const redirectPath = localStorage.getItem("redirectPath") || "/home";
+      localStorage.removeItem("redirectPath"); // Clean up
+      
+      navigate(redirectPath, { replace: true });
+      const dataService=new DataService("users")
+      const response=await dataService.getUserData(user.uid)
+      console.log("response from getUserData::loginPage",response);
+      const userData = {
+        uid: user.uid,
+        email: response.email,
+        displayName: response.displayName || "",
+        collegeName: response.college || "",
+        photoURL: user.photoURL
+      };
+      localStorage.setItem("userData", JSON.stringify(userData));
+
     } catch (error) {
-      console.error(error)
-      const errorMessage = error.code?.split("auth/")[1] || "unknown-error"
+      console.error(error);
+      const errorMessage = error.code?.split("auth/")[1] || "unknown-error";
       toast.error(`Login failed: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   // const handleGoogleLogin = async () => {
-  //   try {
-  //     const user = await authService.signInWithGoogle()
-  //       const userString=JSON.stringify(user)
-  //       localStorage.setItem("userData",userString)
-  //       toast.success('Logged in with Google successfully!')
-  //     navigate('/home')
-  //   } catch (error) {
-  //     console.error(error)
-  //     toast.error('Google login failed. Please try again')
+    //   try {
+      //     const user = await authService.signInWithGoogle()
+      //       const userString=JSON.stringify(user)
+      //       localStorage.setItem("userData",userString)
+      //       toast.success('Logged in with Google successfully!')
+      //     navigate('/home')
+      //   } catch (error) {
+        //     console.error(error)
+        //     toast.error('Google login failed. Please try again')
   //   }
   // };
 
