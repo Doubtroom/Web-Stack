@@ -1,9 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { useSelector } from 'react-redux';
+
 function Footer({classNames}) {
+  const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
+
   return (
-    <footer className={`bg-gradient-to-r from-[#1e6eab] to-[#02254b] shadow-sm  text-white py-10 ${classNames}`}>
+    <footer className={`${
+      isDarkMode 
+        ? 'bg-slate-900 border-t border-slate-800' 
+        : 'bg-gradient-to-r from-[#173f67] to-[#0f2942]'
+    } shadow-sm text-white py-10 ${classNames}`}>
       <div className="container mx-auto px-4">
         <div className="flex flex-wrap justify-between items-start">
           
@@ -85,7 +93,6 @@ function Footer({classNames}) {
                     <Linkedin/>
                 </Link>
             </div>
-
           </div>
         </div>
       </div>

@@ -1,48 +1,109 @@
-import { MessageSquare, Lightbulb, Clock } from "lucide-react";
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { MessageSquare, Lightbulb, Clock, Edit2, Trash2 } from "lucide-react";
+import Button from "./Button";
+import { toast } from "sonner";
+import DataService from "../firebase/DataService";
 
-const Card = ({collegeName, img, branch, collegeYear, topic, noOfAnswers, postedOn}) => {
+const Card = ({id, collegeName, img, branch, topic, noOfAnswers, postedOn, postedBy, showAnswerButton = true, onDelete}) => {
+  const navigate = useNavigate();
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const isQuestionOwner = userData.uid === postedBy;
+
+  const handleCardClick = (e) => {
+    // Don't navigate if clicking on edit/delete buttons
+    if (e.target.closest('.action-buttons')) {
+      return;
+    }
+    navigate(`/question/${id}`);
+  };
+
+  const handleAnswerClick = (e) => {
+    e.stopPropagation();
+    navigate(`/question/${id}/answer`);
+  };
+
+  const handleEditClick = (e) => {
+    e.stopPropagation();
+    navigate(`/question/${id}/edit`);
+  };
+
+  const handleDeleteClick = async (e) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to delete this question?')) {
+      return;
+    }
+
+    try {
+      const dataService = new DataService('questions');
+      
+      // Delete associated image if exists
+      if (img && !img.includes('placeholder')) {
+        const fileId = img.split('/').pop();
+        await dataService.deleteImage(fileId);
+      }
+
+      // Delete the question document
+      await dataService.deleteDocument(id);
+      
+      toast.success('Question deleted successfully!');
+      window.location.reload(); // Refresh to update the list
+    } catch (error) {
+      console.error('Error deleting question:', error);
+      toast.error('Failed to delete question. Please try again.');
+    }
+  };
+
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 cursor-pointer group">
-      <div className="p-5 border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-[#173f67] font-bold text-xl mb-1">{collegeName}</h2>
-            <p className="text-gray-600 text-sm">{branch}</p>
-          </div>
-          <div className="flex items-center gap-2 text-gray-500">
-            <Clock size={16} />
-            <span className="text-sm">{postedOn}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Image Section */}
-      <div className="relative">
+    <div 
+      onClick={handleCardClick}
+      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 cursor-pointer"
+    >
+      <div className="relative h-48">
         <img
           src={img}
-          alt="Question Image"
-          className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          alt={collegeName}
+          className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      </div>
-
-      {/* Content Section */}
-      <div className="p-5">
-        <h3 className="text-gray-900 font-semibold text-lg mb-3 line-clamp-2">{topic}</h3>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
-              <MessageSquare className="text-gray-600 w-4 h-4" />
-              <span className="text-sm text-gray-600">Answer</span>
-            </button>
-            <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
-              <Lightbulb className="text-gray-600 w-4 h-4" />
-              <span className="text-sm text-gray-600">Hints</span>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute bottom-4 left-4 right-4">
+          <h3 className="text-white font-semibold text-lg line-clamp-1">{topic}</h3>
+          <p className="text-white/90 text-sm mt-1 line-clamp-1">{collegeName}</p>
+        </div>
+        {isQuestionOwner && (
+          <div className="absolute top-2 right-2 flex gap-2 action-buttons">
+            <Link
+              to={`/question/${id}/edit`}
+              className="p-2 bg-white dark:bg-gray-700 rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
+            >
+              <Edit2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </Link>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(id, img);
+              }}
+              className="p-2 bg-white dark:bg-gray-700 rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
+            >
+              <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
             </button>
           </div>
-          <div className="text-sm text-gray-500">
-            {noOfAnswers} answers
+        )}
+      </div>
+      
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm text-gray-600 dark:text-gray-300">{branch}</span>
+        </div>
+        
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center gap-1 text-gray-600 dark:text-gray-300">
+            <MessageSquare className="w-4 h-4" />
+            <span>{noOfAnswers} answers</span>
+          </div>
+          <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+            <Clock className="w-4 h-4" />
+            <span>{postedOn}</span>
           </div>
         </div>
       </div>

@@ -1,35 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import InputField from '../components/InputField';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
-import Button from '../components/Button';
+import Button from '../components/ButtonAuth';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 import authService from '../firebase/AuthService.js'
 import {toast} from "sonner"
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {login} from '../store/authSlice'
 import DataService from '../firebase/DataService.js'
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const LoginPage = () => {
-  const dispatch=useDispatch()
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-      })
-    const [errors, setErrors] = useState({});
-    const [isLoading, setIsLoading] = useState(false);
+  const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
     
-    const handleChange = (e) => {
-        const { id, value } = e.target;
-        setFormData(prev => ({ ...prev, [id]: value }));
-        
-        if (errors[id]) {
-          setErrors(prev => ({ ...prev, [id]: '' }));
-        }
-      };
+    if (errors[id]) {
+      setErrors(prev => ({ ...prev, [id]: '' }));
+    }
+  };
+
   const validate = () => {
     const newErrors= {};
     
@@ -59,34 +61,40 @@ const LoginPage = () => {
       
       localStorage.setItem("authStatus", "true");
       
+      const dataService = new DataService("users");
+      const response = await dataService.getUserData(user.uid);
+      const userData = {
+        uid: user.uid,
+        email: response.email,
+        displayName: response.name || "",
+        collegeName: response.college || "",
+        photoURL: user.photoURL,
+        branch: response.branch?.toLowerCase().replace(/\s+/g, '_') || "",
+      };
+      
+      localStorage.setItem("userData", JSON.stringify(userData));
+      
+      // Check if profile is completed
+      const isProfileCompleted = response.college && response.branch && response.role;
+      localStorage.setItem("profileCompleted", isProfileCompleted.toString());
+      
       dispatch(login({ 
         userData: { 
           email: user.email, 
           name: user.displayName || "", 
           userID: user.uid 
         },
-        status: true 
+        status: true,
+        profileCompleted: isProfileCompleted
       }));
       
       toast.success('Logged in successfully!');
       
       // Get redirect path if it exists
-      const redirectPath = localStorage.getItem("redirectPath") || "/home";
+      const redirectPath = localStorage.getItem("redirectPath") || (isProfileCompleted ? "/home" : "/complete-profile");
       localStorage.removeItem("redirectPath"); // Clean up
       
       navigate(redirectPath, { replace: true });
-      const dataService=new DataService("users")
-      const response=await dataService.getUserData(user.uid)
-      console.log("response from getUserData::loginPage",response);
-      const userData = {
-        uid: user.uid,
-        email: response.email,
-        displayName: response.displayName || "",
-        collegeName: response.college || "",
-        photoURL: user.photoURL
-      };
-      localStorage.setItem("userData", JSON.stringify(userData));
-
     } catch (error) {
       console.error(error);
       const errorMessage = error.code?.split("auth/")[1] || "unknown-error";
@@ -109,13 +117,24 @@ const LoginPage = () => {
   //   }
   // };
 
+  if (isLoading) {
+    return <LoadingSpinner fullScreen />;
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
+    <div className={`min-h-screen flex items-center justify-center p-4 ${
+      isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
+    }`}>
+      <div className={`w-full max-w-md rounded-lg shadow-md p-8 ${
+        isDarkMode ? 'bg-gray-800' : 'bg-white'
+      }`}>
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome back</h1>
-          <p className="text-gray-600">Login to your account to continue</p>
+          <h1 className={`text-3xl font-bold mb-2 ${
+            isDarkMode ? 'text-white' : 'text-gray-900'
+          }`}>Welcome back</h1>
+          <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
+            Login to your account to continue
+          </p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -164,14 +183,14 @@ const LoginPage = () => {
           <GoogleLoginButton onClick={handleGoogleLogin} disabled={isLoading} />
         </div> */}
 
-        <div className="text-center text-gray-600">
+        <div className={`text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
           Don't have an account?{' '}
           <Link 
-              to="/signup" 
-              className="text-blue-500 text-sm inline-flex items-center"
-            >
-              Sign up <ArrowRight size={14} className="ml-1" />
-            </Link>
+            to="/signup" 
+            className="text-blue-500 text-sm inline-flex items-center"
+          >
+            Sign up <ArrowRight size={14} className="ml-1" />
+          </Link>
         </div>
       </div>
     </div>

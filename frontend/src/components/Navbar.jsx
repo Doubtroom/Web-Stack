@@ -18,12 +18,14 @@ import SliderSwitch from '../components/SliderSwitch'
 import authService from "../firebase/AuthService";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
+import { useSelector } from 'react-redux';
 
 const Navbar = () => {
   const navigate=useNavigate()
   const [isOpen, setIsOpen] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showNavbar, setShowNavbar] = useState(true);
+  const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
 
   const handleLogout = async (e) => {
     try {
@@ -56,7 +58,11 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed w-full z-50 flex items-center justify-between px-6 py-6 transition-transform duration-300 ease-in-out bg-gradient-to-r from-[#1e6eab] to-[#02254b] shadow-sm ${
+      className={`fixed w-full z-50 flex items-center justify-between px-6 py-6 transition-transform duration-300 ease-in-out ${
+        isDarkMode 
+          ? 'bg-slate-900 shadow-slate-800/50' 
+          : 'bg-gradient-to-r from-[#173f67] to-[#0f2942]'
+      } shadow-sm ${
         showNavbar ? "translate-y-0" : "-translate-y-full"
       }`}
     >
@@ -124,7 +130,7 @@ const Navbar = () => {
           <User className="w-5 h-5 text-black" />
         </div>
       </div>
-
+      <SliderSwitch classNames="lg:hidden" />
       <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer lg:hidden">
         <User className="w-5 h-5 text-black" />
       </div>
@@ -141,21 +147,25 @@ const Navbar = () => {
           >
             <div className="flex flex-col space-y-4 p-4 lg:hidden">
               <NavItem
+                to='/'
                 color="black"
                 icon={<Home className="w-4 h-4" />}
                 label="Home"
               />
               <NavItem
+                to='/my-questions'
                 color="black"
                 icon={<HelpCircle className="w-4 h-4" />}
                 label="My Questions"
               />
               <NavItem
+                to='/my-college'
                 color="black"
                 icon={<School className="w-4 h-4" />}
                 label="My College"
               />
               <NavItem
+                to='/all-colleges'
                 color="black"
                 icon={<Grid className="w-4 h-4" />}
                 label="All Colleges"

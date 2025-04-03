@@ -1,29 +1,23 @@
 import React, { useEffect, useState } from 'react'
 import CollegeCard from '../components/CollegeCard'
-import { HelpCircle, Loader2 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Building2, MessageSquare,Grid } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom'
 import DataService from '../firebase/DataService'
 import LoadingSpinner from '../components/LoadingSpinner'
+import Button from '../components/Button';
 
-const Home = () => {
+const AllColleges = () => {
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchQuestions = async () => {
       try {
         const dataService = new DataService('questions');
-        
-        // Get all questions
         const questionsData = await dataService.getAllDocuments();
-        
-        // Sort questions by date (newest first)
-        const sortedQuestions = questionsData.sort((a, b) => {
-          return new Date(b.createdAt) - new Date(a.createdAt);
-        });
-
-        setQuestions(sortedQuestions);
+        setQuestions(questionsData);
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch questions. Please try again later.');
@@ -32,7 +26,7 @@ const Home = () => {
       }
     };
 
-    fetchData();
+    fetchQuestions();
   }, []);
 
   const formatTimeAgo = (dateString) => {
@@ -69,44 +63,33 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header Section */}
-      <div className='mt-24 flex flex-col justify-center items-center'>
-        <h2 className='text-3xl font-bold text-gray-800 dark:text-white mb-4'>Most Recent Queries</h2>
-        <div className='border border-t-2 border-blue-800 dark:border-blue-400 w-1/4' />
-      </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
+        <div className="max-w-7xl mx-auto px-4">
 
-      {/* Ask Question Tab */}
-      <Link to='/ask-question'>
-        <div className="max-w-5xl mx-auto mt-8 ml-5 mr-5">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 cursor-pointer group">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors duration-300">
-                  <HelpCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Have a doubt? Ask here</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Get help from the community</p>
-                </div>
-              </div>
-              <div className="text-blue-600 dark:text-blue-400 font-medium flex items-center gap-2">
-                Ask Question
-                <span className="transform group-hover:translate-x-1 transition-transform duration-300">→</span>
-              </div>
-            </div>
+      {/* Header Section */}
+      <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <Grid className="w-8 h-8 text-[#173f67] dark:text-blue-400" />
+            <h1 className="text-2xl font-bold text-[#173f67] dark:text-white">
+              All Colleges Questions
+            </h1>
           </div>
+          <Button
+            variant="primary"
+            onClick={() => navigate('/ask-question')}
+          >
+            Ask New Question
+          </Button>
         </div>
-      </Link>
 
       {/* Questions Grid */}
-      <section className="max-w-8xl mx-auto py-10 ">
+      <section className="max-w-7xl mx-auto py-10 ">
         {questions.length === 0 ? (
           <div className="text-center text-gray-500 dark:text-gray-400 py-8">
             No questions yet. Be the first to ask!
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ml-5 mr-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ml-1 mr-1">
             {questions.map((question) => (
               <CollegeCard
                 key={question.id}
@@ -123,8 +106,9 @@ const Home = () => {
           </div>
         )}
       </section>
+      </div>
     </div>
   )
 }
 
-export default Home
+export default AllColleges 

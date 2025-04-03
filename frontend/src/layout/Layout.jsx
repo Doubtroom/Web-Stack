@@ -2,15 +2,17 @@ import React from "react";
 import Navbar from "../components/Navbar"; 
 import Footer from "../components/Footer"
 import { Outlet } from "react-router-dom";
+import ScrollToTop from "../components/ScrollToTop";
 
 const Layout = () => {
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
+      <ScrollToTop />
       <Navbar />
-      <main className={`pt-10 white mb-0`}>
+      <main className="flex-1 pt-10 pb-20">
         <Outlet />
       </main>
-      <Footer classNames={'lg:block hidden mt-20'}/>
+      <Footer classNames={'lg:block hidden'}/>
     </div>
   );
 };

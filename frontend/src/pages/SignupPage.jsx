@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import InputField from '../components/InputField';
-import Button from '../components/Button';
+import Button from '../components/ButtonAuth';
 import { Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../firebase/AuthService';
 import { toast } from 'sonner';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../store/authSlice';
+import DataService from '../firebase/DataService';
 
 const SignupPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
     const [formData, setFormData] = useState({
       name: '',
       email: '',
@@ -23,7 +25,6 @@ const SignupPage = () => {
     const [step, setStep] = useState(1);
     const [otpSent, setOtpSent] = useState(false);
     const [isCheckingEmail, setIsCheckingEmail] = useState(false);
-
 
     const checkEmailtest = async () => {
       setIsCheckingEmail(true)
@@ -79,32 +80,40 @@ const SignupPage = () => {
       }
     };
 
-    const handleChange = async (e) => {
-        const { id, value } = e.target;
-        setFormData(prev => ({ ...prev, [id]: value }));
-        
-        // Clear error when user starts typing
-        if (errors[id]) {
-            setErrors(prev => ({ ...prev, [id]: '' }));
-        }
-
-        // Check email availability when email field changes
-        if (id === 'email' && value && /\S+@\S+\.\S+/.test(value)) {
-            setIsCheckingEmail(true);
-            try {
-                const result = await authService.signUp(value, 'tempPassword123');
-                await authService.logout();
-                await authService.deleteUserByEmail(value);
-            } catch (error) {
-                if (error.code === 'auth/email-already-in-use') {
-                    toast.error("Email already in use");
-                    setErrors(prev => ({ ...prev, email: 'Email already in use' }));
-                }
-            } finally {
-                setIsCheckingEmail(false);
-            }
-        }
-    };
+    const handleChange = (e) => {
+      const { id, value } = e.target;
+      setFormData(prev => ({ ...prev, [id]: value }));
+  
+      // Clear errors as the user types
+      if (errors[id]) {
+          setErrors(prev => ({ ...prev, [id]: '' }));
+      }
+  };
+  
+  // New function to validate only on blur (when user leaves the email field)
+  const handleBlur = async (e) => {
+    const { id, value } = e.target;
+    
+    if (id === 'email' && value) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (emailRegex.test(value)) {
+        setIsCheckingEmail(true);
+              try {
+                  const result = await authService.signUp(value, 'tempPassword123');
+                  await authService.logout();
+                  await authService.deleteUserByEmail(value);
+              } catch (error) {
+                  if (error.code === 'auth/email-already-in-use') {
+                      toast.error("Email already in use");
+                      setErrors(prev => ({ ...prev, email: 'Email already in use' }));
+                  }
+              } finally {
+                  setIsCheckingEmail(false);
+              }
+          }
+      }
+  };
+  
 
     const handleSignup = async() => {
       try {
@@ -124,7 +133,8 @@ const SignupPage = () => {
         
         localStorage.setItem("userData", JSON.stringify(userData));
         localStorage.setItem("authStatus", "true");
-        localStorage.setItem("needsProfileCompletion", "true");
+        localStorage.setItem("profileCompleted", "false");
+        localStorage.setItem("fromSignup", "true");
         
         dispatch(login({ 
           userData: { 
@@ -132,17 +142,13 @@ const SignupPage = () => {
             name: formData.name, 
             userID: user.uid 
           },
-          status: true 
+          status: true,
+          profileCompleted: false
         }));
         
-        const redirectPath = localStorage.getItem("redirectPath") || "/home";
-        localStorage.removeItem("redirectPath"); // Clean up
-        
         toast.success('Account created successfully!');
-        navigate(redirectPath, { 
-          replace: true,
-          state: { fromSignup: true }
-        });
+        
+        window.location.href = '/complete-profile';
       } catch (error) {
         let errorMessage = 'Signup failed. Please try again.';
         if (error.code === 'auth/email-already-in-use') {
@@ -182,20 +188,20 @@ const SignupPage = () => {
     };
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className={`min-h-screen flex items-center justify-center p-4 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         {isLoading && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+            <div className={`p-6 rounded-lg shadow-xl flex flex-col items-center ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
               <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-gray-700 font-medium">Processing...</p>
+              <p className={`font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>Processing...</p>
             </div>
           </div>
         )}
         {step === 1 && (    
-          <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
+          <div className={`w-full max-w-md rounded-lg shadow-md p-8 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-2">Create an account</h1>
-              <p className="text-gray-600">Sign up to get started</p>
+              <h1 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Create an account</h1>
+              <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Sign up to get started</p>
             </div>
 
             <form onSubmit={handleSendOtp}>
@@ -203,7 +209,7 @@ const SignupPage = () => {
                 <InputField
                   type="text"
                   placeholder="Enter your full name"
-                  icon={<User size={18} />}
+                  icon={<User size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />}
                   value={formData.name}
                   id="name"
                   label="Name"
@@ -218,11 +224,12 @@ const SignupPage = () => {
                   id="email"
                   label="Email"
                   placeholder="Enter your email"
-                  icon={<Mail size={18} />}
+                  icon={<Mail size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />}
                   value={formData.email}
                   error={errors.email}
                   onChange={handleChange}
                   disabled={isCheckingEmail}
+                  onBlur={handleBlur}
                 />
               </div>
 
@@ -230,7 +237,7 @@ const SignupPage = () => {
                 <InputField
                   type="password"
                   placeholder="Create a password"
-                  icon={<Lock size={18} />}
+                  icon={<Lock size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />}
                   value={formData.password}
                   id="password"
                   label="Password"
@@ -245,7 +252,7 @@ const SignupPage = () => {
                   id="confirmPassword"
                   label="Confirm Password"
                   placeholder="Confirm your password"
-                  icon={<Lock size={18} />}
+                  icon={<Lock size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />}
                   value={formData.confirmPassword}
                   error={errors.confirmPassword}
                   onChange={handleChange}
@@ -256,10 +263,11 @@ const SignupPage = () => {
                 <button
                   disabled={isLoading || isCheckingEmail}
                   onClick={handleSendOtp}
-                  className={`py-3 px-4 rounded-md font-medium transition-colors duration-200 primary 
-                    w-full bg-blue-500 hover:bg-blue-600 text-white
-                    ${isLoading || isCheckingEmail ? "bg-blue-700" : ""}
-                    flex items-center justify-center gap-2`}
+                  className={`py-3 px-4 rounded-md font-medium transition-colors duration-200 
+                    w-full text-white flex items-center justify-center gap-2
+                    ${isLoading || isCheckingEmail 
+                      ? 'bg-blue-700' 
+                      : 'bg-blue-500 hover:bg-blue-600'}`}
                 >
                   {isLoading ? (
                     <>
@@ -273,11 +281,11 @@ const SignupPage = () => {
               </div>
             </form>
 
-            <div className="text-center text-gray-600">
+            <div className={`text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
               Already have an account?{' '}
               <Link 
                 to="/login" 
-                className="text-blue-500 text-sm inline-flex items-center"
+                className="text-blue-500 text-sm inline-flex items-center hover:text-blue-400"
               >
                 Login<ArrowRight size={14} className="ml-1" />
               </Link>
@@ -285,17 +293,17 @@ const SignupPage = () => {
           </div>
         )}
         {step === 2 && (
-          <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
+          <div className={`w-full max-w-md rounded-lg shadow-md p-8 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-2">Verify your OTP</h1>
-              <p className="text-gray-600">Enter the OTP sent to your email</p>
+              <h1 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Verify your OTP</h1>
+              <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Enter the OTP sent to your email</p>
             </div>
             <form onSubmit={handleVerifyOtp}>
               <div className="mb-2">
                 <InputField
                   type="text"
                   placeholder="Enter OTP"
-                  icon={<Lock size={18} />}
+                  icon={<Lock size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />}
                   value={formData.otp}
                   id="otp"
                   label="OTP"

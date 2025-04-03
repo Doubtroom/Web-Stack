@@ -1,8 +1,9 @@
 import { Client, Storage } from 'appwrite';
+import config from '../config/config';
 
 const client = new Client()
-    .setEndpoint('https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
-    .setProject('67e69c16002d92d38655');        // Replace with your Appwrite project ID
+    .setEndpoint(config.appwriteEndpoint) 
+    .setProject(config.appwriteProjectId)
 
 const storage = new Storage(client);
 

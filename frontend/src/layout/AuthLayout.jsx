@@ -1,69 +1,54 @@
-import React, { useEffect } from 'react'
-import { useSelector } from 'react-redux'
-import { useNavigate, useLocation } from 'react-router-dom'
+import React, { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-function Protected({children, authentication=true}) {
-    const reduxAuthStatus = useSelector((state)=>state.auth.status)
-    const navigate = useNavigate()
-    const location = useLocation()
-
-    // Get auth status from localStorage
-    const localAuthStatus = localStorage.getItem("authStatus") === "true"
-    const userData = JSON.parse(localStorage.getItem("userData") || "{}")
-    const needsProfileCompletion = localStorage.getItem("needsProfileCompletion") === "true"
+function Protected({ children, authentication = true }) {
+    const navigate = useNavigate();
+    const location = useLocation();
     
-    // Check if all required fields are present
-    const isProfileComplete = userData.role && 
-                            userData.collegeName && 
-                            userData.branch && 
-                            userData.studyType && 
-                            userData.phone && 
-                            userData.gender
+    // Get auth state from Redux
+    const reduxAuthStatus = useSelector((state) => state?.auth?.status || false);
+    const profileCompleted = useSelector((state) => state?.auth?.profileCompleted || false);
 
-    const isAuthenticated = localAuthStatus || reduxAuthStatus
+    // Use localStorage as fallback if Redux state is not available
+    const authStatus = reduxAuthStatus || localStorage.getItem('authStatus') === 'true';
+    const localProfileCompleted = localStorage.getItem('profileCompleted') === 'true';
+    const fromSignup = localStorage.getItem("fromSignup") === "true";
 
     useEffect(() => {
-        // Get navigation state
-        const state = window.history.state?.usr || {}
-        const { fromLogout } = state
+        // If user is not authenticated and tries to access protected pages
+        if (!authStatus && authentication) {
+            navigate('/login', { replace: true });
+            return;
+        }
 
-        // Handle navigation based on auth state
-        if (authentication) {
-            // Protected routes
-            if (!isAuthenticated) {
-                // Not logged in - redirect to landing
-                localStorage.setItem("redirectPath", location.pathname)
-                navigate('/landing', { replace: true })
-            } else if (needsProfileCompletion && location.pathname !== '/complete-profile') {
-                // If profile needs completion and not on complete-profile page, redirect
-                navigate('/complete-profile', { replace: true })
+        // If user is authenticated and tries to access login/signup pages
+        if (authStatus && !authentication) {
+            navigate('/home', { replace: true });
+            return;
+        }
+
+        // If user is authenticated but profile is not completed
+        if (authStatus && !profileCompleted && !localProfileCompleted) {
+            // If user came from signup, they must complete their profile first
+            if (fromSignup && location.pathname !== '/complete-profile') {
+                navigate('/complete-profile', { replace: true });
+                return;
             }
-        } else {
-            // Public routes
-            if (isAuthenticated) {
-                if (needsProfileCompletion) {
-                    // If profile needs completion, go to complete-profile
-                    navigate('/complete-profile', { replace: true })
-                } else if (!fromLogout) {
-                    // If profile is complete and not from logout, go to home
-                    navigate('/home', { replace: true })
-                }
+            // For other users, allow access to complete-profile
+            if (location.pathname !== '/complete-profile') {
+                navigate('/complete-profile', { replace: true });
+                return;
             }
         }
-    }, [isAuthenticated, needsProfileCompletion, authentication, navigate, location.pathname])
 
-    // For protected routes
-    if (authentication) {
-        if (!isAuthenticated) return null
-        // Block rendering if profile needs completion
-        if (needsProfileCompletion && location.pathname !== '/complete-profile') return null
-        return <>{children}</>
-    }
+        // If user is authenticated and profile is completed, prevent access to complete-profile
+        if (authStatus && (profileCompleted || localProfileCompleted) && location.pathname === '/complete-profile') {
+            navigate('/home', { replace: true });
+        }
+    }, [authStatus, profileCompleted, authentication, location, navigate, fromSignup]);
 
-    // For public routes
-    // Block rendering if authenticated and profile is complete
-    if (isAuthenticated && !needsProfileCompletion) return null
-    return !isAuthenticated ? <>{children}</> : null
+    return <>{children}</>;
 }
 
-export default Protected
+export default Protected;

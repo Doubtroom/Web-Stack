@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, GraduationCap, Phone, User, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 import userService from '../firebase/UserService';
+import { useDispatch } from 'react-redux';
+import { updateProfileCompletion } from '../redux/profileSlice';
 
 const UserInfoForm = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [formData, setFormData] = useState({
         collegeName: '',
         branch: '',
@@ -17,6 +20,29 @@ const UserInfoForm = () => {
     });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    
+    // Check if user is coming from signup
+    const fromSignup = localStorage.getItem("fromSignup") === "true";
+    
+    // Prevent navigation away from this page if coming from signup
+    useEffect(() => {
+        if (fromSignup) {
+            // Disable browser back button
+            window.history.pushState(null, '', window.location.href);
+            
+            // Handle browser back button
+            const handlePopState = (e) => {
+                e.preventDefault();
+                window.history.pushState(null, '', window.location.href);
+            };
+            
+            window.addEventListener('popstate', handlePopState);
+            
+            return () => {
+                window.removeEventListener('popstate', handlePopState);
+            };
+        }
+    }, [fromSignup]);
 
     const studyTypes = [
         { value: 'bachelor', label: 'Bachelor\'s Degree' },
@@ -27,15 +53,22 @@ const UserInfoForm = () => {
     ];
 
     const branches = [
-        { value: 'cse', label: 'Computer Science & Engineering' },
-        { value: 'ece', label: 'Electronics & Communication' },
-        { value: 'me', label: 'Mechanical Engineering' },
-        { value: 'ce', label: 'Civil Engineering' },
-        { value: 'ee', label: 'Electrical Engineering' },
-        { value: 'it', label: 'Information Technology' },
-        { value: 'ai', label: 'Artificial Intelligence' },
-        { value: 'cs', label: 'Computer Science' },
-        { value: 'other', label: 'Other' }
+        { value: 'computer_science', label: 'Computer Science' },
+        { value: 'mechanical_engineering', label: 'Mechanical Engineering' },
+        { value: 'electrical_engineering', label: 'Electrical Engineering' },
+        { value: 'civil_engineering', label: 'Civil Engineering' },
+        { value: 'chemical_engineering', label: 'Chemical Engineering' },
+        { value: 'aerospace_engineering', label: 'Aerospace Engineering' },
+        { value: 'biomedical_engineering', label: 'Biomedical Engineering' },
+        { value: 'electronics_engineering', label: 'Electronics Engineering' },
+        { value: 'information_technology', label: 'Information Technology' },
+        { value: 'automation_engineering', label: 'Automation Engineering' },
+        { value: 'robotics_engineering', label: 'Robotics Engineering' },
+        { value: 'metallurgical_engineering', label: 'Metallurgical Engineering' },
+        { value: 'mining_engineering', label: 'Mining Engineering' },
+        { value: 'textile_engineering', label: 'Textile Engineering' },
+        { value: 'agricultural_engineering', label: 'Agricultural Engineering' },
+        { value: 'custom', label: 'Other (Specify)' }
     ];
 
     const handleChange = (e) => {
@@ -62,7 +95,7 @@ const UserInfoForm = () => {
         // Branch validation
         if (!formData.branch) {
             newErrors.branch = 'Branch is required';
-        } else if (formData.branch === 'other' && !formData.otherBranch.trim()) {
+        } else if (formData.branch === 'custom' && !formData.otherBranch.trim()) {
             newErrors.otherBranch = 'Please specify your branch';
         }
         
@@ -96,23 +129,44 @@ const UserInfoForm = () => {
         try {
             const existingUserData = JSON.parse(localStorage.getItem("userData") || "{}");
             
-            // Create the final user data object with all required fields
+            // Format the branch name to match AskQuestion.jsx format
+            const formattedBranch = formData.branch === 'custom' 
+                ? formData.otherBranch.toLowerCase().replace(/\s+/g, '_')
+                : formData.branch;
+
+            const updatedUserData1 = {
+                uid: existingUserData.uid,
+                email: existingUserData.email,
+                displayName: existingUserData.displayName,
+                collegeName: formData.collegeName.trim(),
+                branch: formattedBranch
+            };
+
             const updatedUserData = {
                 uid: existingUserData.uid,
                 email: existingUserData.email,
                 displayName: existingUserData.displayName,
                 collegeName: formData.collegeName.trim(),
+                role: formData.role,
+                branch: formattedBranch,
+                studyType: formData.role === 'faculty' ? '--faculty' : formData.studyType,
+                phone: formData.phone,
+                gender: formData.gender
             };
             
-            // Save to localStorage
-            localStorage.setItem("userData", JSON.stringify(updatedUserData));
-            localStorage.removeItem("needsProfileCompletion"); // Clear the profile completion state
+            localStorage.setItem("userData", JSON.stringify(updatedUserData1));
+            localStorage.setItem("profileCompleted", "true");
+            localStorage.removeItem("fromSignup");
             
-            // Save to Firebase
             await userService.saveUserProfile(existingUserData.uid, updatedUserData);
             
+            // Update Redux state for profile completion
+            dispatch(updateProfileCompletion(true));
+            
             toast.success('Profile information saved successfully!');
-            navigate('/', { replace: true });
+            
+            // Always navigate to home after profile completion
+            navigate('/home', { replace: true });
         } catch (error) {
             console.error('Error saving profile:', error);
             toast.error('Failed to save profile information');
@@ -122,9 +176,9 @@ const UserInfoForm = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white p-4">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white p-4 ">
             <div className="max-w-2xl mx-auto">
-                <div className="bg-white rounded-2xl shadow-xl p-8">
+                <div className="bg-white rounded-2xl shadow-xl p-8 mt-6">
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-bold text-blue-900 mb-2">Complete Your Profile</h1>
                         <p className="text-gray-600">Please provide your academic information</p>
@@ -199,7 +253,7 @@ const UserInfoForm = () => {
                         </div>
 
                         {/* Other Branch Input */}
-                        {formData.branch === 'other' && (
+                        {formData.branch === 'custom' && (
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <GraduationCap className="h-5 w-5 text-blue-500" />

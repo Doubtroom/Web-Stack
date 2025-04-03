@@ -81,7 +81,6 @@ class AuthService {
   async logout() {
     try {
       await signOut(this.auth);
-      console.log("User logged out");
     } catch (error) {
       throw error;
     }
@@ -112,7 +111,6 @@ class AuthService {
   async deleteUserByEmail(email) {
     try {
         const response = await axios.post(`${API_URL}/api/admin/delete-user`, { email });
-        console.log(response.data.message);
         return response.data.message;
     } catch (error) {
       console.error("Error deleting user by email:", error.response?.data?.error || error.message);
@@ -120,7 +118,15 @@ class AuthService {
     }
   }
 
-
+  async checkEmailExists(email) {
+    try {
+      const methods = await fetchSignInMethodsForEmail(this.auth, email);
+      return methods;
+    } catch (error) {
+      console.error("Error checking email:", error);
+      throw error;
+    }
+  }
 }
 
 const authService = new AuthService();

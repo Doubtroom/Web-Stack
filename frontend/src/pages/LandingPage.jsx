@@ -105,8 +105,8 @@ const SocialLink = ({ icon, platform, username }) => {
         </div>
       </div>
     </Link>
-  );
-};
+  )
+}
 
 // Footer Component
 const Footer = () => {
@@ -126,7 +126,7 @@ const Footer = () => {
       </div>
     </footer>
   );
-};
+}
 
 const DoubtRoomPage = () => {
   return (
