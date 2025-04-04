@@ -48,7 +48,7 @@ function App() {
               <UserInfoForm />
             </Protected>
           } />
-
+{/* _blank */}
           {/* Root path redirect */}
           <Route path="/" element={<Navigate to="/landing" replace />} />
 
