@@ -136,7 +136,7 @@ const DoubtRoomPage = () => {
            backgroundSize: 'cover',
          }}>
       {/* Stars overlay */}
-      <div className="absolute inset-0 bg-[url('https://img.freepik.com/free-vector/bring-night-space-wallpaper-with-glowing-starfield_1017-53512.jpg?t=st=1742755566~exp=1742759166~hmac=71b72cf058b09914b7031c9e28266fb0fab9f2112e039f721df2b18dbe9cd210&w=1800')] opacity-30 pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('https://fixthephoto.com/images/content/star-overlays-for-photoshop-151608800611.jpg')] opacity-30 pointer-events-none" />
       
       {/* Content Container */}
       <div className="relative z-10 min-h-screen flex flex-col">
