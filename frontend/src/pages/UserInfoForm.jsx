@@ -70,6 +70,7 @@ const UserInfoForm = () => {
         { value: 'agricultural_engineering', label: 'Agricultural Engineering' },
         { value: 'custom', label: 'Other (Specify)' }
     ];
+    // blank
 
     const colleges = [
         { value: 'nit_agartala', label: 'National Institute of Technology Agartala' },
