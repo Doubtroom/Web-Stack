@@ -29,8 +29,19 @@ function App() {
         v7_relativeSplatPath: true 
       }}>
         <Routes>
+          {/* Root path - redirects based on auth status */}
+          <Route path="/" element={
+            <Protected authentication={null}>
+              {({ authStatus }) => authStatus ? <Navigate to="/home" replace /> : <Navigate to="/landing" replace />}
+            </Protected>
+          } />
+
           {/* Public Routes - Protected from authenticated users */}
-          <Route path="/landing" element={<LandingPage />} />
+          <Route path="/landing" element={
+            <Protected authentication={false}>
+              <LandingPage />
+            </Protected>
+          } />
           <Route path="/login" element={
             <Protected authentication={false}>
               <LoginPage />
@@ -48,9 +59,6 @@ function App() {
               <UserInfoForm />
             </Protected>
           } />
-{/* _blank */}
-          {/* Root path redirect */}
-          <Route path="/" element={<Navigate to="/landing" replace />} />
 
           {/* Protected Routes with Layout */}
           <Route element={<Protected authentication={true}><Layout /></Protected>}>
@@ -65,6 +73,13 @@ function App() {
             <Route path="/all-colleges" element={<AllColleges />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
+
+          {/* Catch all route - redirect to home or landing based on auth status */}
+          <Route path="*" element={
+            <Protected authentication={null}>
+              {({ authStatus }) => authStatus ? <Navigate to="/home" replace /> : <Navigate to="/landing" replace />}
+            </Protected>
+          } />
         </Routes>
       </Router>
       <Toaster 

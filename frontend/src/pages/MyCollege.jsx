@@ -105,7 +105,7 @@ const MyCollege = () => {
               className="flex items-center gap-2 text-white transition-all duration-300 ease-in-out"
             >
               <Plus className="w-4 h-4" />
-              Add a Question
+              Ask a Question
             </Button>
             {userData.branch && (
               <div className="flex items-center gap-2 bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm transition-all duration-300 ease-in-out hover:shadow-md">

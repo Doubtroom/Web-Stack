@@ -1,26 +1,49 @@
 import app from './firebaseConfig';
-import { getFirestore, collection, addDoc, getDoc, getDocs, doc, query, where, updateDoc, deleteDoc, orderBy, increment } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDoc, getDocs, doc, query, where, updateDoc, deleteDoc, orderBy, increment, } from 'firebase/firestore';
 import { storage } from '../appwrite/appwriteConfig';
 import { ID } from 'appwrite';
 import config from '../config/config';
-import { getAuth } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'firebase/auth';
 
 class DataService {
   constructor(collectionName) {
-    const db = getFirestore(app);
-    this.collectionRef = collection(db, collectionName);
-    this.db = db;
+    this.db = getFirestore(app);
+    this.collectionRef = collection(this.db, collectionName);
     this.auth = getAuth(app);
+    this.currentUser = null;  // Store user state
+    
+    // Enable persistent authentication
+    setPersistence(this.auth, browserLocalPersistence)
+      .then(() => {
+        console.log("Firebase auth persistence enabled.");
+      })
+      .catch((error) => {
+        console.error("Error enabling auth persistence:", error);
+      });
+
+    // Listen for auth state changes
+    onAuthStateChanged(this.auth, (user) => {
+      this.currentUser = user;
+      console.log(user ? `🔹 User signed in: ${user.email}` : "⚠️ User signed out.");
+    });
   }
 
-  checkAuth() {
-    const user = this.auth.currentUser;
-    if (!user) {
-      throw new Error('User must be authenticated to perform this operation');
+  async checkAuth() {
+    if (!this.currentUser) {
+      await new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged(this.auth, (user) => {
+          if (user) {
+            this.currentUser = user;
+            unsubscribe(); // Stop listening once authenticated
+            resolve();
+          } else {
+            console.error("🚨 User must be authenticated to perform this operation");
+            throw new Error("User not authenticated");
+          }
+        });
+      });
     }
-    return user;
   }
-
   async uploadImage(file) {
     this.checkAuth();
     try {
