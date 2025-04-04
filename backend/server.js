@@ -16,7 +16,16 @@ admin.initializeApp({
 });
 
 const app = express();
-app.use(cors());
+
+// Configure CORS with specific options
+const corsOptions = {
+  origin: 'https://doubtroom.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 app.use("/api/auth", authRoutes);

@@ -24,7 +24,7 @@ class DataService {
     // Listen for auth state changes
     onAuthStateChanged(this.auth, (user) => {
       this.currentUser = user;
-      console.log(user ? `🔹 User signed in: ${user.email}` : "⚠️ User signed out.");
+      return user;
     });
   }
 
@@ -37,7 +37,6 @@ class DataService {
             unsubscribe(); // Stop listening once authenticated
             resolve();
           } else {
-            console.error("🚨 User must be authenticated to perform this operation");
             throw new Error("User not authenticated");
           }
         });
