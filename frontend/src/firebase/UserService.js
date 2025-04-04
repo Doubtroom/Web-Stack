@@ -1,12 +1,23 @@
 import app from './firebaseConfig';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 class UserService {
     constructor() {
         this.db = getFirestore(app);
+        this.auth = getAuth(app);
+    }
+
+    checkAuth() {
+        const user = this.auth.currentUser;
+        if (!user) {
+            throw new Error('User must be authenticated to perform this operation');
+        }
+        return user;
     }
 
     async saveUserProfile(userId, userData) {
+        this.checkAuth();
         try {
             const userRef = doc(this.db, 'users', userId);
             await setDoc(userRef, {
