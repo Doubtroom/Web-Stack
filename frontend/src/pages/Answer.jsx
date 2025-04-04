@@ -185,7 +185,16 @@ const Answer = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <h3 className="font-semibold text-gray-800 dark:text-white">{answer?.userName}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-gray-800 dark:text-white">
+                  {userData.role === 'faculty' ? answer?.userName : 'Anonymous'}
+                </h3>
+                {userData.role === 'faculty' && (
+                  <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
+                    Faculty
+                  </span>
+                )}
+              </div>
               <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                 <Clock className="w-4 h-4" />
                 {formatTimeAgo(answer?.createdAt)}

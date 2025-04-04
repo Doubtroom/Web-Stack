@@ -63,20 +63,22 @@ const LoginPage = () => {
       
       const dataService = new DataService("users");
       const response = await dataService.getUserData(user.uid);
+
       const userData = {
         uid: user.uid,
         email: response.email,
         displayName: response.name || "",
-        collegeName: response.college || "",
+        collegeName: response.collegeName || "",
         photoURL: user.photoURL,
         branch: response.branch?.toLowerCase().replace(/\s+/g, '_') || "",
+        role: response.role || "",
       };
       
       localStorage.setItem("userData", JSON.stringify(userData));
       
       // Check if profile is completed
       const isProfileCompleted = response.college && response.branch && response.role;
-      localStorage.setItem("profileCompleted", isProfileCompleted.toString());
+      localStorage.setItem("profileCompleted", true);
       
       dispatch(login({ 
         userData: { 
@@ -90,11 +92,9 @@ const LoginPage = () => {
       
       toast.success('Logged in successfully!');
       
-      // Get redirect path if it exists
-      const redirectPath = localStorage.getItem("redirectPath") || (isProfileCompleted ? "/home" : "/complete-profile");
-      localStorage.removeItem("redirectPath"); // Clean up
+
       
-      navigate(redirectPath, { replace: true });
+      navigate('/home', { replace: true });
     } catch (error) {
       console.error(error);
       const errorMessage = error.code?.split("auth/")[1] || "unknown-error";

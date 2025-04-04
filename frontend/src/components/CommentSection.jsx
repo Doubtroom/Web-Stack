@@ -48,7 +48,8 @@ const CommentSection = ({ answerId }) => {
         userId: userData.uid,
         createdAt: new Date().toISOString(),
         upvotes: 0,
-        upvotedBy: []
+        upvotedBy: [],
+        userName: userData.displayName
       };
 
       await dataService.addDocument(commentData);
@@ -164,6 +165,16 @@ const CommentSection = ({ answerId }) => {
             }`}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-semibold text-gray-800 dark:text-white">
+                      {userData.role === 'faculty' ? comment.userName : 'Anonymous'}
+                    </h3>
+                    {userData.role === 'faculty' && (
+                      <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
+                        Faculty
+                      </span>
+                    )}
+                  </div>
                   <p className={`text-sm mb-2 ${
                     isDarkMode ? 'text-gray-200' : 'text-gray-700'
                   }`}>{comment.text}</p>

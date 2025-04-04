@@ -3,8 +3,39 @@ import { useNavigate } from 'react-router-dom';
 import { MessageSquare, Lightbulb, Clock } from 'lucide-react';
 import Button from './Button';
 
-const CollegeCard = ({ id, collegeName, img, branch, collegeYear, topic, noOfAnswers, postedOn }) => {
+const CollegeCard = ({ id, collegeName, img, branch, topic, noOfAnswers, postedOn }) => {
   const navigate = useNavigate();
+
+  const getTimeAgo = (timestamp) => {
+    // Handle both Firestore timestamps and string timestamps
+    const date = typeof timestamp === 'object' && timestamp.toDate 
+      ? timestamp.toDate() 
+      : new Date(timestamp);
+    
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) {
+      return 'just now';
+    }
+    
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} min${diffInMinutes === 1 ? '' : 's'} ago`;
+    }
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
+    }
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) {
+      return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
+    }
+    
+    return date.toLocaleDateString();
+  };
 
   const handleCardClick = () => {
     navigate(`/question/${id}`);
@@ -28,7 +59,7 @@ const CollegeCard = ({ id, collegeName, img, branch, collegeYear, topic, noOfAns
           </div>
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
             <Clock size={16} />
-            <span className="text-xs">{postedOn}</span>
+            <span className="text-xs w-20">{getTimeAgo(postedOn)}</span>
           </div>
         </div>
       </div>

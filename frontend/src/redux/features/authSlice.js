@@ -2,8 +2,22 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     status: false,
-    userData: JSON.parse(localStorage.getItem("userData")) || null,
-    profileCompleted: JSON.parse(localStorage.getItem("profileCompleted")) || false,
+    userData: (() => {
+        try {
+            const data = localStorage.getItem("userData");
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            return null;
+        }
+    })(),
+    profileCompleted: (() => {
+        try {
+            const data = localStorage.getItem("profileCompleted");
+            return data === "true";
+        } catch (error) {
+            return false;
+        }
+    })()
 };
 
 const authSlice = createSlice({

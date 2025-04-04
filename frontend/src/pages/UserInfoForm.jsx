@@ -71,9 +71,35 @@ const UserInfoForm = () => {
         { value: 'custom', label: 'Other (Specify)' }
     ];
 
+    const colleges = [
+        { value: 'nit_agartala', label: 'National Institute of Technology Agartala' },
+        { value: 'iiit_agartala', label: 'Indian Institute of Information Technology Agartala' },
+        { value: 'iit_bombay', label: 'Indian Institute of Technology Bombay' },
+        { value: 'iit_delhi', label: 'Indian Institute of Technology Delhi' },
+        { value: 'iit_madras', label: 'Indian Institute of Technology Madras' },
+        { value: 'iit_kanpur', label: 'Indian Institute of Technology Kanpur' },
+        { value: 'iit_kharagpur', label: 'Indian Institute of Technology Kharagpur' },
+        { value: 'iit_roorkee', label: 'Indian Institute of Technology Roorkee' },
+        { value: 'iit_guwahati', label: 'Indian Institute of Technology Guwahati' },
+        { value: 'nit_trichy', label: 'National Institute of Technology Tiruchirappalli' },
+        { value: 'nit_surathkal', label: 'National Institute of Technology Karnataka' },
+        { value: 'nit_warangal', label: 'National Institute of Technology Warangal' },
+        { value: 'vit_vellore', label: 'Vellore Institute of Technology' },
+        { value: 'vit_bhopal', label: 'Vellore Institute of Technology Bhopal' },
+        { value: 'vit_chennai', label: 'Vellore Institute of Technology Chennai' },
+        { value: 'vit_bhubaneswar', label: 'Vellore Institute of Technology Bhubaneswar' },
+        { value: 'vit_vellore', label: 'Vellore Institute of Technology Vellore' },
+        { value: 'custom', label: 'Other (Specify)' }
+    ];
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        if (name === 'collegeName') {
+            const selectedCollege = colleges.find(college => college.value === value);
+            setFormData(prev => ({ ...prev, [name]: selectedCollege ? selectedCollege.label : value }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
@@ -129,7 +155,6 @@ const UserInfoForm = () => {
         try {
             const existingUserData = JSON.parse(localStorage.getItem("userData") || "{}");
             
-            // Format the branch name to match AskQuestion.jsx format
             const formattedBranch = formData.branch === 'custom' 
                 ? formData.otherBranch.toLowerCase().replace(/\s+/g, '_')
                 : formData.branch;
@@ -139,7 +164,8 @@ const UserInfoForm = () => {
                 email: existingUserData.email,
                 displayName: existingUserData.displayName,
                 collegeName: formData.collegeName.trim(),
-                branch: formattedBranch
+                branch: formattedBranch,
+                role: formData.role
             };
 
             const updatedUserData = {
@@ -160,7 +186,6 @@ const UserInfoForm = () => {
             
             await userService.saveUserProfile(existingUserData.uid, updatedUserData);
             
-            // Update Redux state for profile completion
             dispatch(updateProfileCompletion(true));
             
             toast.success('Profile information saved successfully!');
@@ -212,20 +237,47 @@ const UserInfoForm = () => {
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <Building2 className="h-5 w-5 text-blue-500" />
                             </div>
-                            <input
-                                type="text"
+                            <select
                                 name="collegeName"
-                                value={formData.collegeName}
+                                value={colleges.find(college => college.label === formData.collegeName)?.value || ''}
                                 onChange={handleChange}
                                 className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
                                     errors.collegeName ? 'border-red-500' : 'border-gray-300'
                                 }`}
-                                placeholder="Enter your college name"
-                            />
+                            >
+                                <option value="">Select your college</option>
+                                {colleges.map(college => (
+                                    <option key={college.value} value={college.value}>
+                                        {college.label}
+                                    </option>
+                                ))}
+                            </select>
                             {errors.collegeName && (
                                 <p className="mt-1 text-sm text-red-500">{errors.collegeName}</p>
                             )}
                         </div>
+
+                        {/* Other College Input */}
+                        {formData.collegeName === 'Other (Specify)' && (
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Building2 className="h-5 w-5 text-blue-500" />
+                                </div>
+                                <input
+                                    type="text"
+                                    name="otherCollege"
+                                    value={formData.otherCollege || ''}
+                                    onChange={handleChange}
+                                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
+                                        errors.otherCollege ? 'border-red-500' : 'border-gray-300'
+                                    }`}
+                                    placeholder="Enter your college name"
+                                />
+                                {errors.otherCollege && (
+                                    <p className="mt-1 text-sm text-red-500">{errors.otherCollege}</p>
+                                )}
+                            </div>
+                        )}
 
                         {/* Branch */}
                         <div className="relative">

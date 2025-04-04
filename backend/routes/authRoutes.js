@@ -9,10 +9,15 @@ const router = express.Router();
 const otpStore = {};
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587, // Change from 465 to 587
+  secure: false, // Use `true` for 465, `false` for 587
   auth: {
     user: process.env.EMAIL,
     pass: process.env.PASSWORD
+  },
+  tls: {
+    rejectUnauthorized: false, // Ignore self-signed certs
   },
 });
 

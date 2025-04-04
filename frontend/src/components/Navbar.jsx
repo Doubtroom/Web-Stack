@@ -12,16 +12,19 @@ import {
 } from "lucide-react";
 import SearchBar from "./SearchBar";
 import NavItem from "./NavItem";
+import { NavLink } from "react-router-dom";
 import Logo from "../assets/logoWhite.png";
 import { motion, AnimatePresence } from "framer-motion";
 import SliderSwitch from '../components/SliderSwitch'
 import authService from "../firebase/AuthService";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../store/authSlice';
 
 const Navbar = () => {
-  const navigate=useNavigate()
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showNavbar, setShowNavbar] = useState(true);
@@ -30,8 +33,10 @@ const Navbar = () => {
   const handleLogout = async (e) => {
     try {
       await authService.logout();
+      dispatch(logout());
       localStorage.removeItem('authStatus');
       localStorage.removeItem('userData');
+      localStorage.setItem('profileCompleted', false);
       toast.success('Logged out successfully!');
       navigate('/landing', { state: { fromLogout: true }, replace: true });
     } catch (error) {
@@ -60,8 +65,8 @@ const Navbar = () => {
     <nav
       className={`fixed w-full z-50 flex items-center justify-between px-6 py-6 transition-transform duration-300 ease-in-out ${
         isDarkMode 
-          ? 'bg-slate-900 shadow-slate-800/50' 
-          : 'bg-gradient-to-r from-[#173f67] to-[#0f2942]'
+          ? 'bg-slate-900 shadow-slate-800/50'
+          : 'bg-gradient-to-r from-[#1e6eab] to-[#02254b]'
       } shadow-sm ${
         showNavbar ? "translate-y-0" : "-translate-y-full"
       }`}
@@ -125,15 +130,18 @@ const Navbar = () => {
         <span className="mr-1">{<LogOut className="w-4 h-4" />}</span>
         <span className="text-">{"Logout"}</span>
       </div>
-
+        <NavLink to="/profile">
         <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
           <User className="w-5 h-5 text-black" />
         </div>
+        </NavLink>
       </div>
       <SliderSwitch classNames="lg:hidden" />
+      <NavLink to="/profile">
       <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer lg:hidden">
         <User className="w-5 h-5 text-black" />
       </div>
+      </NavLink>
 
       <AnimatePresence>
         {isOpen && (

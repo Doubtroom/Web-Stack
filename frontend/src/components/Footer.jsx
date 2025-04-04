@@ -10,7 +10,7 @@ function Footer({classNames}) {
     <footer className={`${
       isDarkMode 
         ? 'bg-slate-900 border-t border-slate-800' 
-        : 'bg-gradient-to-r from-[#173f67] to-[#0f2942]'
+        : 'bg-gradient-to-r from-[#1e6eab] to-[#02254b]'
     } shadow-sm text-white py-10 ${classNames}`}>
       <div className="container mx-auto px-4">
         <div className="flex flex-wrap justify-between items-start">

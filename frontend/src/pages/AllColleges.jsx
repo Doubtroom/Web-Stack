@@ -1,114 +1,113 @@
-import React, { useEffect, useState } from 'react'
-import CollegeCard from '../components/CollegeCard'
-import { Building2, MessageSquare,Grid } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom'
-import DataService from '../firebase/DataService'
-import LoadingSpinner from '../components/LoadingSpinner'
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import CollegeCard from '../components/CollegeCard';
+import DataService from '../firebase/DataService';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { toast } from 'sonner';
+import { Building2, Filter, Plus } from 'lucide-react';
 import Button from '../components/Button';
 
-const AllColleges = () => {
+const AllCollege = () => {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [showMyBranch, setShowMyBranch] = useState(false);
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         const dataService = new DataService('questions');
-        const questionsData = await dataService.getAllDocuments();
-        setQuestions(questionsData);
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to fetch questions. Please try again later.');
-        console.error('Error:', err);
+        let fetchedQuestions;
+        
+        if (showMyBranch && userData.branch) {
+          fetchedQuestions = await dataService.getQuestionsByBranch(userData.branch);
+        } else {
+          fetchedQuestions = await dataService.getAllDocuments();
+        }
+        
+        // Sort questions by createdAt timestamp in descending order (newest first)
+        const sortedQuestions = fetchedQuestions.sort((a, b) => {
+          return new Date(b.createdAt) - new Date(a.createdAt); // For descending order (newest first)
+        });
+        
+        setQuestions(sortedQuestions);
+      } catch (error) {
+        console.error('Error fetching questions:', error);
+        toast.error('Failed to fetch questions');
+      } finally {
         setLoading(false);
       }
     };
 
     fetchQuestions();
-  }, []);
-
-  const formatTimeAgo = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
-
-    if (diffInSeconds < 60) return 'just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    return `${Math.floor(diffInSeconds / 86400)} days ago`;
-  };
-
-  const formatText = (text) => {
-    if (!text) return 'Question';
-    return text
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  };
+  }, [showMyBranch, userData.branch]);
 
   if (loading) {
     return <LoadingSpinner fullScreen />;
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-red-600 dark:text-red-400 text-center">
-          <p className="text-xl font-semibold">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
-        <div className="max-w-7xl mx-auto px-4">
-
-      {/* Header Section */}
-      <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 mt-16">
+      {/* Questions Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <Grid className="w-8 h-8 text-[#173f67] dark:text-blue-400" />
-            <h1 className="text-2xl font-bold text-[#173f67] dark:text-white">
-              All Colleges Questions
-            </h1>
+            <Building2 className="w-8 h-8 text-[#173f67] dark:text-blue-400" />
+            <h1 className="text-2xl font-bold text-[#173f67] dark:text-white">All College Questions</h1>
           </div>
-          <Button
-            variant="primary"
-            onClick={() => navigate('/ask-question')}
-          >
-            Ask New Question
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => navigate('/ask-question')}
+              className="flex items-center gap-2 text-white transition-all duration-300 ease-in-out"
+            >
+              <Plus className="w-4 h-4" />
+              Add a Question
+            </Button>
+            {userData.branch && (
+              <div className="flex items-center gap-2 bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm transition-all duration-300 ease-in-out hover:shadow-md">
+                <Filter className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <Button
+                  variant="outline"
+                  onClick={() => setShowMyBranch(!showMyBranch)}
+                  className={`flex items-center gap-2 transition-all duration-300 ease-in-out min-w-[160px] justify-center ${
+                    showMyBranch 
+                      ? 'text-black border-blue-600 dark:text-white dark:bg-gray-800 transform scale-105' 
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {showMyBranch ? 'Show All' : `Show My Branch Only`}
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
-
-      {/* Questions Grid */}
-      <section className="max-w-7xl mx-auto py-10 ">
-        {questions.length === 0 ? (
-          <div className="text-center text-gray-500 dark:text-gray-400 py-8">
-            No questions yet. Be the first to ask!
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ml-1 mr-1">
-            {questions.map((question) => (
-              <CollegeCard
-                key={question.id}
-                id={question.id}
-                collegeName={formatText(question.collegeName) || 'Question'}
-                img={question.photo || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"}
-                branch={formatText(question.branch) || 'Question'}
-                collegeYear="2023"
-                topic={formatText(question.topic) || 'General'}
-                noOfAnswers={question.answers || 0}
-                postedOn={formatTimeAgo(question.createdAt)}
-              />
-            ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {questions.map((question) => (
+            <CollegeCard
+              key={question.id}
+              id={question.id}
+              collegeName={question.collegeName}
+              img={question.photo || 'https://via.placeholder.com/300x200'}
+              branch={question.branch}
+              topic={question.topic}
+              noOfAnswers={question.noOfAnswers || 0}
+              postedOn={question.createdAt}
+            />
+          ))}
+        </div>
+        {questions.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 dark:text-gray-400 text-lg">
+              {showMyBranch 
+                ? `No questions found for ${userData.branch} branch`
+                : 'No questions found'}
+            </p>
           </div>
         )}
-      </section>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AllColleges 
+export default AllCollege; 

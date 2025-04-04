@@ -14,6 +14,7 @@ import LandingPage from './pages/LandingPage';
 import MyQuestions from './pages/MyQuestions';
 import MyCollege from './pages/MyCollege';
 import AllColleges from './pages/AllColleges';
+import Profile from './pages/Profile';
 import { Toaster } from 'sonner';
 import Protected from './layout/AuthLayout'
 import EditQuestion from './pages/EditQuestion'
@@ -52,7 +53,7 @@ function App() {
           <Route path="/" element={<Navigate to="/home" replace />} />
 
           {/* Protected Routes with Layout */}
-          <Route element={<Layout />}>
+          <Route element={<Protected authentication={true}><Layout /></Protected>}>
             <Route path="/home" element={<Home />} />
             <Route path="/question/:id" element={<Question />} />
             <Route path="/question/:id/edit" element={<EditQuestion />} />
@@ -62,10 +63,21 @@ function App() {
             <Route path="/my-questions" element={<MyQuestions />} />
             <Route path="/my-college" element={<MyCollege />} />
             <Route path="/all-colleges" element={<AllColleges />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Routes>
       </Router>
-      <Toaster position="top-center" richColors />
+      <Toaster 
+        position="top-center" 
+        richColors 
+        theme={isDarkMode ? "dark" : "light"}
+        toastOptions={{
+          style: {
+            background: isDarkMode ? '#1f2937' : '#ffffff',
+            color: isDarkMode ? '#ffffff' : '#000000',
+          }
+        }}
+      />
     </div>
   );
 }

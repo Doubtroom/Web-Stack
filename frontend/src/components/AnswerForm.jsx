@@ -3,13 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Upload, X } from 'lucide-react';
 import DataService from '../firebase/DataService';
 import { toast } from 'sonner';
-import LoadingSpinner from './LoadingSpinner';
 import Button from './Button';
 
 const AnswerForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [question, setQuestion] = useState(null);
   const [formData, setFormData] = useState({
     text: '',
@@ -18,6 +18,9 @@ const AnswerForm = () => {
   const [previewUrl, setPreviewUrl] = useState(null);
 
   useEffect(() => {
+    // Scroll to top when component mounts
+    window.scrollTo(0, 0);
+
     const validateQuestion = async () => {
       if (!id) {
         toast.error('Invalid question ID');
@@ -40,6 +43,8 @@ const AnswerForm = () => {
         console.error('Error fetching question:', error);
         toast.error('Failed to fetch question details');
         navigate('/');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -89,7 +94,7 @@ const AnswerForm = () => {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     try {
       const dataService = new DataService('answers');
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -103,7 +108,7 @@ const AnswerForm = () => {
         photoId = photoData.fileId;
       }
 
-      // Create answer document with proper initialization of upvote fields
+      // Create answer document
       const answerData = {
         text: formData.text.trim() || null,
         photo: photoUrl,
@@ -119,18 +124,56 @@ const AnswerForm = () => {
       };
 
       await dataService.addDocument(answerData);
+      
+      // Update answer count in question document
+      const questionService = new DataService('questions');
+      await questionService.updateAnswerCount(id, true);
+      
       toast.success('Answer posted successfully!');
+      window.scrollTo(0, 0);
       navigate(`/question/${id}`);
     } catch (error) {
       console.error('Error posting answer:', error);
       toast.error('Failed to post answer. Please try again.');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
+  const AnswerFormSkeleton = () => (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
+      <div className="max-w-2xl mx-auto px-4">
+        <div className='flex justify-end mb-4'>
+          <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8">
+          <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded-lg mb-6 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+          <div className="space-y-6">
+            {/* Text Input Skeleton */}
+            <div>
+              <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-2 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+              <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+            </div>
+
+            {/* Photo Upload Skeleton */}
+            <div>
+              <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-2 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+              <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+            </div>
+
+            {/* Buttons Skeleton */}
+            <div className="flex justify-end gap-4">
+              <div className="h-10 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+              <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   if (loading) {
-    return <LoadingSpinner fullScreen />;
+    return <AnswerFormSkeleton />;
   }
 
   if (!question) {
@@ -212,14 +255,16 @@ const AnswerForm = () => {
               <Button
                 variant="outline"
                 onClick={() => navigate(`/question/${id}`)}
+                disabled={submitting}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 variant="primary"
+                disabled={submitting}
               >
-                Post Answer
+                {submitting ? 'Posting...' : 'Post Answer'}
               </Button>
             </div>
           </form>

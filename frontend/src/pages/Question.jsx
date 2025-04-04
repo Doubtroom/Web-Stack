@@ -48,6 +48,19 @@ const Question = () => {
         await dataService.deleteImage(oldFileId);
       }
 
+      // Delete all answers and update count
+      const answersService = new DataService('answers');
+      const answers = await answersService.getAnswersByQuestionId(id);
+      
+      // Delete each answer
+      for (const answer of answers) {
+        if (answer.photo) {
+          const photoId = answer.photo.split('/').pop();
+          await answersService.deleteImage(photoId);
+        }
+        await answersService.deleteDocument(answer.id);
+      }
+
       // Delete the question document
       await dataService.deleteDocument(id);
       
@@ -184,7 +197,7 @@ const Question = () => {
               </span>
               <span className="flex items-center gap-1">
                 <MessageSquare className="w-4 h-4" />
-                {answers.length} answers
+                {question?.noOfAnswers || 0} answers
               </span>
             </div>
             {question?.photo && (
@@ -239,7 +252,16 @@ const Question = () => {
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <h3 className="font-semibold text-gray-800 dark:text-white">{!(answer.userName) || 'Anonymous'}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-gray-800 dark:text-white">
+                            {userData.role === 'faculty' ?answer.userName:'Anonymous'}
+                          </h3>
+                          {userData.role === 'faculty' && (
+                            <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
+                              Faculty
+                            </span>
+                          )}
+                        </div>
                         <span className="text-sm text-gray-500 dark:text-gray-400">{formatTimeAgo(answer.createdAt)}</span>
                       </div>
                     </div>

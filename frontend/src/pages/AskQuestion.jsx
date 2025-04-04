@@ -229,22 +229,21 @@ const AskQuestion = () => {
   ];
 
   const branches = [
-    { value: "computer_science", label: "Computer Science" },
-    { value: "mechanical", label: "Mechanical Engineering" },
-    { value: "electrical", label: "Electrical Engineering" },
-    { value: "civil", label: "Civil Engineering" },
-    { value: "chemical", label: "Chemical Engineering" },
-    { value: "aerospace", label: "Aerospace Engineering" },
-    { value: "biomedical", label: "Biomedical Engineering" },
-    { value: "electronics", label: "Electronics Engineering" },
-    { value: "information_technology", label: "Information Technology" },
-    { value: "automation", label: "Automation Engineering" },
-    { value: "robotics", label: "Robotics Engineering" },
-    { value: "metallurgy", label: "Metallurgical Engineering" },
-    { value: "mining", label: "Mining Engineering" },
-    { value: "textile", label: "Textile Engineering" },
-    { value: "agricultural", label: "Agricultural Engineering" },
-    { value: "custom", label: "Other (Specify)" }
+    { value: 'computer_science', label: 'Computer Science' },
+    { value: 'mechanical_engineering', label: 'Mechanical Engineering' },
+    { value: 'electrical_engineering', label: 'Electrical Engineering' },
+    { value: 'civil_engineering', label: 'Civil Engineering' },
+    { value: 'chemical_engineering', label: 'Chemical Engineering' },
+    { value: 'aerospace_engineering', label: 'Aerospace Engineering' },
+    { value: 'biomedical_engineering', label: 'Biomedical Engineering' },
+    { value: 'electronics_engineering', label: 'Electronics Engineering' },
+    { value: 'information_technology', label: 'Information Technology' },
+    { value: 'automation_engineering', label: 'Automation Engineering' },
+    { value: 'robotics_engineering', label: 'Robotics Engineering' },
+    { value: 'metallurgical_engineering', label: 'Metallurgical Engineering' },
+    { value: 'mining_engineering', label: 'Mining Engineering' },
+    { value: 'textile_engineering', label: 'Textile Engineering' },
+    { value: 'agricultural_engineering', label: 'Agricultural Engineering' }
   ];
 
   const handleInputChange = (e) => {
@@ -375,6 +374,7 @@ const AskQuestion = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    window.scrollTo(0, 0);
     
     const validationErrors = validateForm(formData);
     if (Object.keys(validationErrors).length > 0) {

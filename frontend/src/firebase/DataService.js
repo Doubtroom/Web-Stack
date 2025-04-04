@@ -1,5 +1,5 @@
 import app from './firebaseConfig';
-import { getFirestore, collection, addDoc, getDoc, getDocs, doc, query, where, updateDoc, deleteDoc, orderBy } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDoc, getDocs, doc, query, where, updateDoc, deleteDoc, orderBy, increment } from 'firebase/firestore';
 import { storage } from '../appwrite/appwriteConfig';
 import { ID } from 'appwrite';
 import config from '../config/config';
@@ -58,7 +58,7 @@ class DataService {
         collegeName: data.collegeName,
         postedBy: data.postedBy,
         createdAt: new Date().toISOString(),
-        answers: 0
+        noOfAnswers: 0
       };
 
       const docRef = await addDoc(this.collectionRef, questionData);
@@ -309,9 +309,42 @@ class DataService {
       }
 
       console.log("All files deleted successfully!");
-  } catch (error) {
+    } catch (error) {
       console.error("Error deleting files:", error);
+    }
   }
+
+  async updateAnswerCount(questionId, shouldIncrement = true) {
+    try {
+      const questionRef = doc(this.db, 'questions', questionId);
+      await updateDoc(questionRef, {
+        noOfAnswers: shouldIncrement ? increment(1) : increment(-1)
+      });
+    } catch (error) {
+      console.error('Error updating answer count:', error);
+      throw error;
+    }
+  }
+
+  async getQuestionsByBranch(branch) {
+    try {
+      const q = query(
+        this.collectionRef,
+        where('branch', '==', branch)
+      );
+      const querySnapshot = await getDocs(q);
+      const questions = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      // Sort questions by date in memory
+      return questions.sort((a, b) => 
+        new Date(b.createdAt) - new Date(a.createdAt)
+      );
+    } catch (error) {
+      console.error('Error getting questions by branch:', error);
+      throw error;
+    }
   }
 }
 

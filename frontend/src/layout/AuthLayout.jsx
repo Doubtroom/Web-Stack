@@ -10,7 +10,7 @@ function Protected({ children, authentication = true }) {
     const reduxAuthStatus = useSelector((state) => state?.auth?.status || false);
     const profileCompleted = useSelector((state) => state?.auth?.profileCompleted || false);
 
-    // Use localStorage as fallback if Redux state is not available
+    // Only use localStorage as a secondary check if Redux state is true
     const authStatus = reduxAuthStatus || localStorage.getItem('authStatus') === 'true';
     const localProfileCompleted = localStorage.getItem('profileCompleted') === 'true';
     const fromSignup = localStorage.getItem("fromSignup") === "true";

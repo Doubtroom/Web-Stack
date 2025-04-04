@@ -1,39 +1,50 @@
 import React, { useEffect, useState } from 'react'
 import CollegeCard from '../components/CollegeCard'
-import { HelpCircle, Loader2 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { HelpCircle, Loader2,Filter } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import DataService from '../firebase/DataService'
 import LoadingSpinner from '../components/LoadingSpinner'
+import { toast } from 'sonner'
+import Button from '../components/Button'
 
 const Home = () => {
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [showMyBranch, setShowMyBranch] = useState(false);
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
 
   useEffect(() => {
-    const fetchData = async () => {
+    // Scroll to top when component mounts
+    window.scrollTo(0, 0);
+
+    const fetchQuestions = async () => {
       try {
         const dataService = new DataService('questions');
+        let fetchedQuestions;
         
-        // Get all questions
-        const questionsData = await dataService.getAllDocuments();
+        if (showMyBranch && userData.branch) {
+          fetchedQuestions = await dataService.getQuestionsByBranch(userData.branch);
+        } else {
+          fetchedQuestions = await dataService.getAllDocuments();
+        }
         
-        // Sort questions by date (newest first)
-        const sortedQuestions = questionsData.sort((a, b) => {
-          return new Date(b.createdAt) - new Date(a.createdAt);
+        // Sort questions by createdAt timestamp in descending order (newest first)
+        const sortedQuestions = fetchedQuestions.sort((a, b) => {
+          return new Date(b.createdAt) - new Date(a.createdAt); // For descending order (newest first)
         });
-
+        
         setQuestions(sortedQuestions);
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to fetch questions. Please try again later.');
-        console.error('Error:', err);
+      } catch (error) {
+        console.error('Error fetching questions:', error);
+        toast.error('Failed to fetch questions');
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, []);
+    fetchQuestions();
+  }, [showMyBranch, userData.branch]);
 
   const formatTimeAgo = (dateString) => {
     const date = new Date(dateString);
@@ -54,31 +65,43 @@ const Home = () => {
       .join(' ');
   };
 
+  const QuestionSkeleton = () => (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700">
+      <div className="p-5 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-2 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+          </div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+        </div>
+      </div>
+
+      <div className="relative">
+        <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+      </div>
+
+      <div className="p-5">
+        <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-3 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-20 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+          </div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
+        </div>
+      </div>
+    </div>
+  );
+
   if (loading) {
     return <LoadingSpinner fullScreen />;
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-red-600 dark:text-red-400 text-center">
-          <p className="text-xl font-semibold">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header Section */}
-      <div className='mt-24 flex flex-col justify-center items-center'>
-        <h2 className='text-3xl font-bold text-gray-800 dark:text-white mb-4'>Most Recent Queries</h2>
-        <div className='border border-t-2 border-blue-800 dark:border-blue-400 w-1/4' />
-      </div>
-
       {/* Ask Question Tab */}
       <Link to='/ask-question'>
-        <div className="max-w-5xl mx-auto mt-8 ml-5 mr-5">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 cursor-pointer group">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -99,30 +122,51 @@ const Home = () => {
         </div>
       </Link>
 
-      {/* Questions Grid */}
-      <section className="max-w-8xl mx-auto py-10 ">
-        {questions.length === 0 ? (
-          <div className="text-center text-gray-500 dark:text-gray-400 py-8">
-            No questions yet. Be the first to ask!
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ml-5 mr-5">
-            {questions.map((question) => (
-              <CollegeCard
-                key={question.id}
-                id={question.id}
-                collegeName={formatText(question.collegeName) || 'Question'}
-                img={question.photo || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"}
-                branch={formatText(question.branch) || 'Question'}
-                collegeYear="2023"
-                topic={formatText(question.topic) || 'General'}
-                noOfAnswers={question.answers || 0}
-                postedOn={formatTimeAgo(question.createdAt)}
-              />
-            ))}
+      {/* Questions Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Recent Questions</h1>
+          {userData.branch && (
+              <div className="flex items-center gap-2 bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm transition-all duration-300 ease-in-out hover:shadow-md">
+                <Filter className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <Button
+                  variant="outline"
+                  onClick={() => setShowMyBranch(!showMyBranch)}
+                  className={`flex items-center gap-2 transition-all duration-300 ease-in-out min-w-[160px] justify-center ${
+                    showMyBranch 
+                      ? 'text-black border-blue-600 dark:text-white dark:bg-gray-800 transform scale-105' 
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {showMyBranch ? 'Show All' : `Show My Branch Only`}
+                </Button>
+              </div>
+            )}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {questions.map((question) => (
+            <CollegeCard
+              key={question.id}
+              id={question.id}
+              collegeName={question.collegeName}
+              img={question.photo || 'https://via.placeholder.com/300x200'}
+              branch={question.branch}
+              topic={question.topic}
+              noOfAnswers={question.noOfAnswers || 0}
+              postedOn={question.createdAt}
+            />
+          ))}
+        </div>
+        {questions.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 dark:text-gray-400 text-lg">
+              {showMyBranch 
+                ? `No questions found for ${userData.branch} branch`
+                : 'No questions found'}
+            </p>
           </div>
         )}
-      </section>
+      </div>
     </div>
   )
 }
