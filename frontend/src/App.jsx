@@ -50,7 +50,7 @@ function App() {
           } />
 
           {/* Root path redirect */}
-          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/" element={<Navigate to="/landing" replace />} />
 
           {/* Protected Routes with Layout */}
           <Route element={<Protected authentication={true}><Layout /></Protected>}>
