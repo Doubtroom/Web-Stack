@@ -136,7 +136,7 @@ const DoubtRoomPage = () => {
            backgroundSize: 'cover',
          }}>
       {/* Stars overlay */}
-      <div className="absolute inset-0 bg-[url('https://fixthephoto.com/images/content/star-overlays-for-photoshop-151608800611.jpg')] opacity-30 pointer-events-none" />
+      <div className="absolute inset-0  opacity-30 pointer-events-none" />
       
       {/* Content Container */}
       <div className="relative z-10 min-h-screen flex flex-col">
