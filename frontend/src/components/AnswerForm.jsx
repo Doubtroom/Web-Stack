@@ -181,9 +181,9 @@ const AnswerForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 lg:pt-24">
       <div className="max-w-2xl mx-auto px-4">
-        <div className='flex justify-end'>
+        <div className='flex justify-start mb-4'>
           <Button 
             className='mb-4' 
             variant="outline" 

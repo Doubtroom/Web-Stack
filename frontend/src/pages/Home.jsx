@@ -6,6 +6,7 @@ import DataService from '../firebase/DataService'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { toast } from 'sonner'
 import Button from '../components/Button'
+import placeholder from '../../public/placeholder.png'
 
 const Home = () => {
   const navigate = useNavigate();
@@ -100,7 +101,7 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Ask Question Tab */}
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 lg:mt-24">
       <Link to='/ask-question'>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 cursor-pointer group">
             <div className="flex items-center justify-between">
@@ -151,7 +152,7 @@ const Home = () => {
               key={question.id}
               id={question.id}
               collegeName={question.collegeName}
-              img={question.photo || 'https://via.placeholder.com/300x200'}
+              img={question.photo || placeholder}
               branch={question.branch}
               topic={question.topic}
               noOfAnswers={question.noOfAnswers || 0}

@@ -15,6 +15,7 @@ import MyQuestions from './pages/MyQuestions';
 import MyCollege from './pages/MyCollege';
 import AllColleges from './pages/AllColleges';
 import Profile from './pages/Profile';
+import SearchResults from './pages/SearchResults';
 import { Toaster } from 'sonner';
 import Protected from './layout/AuthLayout'
 import EditQuestion from './pages/EditQuestion'
@@ -72,6 +73,7 @@ function App() {
             <Route path="/my-college" element={<MyCollege />} />
             <Route path="/all-colleges" element={<AllColleges />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/search/:query" element={<SearchResults />} />
           </Route>
 
           {/* Catch all route - redirect to home or landing based on auth status */}

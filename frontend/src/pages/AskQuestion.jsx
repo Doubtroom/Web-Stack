@@ -432,7 +432,7 @@ const AskQuestion = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 lg:pt-24">
       <Container maxWidth="md">
         <StyledPaper isDarkMode={isDarkMode}>
           <Typography 

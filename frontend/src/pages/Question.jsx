@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MessageSquare, ThumbsUp, Clock, Maximize2, Edit2, Trash2 } from 'lucide-react';
+import { MessageSquare, ThumbsUp, Clock, Maximize2, Edit2, Trash2, MoreVertical } from 'lucide-react';
 import DataService from '../firebase/DataService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Button from '../components/Button';
 import { toast } from 'sonner';
+import ConfirmationDialog from '../components/ConfirmationDialog';
 
 const Question = () => {
   const { id } = useParams();
@@ -13,6 +14,8 @@ const Question = () => {
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showOptions, setShowOptions] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
 
   useEffect(() => {
@@ -43,10 +46,6 @@ const Question = () => {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this question?')) {
-      return;
-    }
-
     try {
       const dataService = new DataService('questions');
       
@@ -160,8 +159,8 @@ const Question = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Question Section */}
-      <div className="max-w-4xl mx-auto pt-24 pb-12 px-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 mb-12">
+      <div className="w-full max-w-4xl mx-auto pt-16 sm:pt-24 pb-8 sm:pb-12 px-4 sm:px-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-8 mb-8 sm:mb-12">
           <div>
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -176,29 +175,41 @@ const Question = () => {
                 </div>
               </div>
               {isQuestionOwner && (
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleEdit}
-                    className="text-[#173f67] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                <div className="relative">
+                  <button
+                    onClick={() => setShowOptions(!showOptions)}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
                   >
-                    <Edit2 className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDelete}
-                    className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Delete
-                  </Button>
+                    <MoreVertical className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  </button>
+                  {showOptions && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                      <button
+                        onClick={() => {
+                          setShowOptions(false);
+                          handleEdit();
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                        Edit Question
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowOptions(false);
+                          setShowDeleteDialog(true);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete Question
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-6">
+            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-6">
               <span className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
                 {formatTimeAgo(question?.createdAt)}
@@ -221,7 +232,7 @@ const Question = () => {
         </div>
 
         {/* Answers Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-8">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Answers ({answers.length})</h2>
             <Button 
@@ -323,6 +334,14 @@ const Question = () => {
           )}
         </div>
       </div>
+
+      <ConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDelete}
+        title="Delete Question"
+        message="Are you sure you want to delete this question? This action cannot be undone."
+      />
     </div>
   );
 };

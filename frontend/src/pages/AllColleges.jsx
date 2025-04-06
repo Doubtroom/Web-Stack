@@ -6,6 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { toast } from 'sonner';
 import { Building2, Filter, Plus } from 'lucide-react';
 import Button from '../components/Button';
+import placeholder from '../../public/placeholder.png'
 
 const AllCollege = () => {
   const navigate = useNavigate();
@@ -48,9 +49,9 @@ const AllCollege = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 mt-16">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 mt-2 lg:mt-16">
       {/* Questions Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:py-12">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div className="flex items-center gap-3">
             <Building2 className="w-8 h-8 text-[#173f67] dark:text-blue-400" />
@@ -88,7 +89,7 @@ const AllCollege = () => {
               key={question.id}
               id={question.id}
               collegeName={question.collegeName}
-              img={question.photo || 'https://via.placeholder.com/300x200'}
+              img={question.photo || placeholder}
               branch={question.branch}
               topic={question.topic}
               noOfAnswers={question.noOfAnswers || 0}

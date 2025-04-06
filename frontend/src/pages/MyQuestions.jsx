@@ -6,6 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { toast } from 'sonner';
+import placeholder from '../../public/placeholder.png'
 
 const MyQuestions = () => {
   const navigate = useNavigate();
@@ -91,7 +92,7 @@ const MyQuestions = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 lg:pt-24">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
@@ -127,7 +128,7 @@ const MyQuestions = () => {
                 key={question.id}
                 id={question.id}
                 collegeName={formatText(question.collegeName) || 'Your College'}
-                img={question.photo || 'https://via.placeholder.com/400x200?text=No+Image'}
+                img={question.photo || placeholder}
                 branch={formatText(question.branch) || 'Your Branch'}
                 collegeYear={question.collegeYear || 'Any Year'}
                 topic={formatText(question.topic) || 'General'}

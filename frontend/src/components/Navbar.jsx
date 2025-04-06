@@ -74,7 +74,7 @@ const Navbar = () => {
   return (
     <>
       <nav
-        className={`fixed w-full z-50 flex items-center justify-between px-6 py-6 transition-transform duration-300 ease-in-out ${
+        className={`fixed w-full z-50  flex items-center justify-between px-6 py-6 transition-transform duration-300 ease-in-out ${
           isDarkMode 
             ? 'bg-slate-900 shadow-slate-800/50'
             : 'bg-gradient-to-r from-[#1e6eab] to-[#02254b]'
@@ -149,13 +149,18 @@ const Navbar = () => {
             </div>
           </NavLink>
         </div>
-        <SliderSwitch classNames="lg:hidden" />
-        <NavLink to="/profile">
-          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer lg:hidden">
-            <User className="w-5 h-5 text-black" />
-          </div>
-        </NavLink>
 
+        {/* Mobile Menu Items */}
+        <div className="lg:hidden flex items-center gap-4">
+          <SliderSwitch />
+          <NavLink to="/profile">
+            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
+              <User className="w-5 h-5 text-black" />
+            </div>
+          </NavLink>
+        </div>
+
+        {/* Mobile Menu */}
         <AnimatePresence>
           {isOpen && (
             <motion.div

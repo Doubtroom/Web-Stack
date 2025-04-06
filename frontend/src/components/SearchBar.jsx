@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, HelpCircle, Clock } from 'lucide-react';
+import { Search, HelpCircle, Clock, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import DataService from '../firebase/DataService';
 import { toast } from 'sonner';
 import { useSelector } from 'react-redux';
 
-const SearchBar = () => {
+const SearchBar = ({ isMobile = false, onClose, isOpen }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -14,16 +14,40 @@ const SearchBar = () => {
   const navigate = useNavigate();
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
 
+  const handleClose = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setShowDropdown(false);
+    setSearchTerm('');
+    setResults([]);
+    if (onClose) {
+      onClose();
+    }
+  };
+
+  // Reset state when isOpen changes
+  useEffect(() => {
+    if (!isOpen) {
+      setShowDropdown(false);
+      setSearchTerm('');
+      setResults([]);
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setShowDropdown(false);
+        handleClose();
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    if (showDropdown || isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showDropdown, isOpen]);
 
   useEffect(() => {
     const searchData = async () => {
@@ -71,11 +95,30 @@ const SearchBar = () => {
     return () => clearTimeout(debounceTimer);
   }, [searchTerm]);
 
-  const handleResultClick = (result) => {
+  const handleInputChange = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSearchTerm(e.target.value);
+    if (!showDropdown && isOpen !== false) {
+      setShowDropdown(true);
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (searchTerm.trim()) {
+      navigate(`/search/${encodeURIComponent(searchTerm.trim())}`);
+      handleClose();
+    }
+  };
+
+  const handleResultClick = (e, result) => {
+    e.preventDefault();
+    e.stopPropagation();
     navigate(`/question/${result.id}`);
-    setShowDropdown(false);
-    setSearchTerm('');
-  }
+    handleClose();
+  };
 
   const formatTimeAgo = (dateString) => {
     const date = new Date(dateString);
@@ -101,30 +144,55 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="relative w-80" ref={searchRef}>
-      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-        <Search className={`w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-      </div>
-      <input
-        type="text"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        onFocus={() => setShowDropdown(true)}
-        className={`w-full py-2 pl-10 pr-4 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#173f67] ${
-          isDarkMode
-            ? 'bg-gray-700 text-white placeholder-gray-400'
-            : 'bg-gray-100 text-gray-900 placeholder-gray-500'
-        }`}
-        placeholder="Search by question, topic, or branch..."
-      />
+    <div 
+      className={`relative ${isMobile ? 'w-full mt-10' : 'w-80'}`} 
+      ref={searchRef}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <form onSubmit={handleSubmit} className="relative flex">
+        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          <Search className={`w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+        </div>
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={handleInputChange}
+          onFocus={(e) => {
+            e.stopPropagation();
+            if (isOpen !== false) {
+              setShowDropdown(true);
+            }
+          }}
+          className={`w-full py-2 pl-10 pr-12 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#173f67] ${
+            isDarkMode
+              ? 'bg-gray-700 text-white placeholder-gray-400'
+              : 'bg-gray-100 text-gray-900 placeholder-gray-500'
+          } ${isMobile ? 'py-3 text-base' : ''}`}
+          placeholder="Search by question, topic, or branch..."
+          autoFocus={isMobile}
+        />
+        <button
+          type="submit"
+          className={`absolute inset-y-0 right-0 flex items-center pr-3 ${
+            isDarkMode
+              ? 'text-blue-400 hover:text-blue-300'
+              : 'text-[#173f67] hover:text-[#122f4d]'
+          }`}
+        >
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </form>
 
       {/* Search Results Dropdown */}
       {showDropdown && (searchTerm.trim() || isLoading) && (
-        <div className={`absolute top-full left-0 w-full mt-2 rounded-lg shadow-lg border max-h-96 overflow-y-auto ${
-          isDarkMode
-            ? 'bg-gray-800 border-gray-700'
-            : 'bg-white border-gray-200'
-        }`}>
+        <div 
+          className={`absolute ${isMobile ? 'top-full left-0 right-0' : 'top-full left-0'} w-full mt-2 rounded-lg shadow-lg border max-h-96 overflow-y-auto ${
+            isDarkMode
+              ? 'bg-gray-800 border-gray-700'
+              : 'bg-white border-gray-200'
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
           {isLoading ? (
             <div className={`p-4 text-center ${
               isDarkMode ? 'text-gray-400' : 'text-gray-500'
@@ -136,7 +204,7 @@ const SearchBar = () => {
               {results.map((result) => (
                 <div
                   key={result.id}
-                  onClick={() => handleResultClick(result)}
+                  onClick={(e) => handleResultClick(e, result)}
                   className={`px-4 py-3 cursor-pointer border-b last:border-b-0 ${
                     isDarkMode
                       ? 'hover:bg-gray-700 border-gray-700'
@@ -160,7 +228,7 @@ const SearchBar = () => {
                       </div>
                       
                       {/* Topic and Branch */}
-                      <div className="flex items-center gap-2 text-xs mb-1">
+                      <div className="flex items-center gap-2 text-xs mb-1 flex-wrap">
                         {result.topic && (
                           <span className={`px-2 py-0.5 rounded-full ${
                             isDarkMode 
