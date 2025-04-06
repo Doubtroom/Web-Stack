@@ -20,6 +20,7 @@ const SignupPage = () => {
       confirmPassword: '',
       otp: ""
     });
+    const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const [step, setStep] = useState(1);
@@ -51,7 +52,7 @@ const SignupPage = () => {
       setIsLoading(true);
       try {
         await authService.sendOtp(formData.email);
-        toast.success("OTP sent successfully! Check your email");
+        toast.success("OTP sent successfully! Please check your email (including spam folder)");
         setOtpSent(true);
         setStep(2);
       } catch (error) {
@@ -187,6 +188,32 @@ const SignupPage = () => {
       return Object.keys(newErrors).length === 0;
     };
 
+    const handleOtpChange = (index, value) => {
+      if (value.length > 1) return; // Only allow single digit
+      if (!/^\d*$/.test(value)) return; // Only allow numbers
+      
+      const newOtpDigits = [...otpDigits];
+      newOtpDigits[index] = value;
+      setOtpDigits(newOtpDigits);
+      
+      // Update the formData.otp
+      setFormData(prev => ({
+        ...prev,
+        otp: newOtpDigits.join('')
+      }));
+      
+      // Auto-focus next input
+      if (value && index < 5) {
+        document.getElementById(`otp-${index + 1}`).focus();
+      }
+    };
+
+    const handleOtpKeyDown = (index, e) => {
+      if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+        document.getElementById(`otp-${index - 1}`).focus();
+      }
+    };
+
     return (
       <div className={`min-h-screen flex items-center justify-center p-4 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         {isLoading && (
@@ -297,22 +324,34 @@ const SignupPage = () => {
             <div className="text-center mb-8">
               <h1 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Verify your OTP</h1>
               <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Enter the OTP sent to your email</p>
+              <p className={`text-sm mt-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Don't forget to check your spam folder if you can't find the OTP!</p>
             </div>
             <form onSubmit={handleVerifyOtp}>
-              <div className="mb-2">
-                <InputField
-                  type="text"
-                  placeholder="Enter OTP"
-                  icon={<Lock size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />}
-                  value={formData.otp}
-                  id="otp"
-                  label="OTP"
-                  error={errors.otp}
-                  onChange={handleChange}
-                />
+              <div className="mb-8">
+                <div className="flex justify-center gap-2">
+                  {otpDigits.map((digit, index) => (
+                    <input
+                      key={index}
+                      id={`otp-${index}`}
+                      type="text"
+                      maxLength="1"
+                      value={digit}
+                      onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                      className={`w-12 h-12 text-center text-xl font-semibold rounded-lg border-2 
+                        ${isDarkMode 
+                          ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500' 
+                          : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500'
+                        } focus:outline-none transition-colors duration-200`}
+                    />
+                  ))}
+                </div>
+                {errors.otp && (
+                  <p className="text-red-500 text-sm mt-2 text-center">{errors.otp}</p>
+                )}
               </div>
 
-              <div className="mb-6">
+              <div className="mb-6 mt-8">
                 <Button 
                   text="Verify OTP" 
                   variant="primary" 

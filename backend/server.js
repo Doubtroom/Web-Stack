@@ -19,7 +19,7 @@ const app = express();
 
 // Configure CORS with specific options
 const corsOptions = {
-  origin: 'https://doubtroom.vercel.app',
+  origin: ['https://doubtroom.vercel.app', process.env.BASE_URL],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true

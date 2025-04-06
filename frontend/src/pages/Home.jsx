@@ -100,8 +100,8 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Ask Question Tab */}
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
       <Link to='/ask-question'>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 cursor-pointer group">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -109,18 +109,20 @@ const Home = () => {
                   <HelpCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Have a doubt? Ask here</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Have a doubt?</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Get help from the community</p>
                 </div>
               </div>
-              <div className="text-blue-600 dark:text-blue-400 font-medium flex items-center gap-2">
-                Ask Question
-                <span className="transform group-hover:translate-x-1 transition-transform duration-300">→</span>
+              <div className='bg-gradient-to-r from-[#1f5986] to-[#114073] dark:bg-blue-400 rounded-lg p-3'>
+                <div className="text-white  font-medium flex items-center gap-2">
+                  Ask Question
+                  <span className="transform group-hover:translate-x-1 transition-transform duration-300">→</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
       </Link>
+        </div>
 
       {/* Questions Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

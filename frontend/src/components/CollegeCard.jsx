@@ -2,9 +2,18 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageSquare, Lightbulb, Clock } from 'lucide-react';
 import Button from './Button';
+import placeholder from '../../public/placeholder.png';
 
 const CollegeCard = ({ id, collegeName, img, branch, topic, noOfAnswers, postedOn }) => {
   const navigate = useNavigate();
+
+  const formatBranchName = (branch) => {
+    if (!branch) return '';
+    return branch
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
 
   const getTimeAgo = (timestamp) => {
     // Handle both Firestore timestamps and string timestamps
@@ -55,7 +64,7 @@ const CollegeCard = ({ id, collegeName, img, branch, topic, noOfAnswers, postedO
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-[#173f67] dark:text-blue-400 font-bold text-xl mb-1 line-clamp-1">{collegeName}</h2>
-            <p className="text-gray-600 dark:text-gray-300 text-sm">{branch}</p>
+            <p className="text-gray-600 dark:text-gray-300 text-sm">{formatBranchName(branch)}</p>
           </div>
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
             <Clock size={16} />
@@ -67,9 +76,13 @@ const CollegeCard = ({ id, collegeName, img, branch, topic, noOfAnswers, postedO
       {/* Image Section */}
       <div className="relative">
         <img
-          src={img}
+          src={img && img.length > 0 ? img : placeholder}
           alt="Question Image"
           className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = placeholder;
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>

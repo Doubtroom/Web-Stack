@@ -95,8 +95,8 @@ const MyCollege = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div className="flex items-center gap-3">
             <Building2 className="w-8 h-8 text-[#173f67] dark:text-blue-400" />
-            <h1 className="text-2xl font-bold text-[#173f67] dark:text-white truncate max-w-[300px] sm:max-w-[400px] md:max-w-[500px]">
-              {userData.collegeName || 'Your College'} Questions
+            <h1 className="text-2xl font-bold text-[#173f67] dark:text-white break-words max-w-[300px] sm:max-w-[400px] md:max-w-[500px]">
+              {userData.collegeName || 'Your College'}
             </h1>
           </div>
           <div className="flex items-center gap-4">

@@ -15,7 +15,7 @@ class DataService {
     // Enable persistent authentication
     setPersistence(this.auth, browserLocalPersistence)
       .then(() => {
-        console.log("Firebase auth persistence enabled.");
+        console.log("");
       })
       .catch((error) => {
         console.error("Error enabling auth persistence:", error);

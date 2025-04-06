@@ -34,6 +34,14 @@ const Question = () => {
     fetchQuestionAndAnswers();
   }, [id]);
 
+  const formatBranchName = (branch) => {
+    if (!branch) return '';
+    return branch
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this question?')) {
       return;
@@ -160,7 +168,7 @@ const Question = () => {
                 <div className="flex items-center gap-2 mb-2">
                   <h2 className="text-[#173f67] dark:text-blue-400 font-bold text-xl">{question?.collegeName}</h2>
                   <span className="text-gray-400 dark:text-gray-500">•</span>
-                  <span className="text-gray-600 dark:text-gray-300">{question?.branch}</span>
+                  <span className="text-gray-600 dark:text-gray-300">{formatBranchName(question?.branch)}</span>
                 </div>
                 <div className="mt-6">
                   <h1 className="text-3xl font-light text-gray-800 dark:text-white tracking-wide leading-relaxed">{question?.text}</h1>

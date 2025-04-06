@@ -21,7 +21,6 @@ const NavBar = () => {
         <Navitem link={`/about`} text="About" />
         <Navitem link={`/login`} text="Log in" />
         <Navitem link={`/signup`} text="Sign up" />
-        <Navitem link={`/contactus`} text="Contact Us" />
       </div>
 
       {/* Mobile Menu Button */}
@@ -59,12 +58,14 @@ const Navitem = ({ text, active = false, link = "" }) => {
   );
 };
 
-// Hero Text Component
 const HeroText = () => {
   return (
     <div className="max-w-2xl px-4 sm:px-0">
-      <h1 className="text-white text-4xl sm:text-5xl md:text-7xl font-light leading-tight mb-6">
-        Changing the world, by <span className="text-teal-300">helping People</span>
+      <h1 className="text-white mb-2">
+        <span className="block text-4xl sm:text-5xl md:text-6xl font-bold mb-4">At Doubtroom</span>
+        <span className="block text-2xl sm:text-3xl md:text-4xl leading-tight font-bold text-teal-300">
+          we change the world, by helping people
+        </span>
       </h1>
       <p className="text-white text-base sm:text-lg">
         A journey of learning, growing and building together. All of it, starts in a room. Doubt room. Join us in building dreams by solving the problems of the world. One thing at a time.
@@ -83,7 +84,7 @@ const SearchBar = () => {
         className="w-full py-3 px-6 pr-12 rounded-full bg-white bg-opacity-20 backdrop-blur-sm text-white placeholder-white outline-none"
       />
       <button className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white p-2 rounded-full">
-        <Link to='/login'>
+        <Link to='/signup'>
           <Search size={24} />
         </Link>
       </button>
@@ -118,9 +119,9 @@ const Footer = () => {
           <SocialLink icon={<Youtube size={20} />} platform="Build with us" username="Youtube" />
           <SocialLink icon={<Linkedin size={20} />} platform="Know us" username="LinkedIN" />
         </div>
-        <Link to={'/login'}>
+        <Link to={'/signup'}>
           <button className="bg-teal-600 text-white py-2 sm:py-3 px-6 sm:px-10 rounded-md hover:bg-teal-700 transition-colors text-sm sm:text-base">
-            Login
+            Sign Up
           </button>
         </Link>
       </div>
@@ -132,7 +133,7 @@ const DoubtRoomPage = () => {
   return (
     <div className="min-h-screen relative overflow-hidden" 
          style={{
-           backgroundImage: 'linear-gradient(to right, #1e3c72, #2a5298, #2e6f95, #00a4b4)',
+           backgroundImage: 'linear-gradient(to right, #0a192f, #112240, #1a365d, #1e3a8a)',
            backgroundSize: 'cover',
          }}>
       {/* Stars overlay */}
