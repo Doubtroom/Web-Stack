@@ -159,7 +159,7 @@ const Question = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Question Section */}
-      <div className="w-full max-w-4xl mx-auto pt-16 sm:pt-24 pb-8 sm:pb-12 px-4 sm:px-6">
+      <div className="w-full max-w-4xl mx-auto pt-2  lg:pt-24 pb-8 sm:pb-12 px-4 sm:px-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-8 mb-8 sm:mb-12">
           <div>
             <div className="flex items-center justify-between mb-6">

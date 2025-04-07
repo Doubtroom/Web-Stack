@@ -1,23 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Building2, MessageSquare, Plus, Filter } from 'lucide-react';
+import { Building2, MessageSquare, Plus } from 'lucide-react';
 import DataService from '../firebase/DataService';
 import Button from '../components/Button';
 import CollegeCard from '../components/CollegeCard';
 import { toast } from 'sonner';
 import LoadingSpinner from '../components/LoadingSpinner';
+import FilterButton from '../components/FilterButton';
 import placeholder from '../../public/placeholder.png'
 
 const MyCollege = () => {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filterLoading, setFilterLoading] = useState(false);
   const [showMyBranch, setShowMyBranch] = useState(false);
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+  const formatBranchName = (branch) => {
+    if (!branch) return '';
+    return branch
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
+        setFilterLoading(true);
         const dataService = new DataService('questions');
         let fetchedQuestions;
         
@@ -43,6 +54,7 @@ const MyCollege = () => {
         toast.error('Failed to fetch questions');
       } finally {
         setLoading(false);
+        setFilterLoading(false);
       }
     };
 
@@ -94,57 +106,65 @@ const MyCollege = () => {
       {/* Questions Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:py-12">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div className="flex items-center gap-3">
-            <Building2 className="w-8 h-8 text-[#173f67] dark:text-blue-400" />
-            <h1 className="text-2xl font-bold text-[#173f67] dark:text-white break-words max-w-[300px] sm:max-w-[400px] md:max-w-[500px]">
-              {userData.collegeName || 'Your College'}
-            </h1>
+          <div className="flex items-center justify-between w-full sm:w-auto">
+            <div className="flex items-center gap-3">
+              <Building2 className="w-16 h-16 lg:w-8 lg:h-8 text-[#173f67] dark:text-blue-400" />
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#173f67] dark:text-white break-words max-w-[300px] sm:max-w-[400px] md:max-w-[500px]">
+                {userData.collegeName || 'Your College'}
+              </h1>
+            </div>
+            {/* Mobile Filter Button */}
+            {userData.branch && (
+              <div className="sm:hidden">
+                <FilterButton
+                  isActive={showMyBranch}
+                  onClick={() => setShowMyBranch(!showMyBranch)}
+                >
+                  {showMyBranch ? 'All' : 'My Branch'}
+                </FilterButton>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-4">
-            <Button
-              onClick={() => navigate('/ask-question')}
-              className="flex items-center gap-2 text-white transition-all duration-300 ease-in-out"
-            >
-              <Plus className="w-4 h-4" />
-              Ask a Question
-            </Button>
+
+            {/* Desktop Filter Button */}
             {userData.branch && (
-              <div className="flex items-center gap-2 bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm transition-all duration-300 ease-in-out hover:shadow-md">
-                <Filter className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                <Button
-                  variant="outline"
+              <div className="hidden sm:block">
+                <FilterButton
+                  isActive={showMyBranch}
                   onClick={() => setShowMyBranch(!showMyBranch)}
-                  className={`flex items-center gap-2 transition-all duration-300 ease-in-out min-w-[160px] justify-center ${
-                    showMyBranch 
-                      ? 'text-black border-blue-600 dark:text-white dark:bg-gray-800 transform scale-105' 
-                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
                 >
-                  {showMyBranch ? 'Show All' : `Show My Branch Only`}
-                </Button>
+                  {showMyBranch ? 'Show All Questions' : `Show My Branch Only`}
+                </FilterButton>
               </div>
             )}
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {questions.map((question) => (
-            <CollegeCard
-              key={question.id}
-              id={question.id}
-              collegeName={question.collegeName}
-              img={question.photo || placeholder}
-              branch={question.branch}
-              topic={question.topic}
-              noOfAnswers={question.noOfAnswers || 0}
-              postedOn={question.createdAt}
-            />
-          ))}
+          {filterLoading ? (
+            <div className="col-span-full flex justify-center py-12">
+              <LoadingSpinner size="lg" />
+            </div>
+          ) : (
+            questions.map((question) => (
+              <CollegeCard
+                key={question.id}
+                id={question.id}
+                collegeName={question.collegeName}
+                img={question.photo || placeholder}
+                branch={question.branch}
+                topic={question.topic}
+                noOfAnswers={question.noOfAnswers || 0}
+                postedOn={question.createdAt}
+              />
+            ))
+          )}
         </div>
         {questions.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 dark:text-gray-400 text-lg">
               {showMyBranch 
-                ? `No questions found for ${userData.branch} branch in ${userData.collegeName}`
+                ? `No questions found for ${formatBranchName(userData.branch)} branch in ${userData.collegeName}`
                 : `No questions found for ${userData.collegeName}`}
             </p>
           </div>

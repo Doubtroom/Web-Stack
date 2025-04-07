@@ -134,7 +134,7 @@ const Navbar = () => {
         {/* Desktop Menu */}
         <div className="hidden lg:flex items-center space-x-6">
           <SliderSwitch/>
-          <NavItem to='/' icon={<Home className="w-4 h-4" />} label="Home" />
+          <NavItem to='/home' icon={<Home className="w-4 h-4" />} label="Home" />
           <NavItem to="/my-questions" icon={<HelpCircle className="w-4 h-4" />} label="My Questions" />
           <NavItem to="/my-college" icon={<School className="w-4 h-4" />} label="My College" />
           <NavItem to="/all-colleges" icon={<Grid className="w-4 h-4" />} label="All Colleges" />
@@ -169,36 +169,15 @@ const Navbar = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="absolute top-16 left-1 w-64 bg-white shadow-lg rounded-lg z-50 transition-transform duration-300 ease-in-out"
+              className="absolute top-16 left-1 w-64 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50 transition-transform duration-300 ease-in-out"
             >
-              <div className="flex flex-col space-y-4 p-4 lg:hidden">
-                <NavItem
-                  to='/'
-                  color="black"
-                  icon={<Home className="w-4 h-4" />}
-                  label="Home"
-                />
-                <NavItem
-                  to='/my-questions'
-                  color="black"
-                  icon={<HelpCircle className="w-4 h-4" />}
-                  label="My Questions"
-                />
-                <NavItem
-                  to='/my-college'
-                  color="black"
-                  icon={<School className="w-4 h-4" />}
-                  label="My College"
-                />
-                <NavItem
-                  to='/all-colleges'
-                  color="black"
-                  icon={<Grid className="w-4 h-4" />}
-                  label="All Colleges"
-                />
-                <div className={`flex items-center text-sm text-black hover:bg-gray-100 lg:hover:bg-transparent lg:hover:text-gray-200 cursor-pointer p-1`} onClick={handleLogoutClick}>
-                  <span className="mr-1">{<LogOut className="w-4 h-4" />}</span>
-                  <span className="text-">{"Logout"}</span>
+              <div className="flex flex-col p-4 lg:hidden">
+                <div 
+                  className="flex items-center text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md cursor-pointer p-3 transition-colors duration-200" 
+                  onClick={handleLogoutClick}
+                >
+                  <LogOut className="w-5 h-5 mr-3" />
+                  <span>Logout</span>
                 </div>
               </div>
             </motion.div>

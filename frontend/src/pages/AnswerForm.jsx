@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Upload, X } from 'lucide-react';
 import DataService from '../firebase/DataService';
 import { toast } from 'sonner';
-import Button from './Button';
+import Button from '../components/Button';
 
 const AnswerForm = () => {
   const { id } = useParams();
@@ -141,9 +141,9 @@ const AnswerForm = () => {
   };
 
   const AnswerFormSkeleton = () => (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-2 lg:pt-24">
       <div className="max-w-2xl mx-auto px-4">
-        <div className='flex justify-end mb-4'>
+        <div className='flex justify-start mb-4'>
           <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8">

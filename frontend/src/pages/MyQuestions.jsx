@@ -94,18 +94,12 @@ const MyQuestions = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 lg:pt-24">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
+        <div className="items-center justify-between mb-8 hidden lg:flex">
         <div className="flex items-center gap-3">
             <HelpCircle className="w-8 h-8 text-[#173f67] dark:text-blue-400" />
             <h1 className="text-2xl font-bold text-[#173f67] dark:text-white">My Questions
             </h1>
           </div>
-          <Button
-            variant="primary"
-            onClick={() => navigate('/ask-question')}
-          >
-            Ask New Question
-          </Button>
         </div>
 
         {questions.length === 0 ? (

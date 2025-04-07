@@ -145,7 +145,7 @@ const SearchBar = ({ isMobile = false, onClose, isOpen }) => {
 
   return (
     <div 
-      className={`relative ${isMobile ? 'w-full mt-10' : 'w-80'}`} 
+      className={`relative ${isMobile ? 'w-full mt-6' : 'w-80'}`} 
       ref={searchRef}
       onClick={(e) => e.stopPropagation()}
     >

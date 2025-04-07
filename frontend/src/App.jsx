@@ -5,7 +5,7 @@ import Layout from './layout/Layout';
 import Home from './pages/Home';
 import Question from './pages/Question';
 import Answer from './pages/Answer';
-import AnswerForm from './components/AnswerForm';
+import AnswerForm from './pages/AnswerForm';
 import AskQuestion from './pages/AskQuestion';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';

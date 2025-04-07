@@ -105,7 +105,7 @@ const SubmitButton = styled('button')(({ isDarkMode }) => ({
 
 const TopicChip = styled(Chip, {
   shouldForwardProp: (prop) => prop !== 'isDarkMode' && prop !== 'isSelected'
-})(({ isDarkMode, isSelected }) => ({
+})(({ theme, isDarkMode, isSelected }) => ({
   margin: '4px',
   backgroundColor: isSelected
     ? isDarkMode 
@@ -159,7 +159,13 @@ const DropZone = styled(Box, {
   },
 }));
 
-const LoadingOverlay = styled(Backdrop)(({ theme, isDarkMode }) => ({
+const DropZoneWrapper = styled('div')({
+  width: '100%',
+});
+
+const LoadingOverlay = styled(Backdrop, {
+  shouldForwardProp: (prop) => prop !== 'isDarkMode'
+})(({ theme, isDarkMode }) => ({
   color: '#ffffff',
   zIndex: theme.zIndex.drawer + 1,
   backgroundColor: isDarkMode ? '#111827' : 'white',
@@ -432,7 +438,7 @@ const AskQuestion = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 lg:pt-24">
+    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} lg:pt-24`}>
       <Container maxWidth="md">
         <StyledPaper isDarkMode={isDarkMode}>
           <Typography 
@@ -576,34 +582,36 @@ const AskQuestion = () => {
               <label className={`block text-sm font-medium ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} mb-2`}>
                 Add Image (Optional)
               </label>
-              <DropZone
-                isDragActive={isDragActive}
-                isDarkMode={isDarkMode}
-                onDragEnter={handleDragIn}
-                onDragLeave={handleDragOut}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-              >
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <label
-                  htmlFor="image-upload"
-                  className="cursor-pointer flex flex-col items-center"
+              <DropZoneWrapper>
+                <DropZone
+                  isDragActive={isDragActive}
+                  isDarkMode={isDarkMode}
+                  onDragEnter={handleDragIn}
+                  onDragLeave={handleDragOut}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
                 >
-                  <Upload className={`w-8 h-8 ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} mb-2`} />
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    <span className="font-semibold">Click to upload</span> or drag and drop
-                  </p>
-                  <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mt-1`}>
-                    PNG, JPG or JPEG (MAX. 5MB)
-                  </p>
-                </label>
-              </DropZone>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className="cursor-pointer flex flex-col items-center"
+                  >
+                    <Upload className={`w-8 h-8 ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} mb-2`} />
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      <span className="font-semibold">Click to upload</span> or drag and drop
+                    </p>
+                    <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mt-1`}>
+                      PNG, JPG or JPEG (MAX. 5MB)
+                    </p>
+                  </label>
+                </DropZone>
+              </DropZoneWrapper>
               {imagePreview && (
                 <div className="mt-4 relative">
                   <ImagePreview src={imagePreview} alt="Preview" />
