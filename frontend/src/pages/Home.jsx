@@ -16,8 +16,15 @@ const Home = () => {
   const [showMyBranch, setShowMyBranch] = useState(false);
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
 
+  const formatBranchName = (branch) => {
+    if (!branch) return '';
+    return branch
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   useEffect(() => {
-    // Scroll to top when component mounts
     window.scrollTo(0, 0);
 
     const fetchQuestions = async () => {
@@ -181,7 +188,7 @@ const Home = () => {
           <div className="text-center py-12">
             <p className="text-gray-500 dark:text-gray-400 text-lg">
               {showMyBranch 
-                ? `No questions found for ${userData.branch} branch`
+                ? `No questions found for ${formatBranchName(userData.branch)} branch`
                 : 'No questions found'}
             </p>
           </div>
