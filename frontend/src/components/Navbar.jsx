@@ -74,7 +74,7 @@ const Navbar = () => {
   return (
     <>
       <nav
-        className={`fixed w-full z-50  flex items-center justify-between px-6 py-6 transition-transform duration-300 ease-in-out ${
+        className={`fixed w-full z-50 flex items-center justify-between px-4 sm:px-5 md:px-6 py-4 sm:py-6 transition-transform duration-300 ease-in-out ${
           isDarkMode 
             ? 'bg-slate-900 shadow-slate-800/50'
             : 'bg-gradient-to-r from-[#1e6eab] to-[#02254b]'
@@ -82,7 +82,7 @@ const Navbar = () => {
           showNavbar ? "translate-y-0" : "-translate-y-full"
         }`}
       >
-        <div className="flex gap-7">
+        <div className="flex gap-4 sm:gap-5 md:gap-7">
           <div className="flex items-center space-x-3">
             <div className="flex gap-2">
               <div className="lg:hidden flex items-center">
@@ -99,7 +99,7 @@ const Navbar = () => {
                         exit={{ opacity: 0, rotate: -90, scale: 0.8 }}
                         transition={{ duration: 0.1 }}
                       >
-                        <X className="w-6 h-6" />
+                        <X className="w-5 h-5 sm:w-6 sm:h-6" />
                       </motion.div>
                     ) : (
                       <motion.div
@@ -109,7 +109,7 @@ const Navbar = () => {
                         exit={{ opacity: 0, rotate: 90, scale: 0.8 }}
                         transition={{ duration: 0.1 }}
                       >
-                        <Menu className="w-6 h-6" />
+                        <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -117,10 +117,10 @@ const Navbar = () => {
               </div>
               
               <NavLink to="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-md flex items-center justify-center">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md flex items-center justify-center">
                   <img src={Logo} alt="Logo" />
                 </div>
-                <span className="text-xl font-bold text-white">Doubtroom</span>
+                <span className="text-lg sm:text-xl font-bold text-white">Doubtroom</span>
               </NavLink>
             </div>
           </div>
@@ -151,11 +151,11 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu Items */}
-        <div className="lg:hidden flex items-center gap-4">
+        <div className="lg:hidden flex items-center gap-3 sm:gap-4">
           <SliderSwitch />
           <NavLink to="/profile">
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
-              <User className="w-5 h-5 text-black" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
+              <User className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
             </div>
           </NavLink>
         </div>

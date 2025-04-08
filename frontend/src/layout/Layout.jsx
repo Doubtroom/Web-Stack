@@ -41,7 +41,7 @@ const Layout = () => {
       {/* Mobile Search Bar */}
       <div className="lg:hidden">
         {shouldShowSearch && (
-          <div className="w-full px-4 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 mt-16">
+          <div className="w-full px-4 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 mt-10">
             <SearchBar isMobile={true} />
           </div>
         )}

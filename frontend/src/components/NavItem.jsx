@@ -10,7 +10,8 @@ const NavItem = ({ icon, label, classNames = "", color = "white", onClick, to })
       to={to} 
       className={({ isActive }) => `
         flex items-center text-sm text-${color} 
-        hover:bg-gray-100 lg:hover:bg-transparent lg:hover:text-gray-200 
+        hover:bg-gray-100 lg:hover:bg-transparent lg:hover:text-gray-200\
+        hover:text-amber-100 dark:hover:text-blue-400
         ${classNames} cursor-pointer p-1 relative group overflow-hidden
         ${isActive ? 'text-amber-100 dark:text-blue-400' : ''}
       `} 
