@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageSquare, Lightbulb, Clock } from 'lucide-react';
 import Button from './Button';
-import placeholder from '../../public/placeholder.png';
+import placeholder from '../assets/placeholder.png';
 
 const CollegeCard = ({ id, collegeName, img, branch, topic, noOfAnswers, postedOn }) => {
   const navigate = useNavigate();

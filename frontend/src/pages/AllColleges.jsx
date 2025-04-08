@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Building2, Plus } from 'lucide-react';
 import Button from '../components/Button';
 import FilterButton from '../components/FilterButton';
-import placeholder from '../../public/placeholder.png'
+import placeholder from '../assets/placeholder.png'
 
 const AllCollege = () => {
   const navigate = useNavigate();

@@ -70,7 +70,6 @@ const UserInfoForm = () => {
         { value: 'agricultural_engineering', label: 'Agricultural Engineering' },
         { value: 'custom', label: 'Other (Specify)' }
     ];
-    // blank
 
     const colleges = [
         { value: 'nit_agartala', label: 'National Institute of Technology Agartala' },
@@ -89,7 +88,6 @@ const UserInfoForm = () => {
         { value: 'vit_bhopal', label: 'Vellore Institute of Technology Bhopal' },
         { value: 'vit_chennai', label: 'Vellore Institute of Technology Chennai' },
         { value: 'vit_bhubaneswar', label: 'Vellore Institute of Technology Bhubaneswar' },
-        { value: 'vit_vellore', label: 'Vellore Institute of Technology Vellore' },
         { value: 'custom', label: 'Other (Specify)' }
     ];
 
@@ -98,6 +96,10 @@ const UserInfoForm = () => {
         if (name === 'collegeName') {
             const selectedCollege = colleges.find(college => college.value === value);
             setFormData(prev => ({ ...prev, [name]: selectedCollege ? selectedCollege.label : value }));
+        } else if (name === 'phone') {
+            // Remove all whitespace and non-digit characters from phone number
+            const cleanPhoneNumber = value.replace(/\D/g, '');
+            setFormData(prev => ({ ...prev, [name]: cleanPhoneNumber }));
         } else {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
@@ -202,26 +204,26 @@ const UserInfoForm = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white p-4 ">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 md:p-8">
             <div className="max-w-2xl mx-auto">
-                <div className="bg-white rounded-2xl shadow-xl p-8 mt-6">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-blue-900 mb-2">Complete Your Profile</h1>
-                        <p className="text-gray-600">Please provide your academic information</p>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 mt-4 sm:mt-6">
+                    <div className="text-center mb-6 sm:mb-8">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-blue-900 dark:text-blue-300 mb-2">Complete Your Profile</h1>
+                        <p className="text-gray-600 dark:text-gray-300">Please provide your academic information</p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                         {/* Role */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Briefcase className="h-5 w-5 text-blue-500" />
+                                <Briefcase className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                             </div>
                             <select
                                 name="role"
                                 value={formData.role}
                                 onChange={handleChange}
-                                className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                                    errors.role ? 'border-red-500' : 'border-gray-300'
+                                className={`block w-full pl-10 pr-3 py-2.5 sm:py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                                    errors.role ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
                                 }`}
                             >
                                 <option value="">Select your role</option>
@@ -229,21 +231,21 @@ const UserInfoForm = () => {
                                 <option value="faculty">Faculty</option>
                             </select>
                             {errors.role && (
-                                <p className="mt-1 text-sm text-red-500">{errors.role}</p>
+                                <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.role}</p>
                             )}
                         </div>
 
                         {/* College Name */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Building2 className="h-5 w-5 text-blue-500" />
+                                <Building2 className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                             </div>
                             <select
                                 name="collegeName"
                                 value={colleges.find(college => college.label === formData.collegeName)?.value || ''}
                                 onChange={handleChange}
-                                className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                                    errors.collegeName ? 'border-red-500' : 'border-gray-300'
+                                className={`block w-full pl-10 pr-3 py-2.5 sm:py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                                    errors.collegeName ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
                                 }`}
                             >
                                 <option value="">Select your college</option>
@@ -254,7 +256,7 @@ const UserInfoForm = () => {
                                 ))}
                             </select>
                             {errors.collegeName && (
-                                <p className="mt-1 text-sm text-red-500">{errors.collegeName}</p>
+                                <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.collegeName}</p>
                             )}
                         </div>
 
@@ -262,20 +264,20 @@ const UserInfoForm = () => {
                         {formData.collegeName === 'Other (Specify)' && (
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Building2 className="h-5 w-5 text-blue-500" />
+                                    <Building2 className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                                 </div>
                                 <input
                                     type="text"
                                     name="otherCollege"
                                     value={formData.otherCollege || ''}
                                     onChange={handleChange}
-                                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                                        errors.otherCollege ? 'border-red-500' : 'border-gray-300'
+                                    className={`block w-full pl-10 pr-3 py-2.5 sm:py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                                        errors.otherCollege ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
                                     }`}
                                     placeholder="Enter your college name"
                                 />
                                 {errors.otherCollege && (
-                                    <p className="mt-1 text-sm text-red-500">{errors.otherCollege}</p>
+                                    <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.otherCollege}</p>
                                 )}
                             </div>
                         )}
@@ -283,14 +285,14 @@ const UserInfoForm = () => {
                         {/* Branch */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <GraduationCap className="h-5 w-5 text-blue-500" />
+                                <GraduationCap className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                             </div>
                             <select
                                 name="branch"
                                 value={formData.branch}
                                 onChange={handleChange}
-                                className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                                    errors.branch ? 'border-red-500' : 'border-gray-300'
+                                className={`block w-full pl-10 pr-3 py-2.5 sm:py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                                    errors.branch ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
                                 }`}
                             >
                                 <option value="">Select your branch</option>
@@ -301,7 +303,7 @@ const UserInfoForm = () => {
                                 ))}
                             </select>
                             {errors.branch && (
-                                <p className="mt-1 text-sm text-red-500">{errors.branch}</p>
+                                <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.branch}</p>
                             )}
                         </div>
 
@@ -309,20 +311,20 @@ const UserInfoForm = () => {
                         {formData.branch === 'custom' && (
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <GraduationCap className="h-5 w-5 text-blue-500" />
+                                    <GraduationCap className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                                 </div>
                                 <input
                                     type="text"
                                     name="otherBranch"
                                     value={formData.otherBranch}
                                     onChange={handleChange}
-                                    className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                                        errors.otherBranch ? 'border-red-500' : 'border-gray-300'
+                                    className={`block w-full pl-10 pr-3 py-2.5 sm:py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                                        errors.otherBranch ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
                                     }`}
                                     placeholder="Enter your branch name"
                                 />
                                 {errors.otherBranch && (
-                                    <p className="mt-1 text-sm text-red-500">{errors.otherBranch}</p>
+                                    <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.otherBranch}</p>
                                 )}
                             </div>
                         )}
@@ -330,16 +332,16 @@ const UserInfoForm = () => {
                         {/* Study Type */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <GraduationCap className="h-5 w-5 text-blue-500" />
+                                <GraduationCap className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                             </div>
                             <select
                                 name="studyType"
                                 value={formData.studyType}
                                 onChange={handleChange}
                                 disabled={formData.role === 'faculty'}
-                                className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                                    errors.studyType ? 'border-red-500' : 'border-gray-300'
-                                } ${formData.role === 'faculty' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                className={`block w-full pl-10 pr-3 py-2.5 sm:py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
+                                    errors.studyType ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
+                                } ${formData.role === 'faculty' ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : 'bg-white dark:bg-gray-700'} text-gray-900 dark:text-gray-100`}
                             >
                                 <option value="">Select type of study</option>
                                 {studyTypes.map(type => (
@@ -349,44 +351,44 @@ const UserInfoForm = () => {
                                 ))}
                             </select>
                             {errors.studyType && (
-                                <p className="mt-1 text-sm text-red-500">{errors.studyType}</p>
+                                <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.studyType}</p>
                             )}
                             {formData.role === 'faculty' && (
-                                <p className="mt-1 text-sm text-gray-500">Study type is not applicable for faculty members</p>
+                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Study type is not applicable for faculty members</p>
                             )}
                         </div>
 
                         {/* Phone Number */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Phone className="h-5 w-5 text-blue-500" />
+                                <Phone className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                             </div>
                             <input
                                 type="tel"
                                 name="phone"
                                 value={formData.phone}
                                 onChange={handleChange}
-                                className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                                    errors.phone ? 'border-red-500' : 'border-gray-300'
+                                className={`block w-full pl-10 pr-3 py-2.5 sm:py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                                    errors.phone ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
                                 }`}
                                 placeholder="Enter your phone number"
                             />
                             {errors.phone && (
-                                <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
+                                <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.phone}</p>
                             )}
                         </div>
 
                         {/* Gender */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <User className="h-5 w-5 text-blue-500" />
+                                <User className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                             </div>
                             <select
                                 name="gender"
                                 value={formData.gender}
                                 onChange={handleChange}
-                                className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
-                                    errors.gender ? 'border-red-500' : 'border-gray-300'
+                                className={`block w-full pl-10 pr-3 py-2.5 sm:py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                                    errors.gender ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
                                 }`}
                             >
                                 <option value="">Select your gender</option>
@@ -396,7 +398,7 @@ const UserInfoForm = () => {
                                 <option value="prefer_not_to_say">Prefer not to say</option>
                             </select>
                             {errors.gender && (
-                                <p className="mt-1 text-sm text-red-500">{errors.gender}</p>
+                                <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.gender}</p>
                             )}
                         </div>
 
@@ -404,10 +406,10 @@ const UserInfoForm = () => {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className={`w-full py-3 px-4 rounded-lg text-white font-medium shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${
+                            className={`w-full py-2.5 sm:py-3 px-4 rounded-lg text-white font-medium shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${
                                 isLoading 
-                                    ? 'bg-blue-400 cursor-not-allowed' 
-                                    : 'bg-blue-600 hover:bg-blue-700'
+                                    ? 'bg-blue-400 dark:bg-blue-500 cursor-not-allowed' 
+                                    : 'bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800'
                             }`}
                         >
                             {isLoading ? 'Saving...' : 'Save Information'}

@@ -7,7 +7,7 @@ import CollegeCard from '../components/CollegeCard';
 import { toast } from 'sonner';
 import LoadingSpinner from '../components/LoadingSpinner';
 import FilterButton from '../components/FilterButton';
-import placeholder from '../../public/placeholder.png'
+import placeholder from '../assets/placeholder.png'
 
 const MyCollege = () => {
   const navigate = useNavigate();

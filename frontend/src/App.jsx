@@ -19,7 +19,7 @@ import SearchResults from './pages/SearchResults';
 import { Toaster } from 'sonner';
 import Protected from './layout/AuthLayout'
 import EditQuestion from './pages/EditQuestion'
-
+import ForgotPassword from './pages/ForgotPassword'
 function App() {
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
 
@@ -51,6 +51,11 @@ function App() {
           <Route path="/signup" element={
             <Protected authentication={false}>
               <SignupPage />
+            </Protected>
+          } />
+          <Route path="/forgot-password" element={
+            <Protected authentication={false}>
+              <ForgotPassword />
             </Protected>
           } />
           

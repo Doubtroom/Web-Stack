@@ -163,7 +163,7 @@ const LoginPage = () => {
               disabled={isLoading}
             />
             <div className="flex justify-end mt-2">
-              <Link to={"/forgotpassword"}>
+              <Link to={"/forgot-password"}>
                 <h2 className="text-blue-500 text-sm hover:underline">Forgot Password</h2>
               </Link>
             </div>

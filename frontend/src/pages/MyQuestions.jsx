@@ -6,7 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { toast } from 'sonner';
-import placeholder from '../../public/placeholder.png'
+import placeholder from '../assets/placeholder.png'
 
 const MyQuestions = () => {
   const navigate = useNavigate();

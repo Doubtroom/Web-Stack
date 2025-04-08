@@ -6,7 +6,9 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   fetchSignInMethodsForEmail,
-  deleteUser
+  deleteUser,
+  sendPasswordResetEmail,
+  sendEmailVerification
 } from "firebase/auth";
 import axios from "axios";
 import app from './firebaseConfig.js'
@@ -125,6 +127,22 @@ class AuthService {
     } catch (error) {
       console.error("Error checking email:", error);
       throw error;
+    }
+  }
+
+  async sendPasswordResetEmail(email) {
+    try {
+      await sendPasswordResetEmail(this.auth, email);
+    } catch (error) {
+       console.error("Error in AuthService :: sendPasswordResetEmail()", error);
+    }
+  }
+
+  async sendEmailVerification(user) {
+    try {
+      await sendEmailVerification(user);
+    } catch (error) {
+      console.error("Error in AuthService :: sendEmailVerification()", error);
     }
   }
 }

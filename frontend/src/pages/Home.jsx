@@ -6,7 +6,7 @@ import DataService from '../firebase/DataService'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { toast } from 'sonner'
 import FilterButton from '../components/FilterButton'
-import placeholder from '../../public/placeholder.png'
+import placeholder from '../assets/placeholder.png'
 
 const Home = () => {
   const navigate = useNavigate();
