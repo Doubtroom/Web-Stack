@@ -6,6 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import Button from '../components/Button';
 import { toast } from 'sonner';
 import ConfirmationDialog from '../components/ConfirmationDialog';
+import ImageModal from '../components/ImageModal';
 
 const Question = () => {
   const { id } = useParams();
@@ -16,6 +17,7 @@ const Question = () => {
   const [error, setError] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
 
   useEffect(() => {
@@ -220,12 +222,15 @@ const Question = () => {
               </span>
             </div>
             {question?.photo && (
-              <div className="mt-6 rounded-lg overflow-hidden">
+              <div className="mt-6 rounded-lg overflow-hidden cursor-pointer group relative" onClick={() => setSelectedImage(question.photo)}>
                 <img
                   src={question.photo}
                   alt="Question"
-                  className="w-full h-auto object-cover"
+                  className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                 />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                  <Maximize2 className="w-6 h-6 text-white" />
+                </div>
               </div>
             )}
           </div>
@@ -286,11 +291,17 @@ const Question = () => {
                     </div>
                     <p className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-2">{answer.text}</p>
                     {answer.photo && (
-                      <div className="mt-4 rounded-lg overflow-hidden w-full h-32 relative group">
+                      <div 
+                        className="mt-4 rounded-lg overflow-hidden w-full h-32 relative group cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImage(answer.photo);
+                        }}
+                      >
                         <img
                           src={answer.photo}
                           alt="Answer"
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                         />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
                           <Maximize2 className="w-6 h-6 text-white" />
@@ -341,6 +352,12 @@ const Question = () => {
         onConfirm={handleDelete}
         title="Delete Question"
         message="Are you sure you want to delete this question? This action cannot be undone."
+      />
+
+      <ImageModal
+        isOpen={!!selectedImage}
+        onClose={() => setSelectedImage(null)}
+        imageUrl={selectedImage}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "appwrite": "^17.0.1"
+    "appwrite": "^17.0.1",
+    "react-zoom-pan-pinch": "^3.7.0"
   }
 }

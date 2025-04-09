@@ -395,6 +395,48 @@ class DataService {
       throw error;
     }
   }
+
+  async getAnswersByUserId(userId) {
+    this.checkAuth();
+    try {
+      const answersCollection = collection(this.db, 'answers');
+      const q = query(
+        answersCollection, 
+        where('userId', '==', userId),
+        orderBy('createdAt', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      const answers = [];
+      querySnapshot.forEach((doc) => {
+        answers.push({ id: doc.id, ...doc.data() });
+      });
+      return answers;
+    } catch (error) {
+      console.error('Error getting answers by user: ', error);
+      // Check if it's a connection error
+      if (error.code === 'unavailable' || error.code === 'failed-precondition') {
+        // Retry once after a short delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        try {
+          const answersCollection = collection(this.db, 'answers');
+          const q = query(
+            answersCollection, 
+            where('userId', '==', userId),
+            orderBy('createdAt', 'desc')
+          );
+          const querySnapshot = await getDocs(q);
+          const answers = [];
+          querySnapshot.forEach((doc) => {
+            answers.push({ id: doc.id, ...doc.data() });
+          });
+          return answers;
+        } catch (retryError) {
+          console.error('Error on retry: ', retryError);
+        }
+      }
+      throw error;
+    }
+  }
 }
 
 export default DataService;

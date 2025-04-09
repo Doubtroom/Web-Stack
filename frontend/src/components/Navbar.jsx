@@ -27,7 +27,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [showNavbar, setShowNavbar] = useState(true);
+  const [navbarVisibility, setNavbarVisibility] = useState(1);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
 
@@ -56,12 +56,26 @@ const Navbar = () => {
   };
 
   const handleScroll = () => {
-    if (window.scrollY < lastScrollY) {
-      setShowNavbar(true);
-    } else {
-      setShowNavbar(false);
+    const currentScrollY = window.scrollY;
+    
+    // Calculate scroll direction and distance
+    const scrollDiff = lastScrollY - currentScrollY;
+    
+    // If scrolling up
+    if (scrollDiff > 0) {
+      // Gradually increase visibility as user scrolls up
+      // The more they scroll up, the more visible the navbar becomes
+      const newVisibility = Math.min(1, navbarVisibility + (scrollDiff * 0.01));
+      setNavbarVisibility(newVisibility);
+    } 
+    // If scrolling down
+    else if (scrollDiff < 0) {
+      // Gradually decrease visibility as user scrolls down
+      const newVisibility = Math.max(0, navbarVisibility - (Math.abs(scrollDiff) * 0.01));
+      setNavbarVisibility(newVisibility);
     }
-    setLastScrollY(window.scrollY);
+    
+    setLastScrollY(currentScrollY);
   };
 
   useEffect(() => {
@@ -69,58 +83,30 @@ const Navbar = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [lastScrollY]);
+  }, [lastScrollY, navbarVisibility]);
 
   return (
     <>
       <nav
-        className={`fixed w-full z-50 flex items-center justify-between px-4 sm:px-5 md:px-6 py-4 sm:py-6 transition-transform duration-300 ease-in-out ${
+        className={`fixed w-full z-50 flex items-center justify-between px-5 sm:px-5 md:px-6 py-5 sm:py-6 transition-all duration-300 ease-in-out ${
           isDarkMode 
             ? 'bg-slate-900 shadow-slate-800/50'
             : 'bg-gradient-to-r from-[#1e6eab] to-[#02254b]'
-        } shadow-sm ${
-          showNavbar ? "translate-y-0" : "-translate-y-full"
-        }`}
+        } shadow-sm`}
+        style={{ 
+          opacity: navbarVisibility,
+          transform: `translateY(${-100 + (navbarVisibility * 100)}%)`,
+          transition: 'opacity 0.3s ease, transform 0.3s ease'
+        }}
       >
         <div className="flex gap-4 sm:gap-5 md:gap-7">
           <div className="flex items-center space-x-3">
             <div className="flex gap-2">
-              <div className="lg:hidden flex items-center">
-                <button
-                  onClick={() => setIsOpen(!isOpen)}
-                  className="text-white focus:outline-none"
-                >
-                  <AnimatePresence mode="wait">
-                    {isOpen ? (
-                      <motion.div
-                        key="close"
-                        initial={{ opacity: 0, rotate: 90, scale: 0.8 }}
-                        animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                        exit={{ opacity: 0, rotate: -90, scale: 0.8 }}
-                        transition={{ duration: 0.1 }}
-                      >
-                        <X className="w-5 h-5 sm:w-6 sm:h-6" />
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="menu"
-                        initial={{ opacity: 0, rotate: -90, scale: 0.8 }}
-                        animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                        exit={{ opacity: 0, rotate: 90, scale: 0.8 }}
-                        transition={{ duration: 0.1 }}
-                      >
-                        <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </button>
-              </div>
-              
               <NavLink to="/" className="flex items-center gap-2">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md flex items-center justify-center">
+                <div className="w-8 h-8 sm:w-8 sm:h-8 rounded-md flex items-center justify-center">
                   <img src={Logo} alt="Logo" />
                 </div>
-                <span className="text-lg sm:text-xl font-bold text-white">Doubtroom</span>
+                <span className="text-xl sm:text-xl font-bold text-white">Doubtroom</span>
               </NavLink>
             </div>
           </div>
@@ -135,7 +121,7 @@ const Navbar = () => {
         <div className="hidden lg:flex items-center space-x-6">
           <SliderSwitch/>
           <NavItem to='/home' icon={<Home className="w-4 h-4" />} label="Home" />
-          <NavItem to="/my-questions" icon={<HelpCircle className="w-4 h-4" />} label="My Questions" />
+          <NavItem to="/my-questions" icon={<HelpCircle className="w-4 h-4" />} label="My Contributions" />
           <NavItem to="/my-college" icon={<School className="w-4 h-4" />} label="My College" />
           <NavItem to="/all-colleges" icon={<Grid className="w-4 h-4" />} label="All Colleges" />
           
@@ -151,38 +137,54 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu Items */}
-        <div className="lg:hidden flex items-center gap-3 sm:gap-4">
+        <div className="lg:hidden flex items-center gap-4 sm:gap-4">
           <SliderSwitch />
-          <NavLink to="/profile">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
-              <User className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
-            </div>
-          </NavLink>
-        </div>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              key="mobile-menu"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="absolute top-16 left-1 w-64 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50 transition-transform duration-300 ease-in-out"
+          <div className="relative">
+            <button 
+              onClick={() => setIsOpen(!isOpen)}
+              className="w-9 h-9 sm:w-9 sm:h-9 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer"
             >
-              <div className="flex flex-col p-4 lg:hidden">
-                <div 
-                  className="flex items-center text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md cursor-pointer p-3 transition-colors duration-200" 
-                  onClick={handleLogoutClick}
+              <User className="w-5 h-5 sm:w-5 sm:h-5 text-black" />
+            </button>
+            
+            {/* Mobile User Menu */}
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  key="mobile-menu"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-12 right-0 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50 transition-transform duration-300 ease-in-out"
                 >
-                  <LogOut className="w-5 h-5 mr-3" />
-                  <span>Logout</span>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                  <div className="flex flex-col p-2">
+                    <NavLink 
+                      to="/profile" 
+                      className="flex items-center text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md cursor-pointer p-3 transition-colors duration-200"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <User className="w-5 h-5 mr-3" />
+                      <NavLink to="/profile">
+                        <span>Profile</span>
+                      </NavLink>
+                    </NavLink>
+                    <div 
+                      className="flex items-center text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md cursor-pointer p-3 transition-colors duration-200" 
+                      onClick={() => {
+                        setIsOpen(false);
+                        handleLogoutClick();
+                      }}
+                    >
+                      <LogOut className="w-5 h-5 mr-3" />
+                      <span>Logout</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
       </nav>
 
       {/* Logout Confirmation Dialog */}

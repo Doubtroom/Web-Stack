@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { User, Building2, GraduationCap, Phone, Briefcase, Mail, Edit2, Save, X } from 'lucide-react';
+import { User, Building2, GraduationCap, Phone, Briefcase, Mail, Edit2, Save, X, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import DataService from '../firebase/DataService';
 import userService from '../firebase/UserService';
@@ -82,6 +82,13 @@ const Profile = () => {
       toast.error('Failed to update profile');
     }
   };
+  const formatBranchName = (branch) => {
+    if (!branch) return '';
+    return branch
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
 
   if (loading) {
     return (
@@ -92,133 +99,128 @@ const Profile = () => {
   }
 
   return (
-    <div className={`min-h-screen p-6 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
-      <div className="max-w-4xl mx-auto mt-20">
-        <div className={`rounded-lg shadow-lg p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <User className="w-6 h-6" />
-              Profile
-            </h1>
+    <div className={`min-h-screen p-3 sm:p-6 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+      <div className="max-w-4xl mx-auto mt-12 sm:mt-20">
+        {/* Profile Header */}
+        <div className={`rounded-t-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? 'bg-gradient-to-r from-gray-800 to-gray-700' : 'bg-gradient-to-r from-blue-500 to-blue-600'} text-white relative`}>
+          <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-                  isDarkMode 
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                    : 'bg-blue-500 hover:bg-blue-600 text-white'
-                }`}
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg bg-white/20 hover:bg-white/30 transition-all text-sm sm:text-base"
               >
-                <Edit2 className="w-4 h-4" />
-                Edit Profile
+                <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Edit Profile</span>
+                <span className="sm:hidden">Edit</span>
               </button>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex gap-1 sm:gap-2">
                 <button
                   onClick={() => setIsEditing(false)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-                    isDarkMode 
-                      ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                      : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                  }`}
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg bg-white/20 hover:bg-white/30 transition-all text-sm sm:text-base"
                 >
-                  <X className="w-4 h-4" />
-                  Cancel
+                  <X className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Cancel</span>
                 </button>
                 <button
                   onClick={handleSubmit}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-                    isDarkMode 
-                      ? 'bg-green-600 hover:bg-green-700 text-white' 
-                      : 'bg-green-500 hover:bg-green-600 text-white'
-                  }`}
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg bg-white/20 hover:bg-white/30 transition-all text-sm sm:text-base"
                 >
-                  <Save className="w-4 h-4" />
-                  Save Changes
+                  <Save className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Save Changes</span>
+                  <span className="sm:hidden">Save</span>
                 </button>
               </div>
             )}
           </div>
+          
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 mt-8 sm:mt-0">
+            <div className="relative">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/20 flex items-center justify-center">
+                <User className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+              {isEditing && (
+                <button className="absolute bottom-0 right-0 p-1.5 sm:p-2 rounded-full bg-white/20 hover:bg-white/30 transition-all">
+                  <Camera className="w-3 h-3 sm:w-4 sm:h-4" />
+                </button>
+              )}
+            </div>
+            <div className="text-center sm:text-left">
+              <h1 className="text-2xl sm:text-3xl font-bold">{userData?.name || 'Your Name'}</h1>
+              <p className="text-white/80 text-sm sm:text-base">{userData?.role || 'Role'}</p>
+            </div>
+          </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Mail className="w-5 h-5" />
-                <span className="font-semibold">Email:</span>
-                <span>{userData?.email || 'Not available'}</span>
+        {/* Profile Content */}
+        <div className={`rounded-b-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+            <div className="space-y-4 sm:space-y-6">
+              <div className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                  <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                  <span className="font-semibold text-sm sm:text-base">Email</span>
+                </div>
+                <p className="ml-6 sm:ml-8 text-sm sm:text-base">{userData?.email || 'Not available'}</p>
               </div>
 
-              <div className="flex items-center gap-2">
-                <User className="w-5 h-5" />
-                <span className="font-semibold">Name:</span>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className={`flex-1 px-3 py-1 rounded-md border ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
-                  />
-                ) : (
-                  <span>{userData?.name || 'Not available'}</span>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5" />
-                <span className="font-semibold">College:</span>
+              <div className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                  <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                  <span className="font-semibold text-sm sm:text-base">College</span>
+                </div>
                 {isEditing ? (
                   <input
                     type="text"
                     name="collegeName"
                     value={formData.collegeName}
                     onChange={handleInputChange}
-                    className={`flex-1 px-3 py-1 rounded-md border ${
+                    className={`ml-6 sm:ml-8 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border text-sm sm:text-base ${
                       isDarkMode 
                         ? 'bg-gray-700 border-gray-600 text-white' 
                         : 'bg-white border-gray-300 text-gray-900'
                     }`}
                   />
                 ) : (
-                  <span>{userData?.collegeName || 'Not available'}</span>
+                  <p className="ml-6 sm:ml-8 text-sm sm:text-base">{userData?.collegeName || 'Not available'}</p>
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
-                <GraduationCap className="w-5 h-5" />
-                <span className="font-semibold">Branch:</span>
+              <div className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                  <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                  <span className="font-semibold text-sm sm:text-base">Branch</span>
+                </div>
                 {isEditing ? (
                   <input
                     type="text"
                     name="branch"
                     value={formData.branch}
                     onChange={handleInputChange}
-                    className={`flex-1 px-3 py-1 rounded-md border ${
+                    className={`ml-6 sm:ml-8 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border text-sm sm:text-base ${
                       isDarkMode 
                         ? 'bg-gray-700 border-gray-600 text-white' 
                         : 'bg-white border-gray-300 text-gray-900'
                     }`}
                   />
                 ) : (
-                  <span>{userData?.branch || 'Not available'}</span>
+                  <p className="ml-6 sm:ml-8 text-sm sm:text-base">{formatBranchName(userData?.branch) || 'Not available'}</p>
                 )}
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Briefcase className="w-5 h-5" />
-                <span className="font-semibold">Role:</span>
+            <div className="space-y-4 sm:space-y-6">
+              <div className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                  <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                  <span className="font-semibold text-sm sm:text-base">Role</span>
+                </div>
                 {isEditing ? (
                   <select
                     name="role"
                     value={formData.role}
                     onChange={handleInputChange}
-                    className={`flex-1 px-3 py-1 rounded-md border ${
+                    className={`ml-6 sm:ml-8 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border text-sm sm:text-base ${
                       isDarkMode 
                         ? 'bg-gray-700 border-gray-600 text-white' 
                         : 'bg-white border-gray-300 text-gray-900'
@@ -229,19 +231,21 @@ const Profile = () => {
                     <option value="faculty">Faculty</option>
                   </select>
                 ) : (
-                  <span>{userData?.role || 'Not available'}</span>
+                  <p className="ml-6 sm:ml-8 text-sm sm:text-base">{userData?.role || 'Not available'}</p>
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
-                <GraduationCap className="w-5 h-5" />
-                <span className="font-semibold">Study Type:</span>
+              <div className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                  <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                  <span className="font-semibold text-sm sm:text-base">Study Type</span>
+                </div>
                 {isEditing ? (
                   <select
                     name="studyType"
                     value={formData.studyType}
                     onChange={handleInputChange}
-                    className={`flex-1 px-3 py-1 rounded-md border ${
+                    className={`ml-6 sm:ml-8 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border text-sm sm:text-base ${
                       isDarkMode 
                         ? 'bg-gray-700 border-gray-600 text-white' 
                         : 'bg-white border-gray-300 text-gray-900'
@@ -255,39 +259,43 @@ const Profile = () => {
                     <option value="certification">Certification</option>
                   </select>
                 ) : (
-                  <span>{userData?.studyType || 'Not available'}</span>
+                  <p className="ml-6 sm:ml-8 text-sm sm:text-base">{userData?.studyType || 'Not available'}</p>
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
-                <Phone className="w-5 h-5" />
-                <span className="font-semibold">Phone:</span>
+              <div className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                  <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                  <span className="font-semibold text-sm sm:text-base">Phone</span>
+                </div>
                 {isEditing ? (
                   <input
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className={`flex-1 px-3 py-1 rounded-md border ${
+                    className={`ml-6 sm:ml-8 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border text-sm sm:text-base ${
                       isDarkMode 
                         ? 'bg-gray-700 border-gray-600 text-white' 
                         : 'bg-white border-gray-300 text-gray-900'
                     }`}
                   />
                 ) : (
-                  <span>{userData?.phone || 'Not available'}</span>
+                  <p className="ml-6 sm:ml-8 text-sm sm:text-base">{userData?.phone || 'Not available'}</p>
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
-                <User className="w-5 h-5" />
-                <span className="font-semibold">Gender:</span>
+              <div className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                  <span className="font-semibold text-sm sm:text-base">Gender</span>
+                </div>
                 {isEditing ? (
                   <select
                     name="gender"
                     value={formData.gender}
                     onChange={handleInputChange}
-                    className={`flex-1 px-3 py-1 rounded-md border ${
+                    className={`ml-6 sm:ml-8 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border text-sm sm:text-base ${
                       isDarkMode 
                         ? 'bg-gray-700 border-gray-600 text-white' 
                         : 'bg-white border-gray-300 text-gray-900'
@@ -299,7 +307,7 @@ const Profile = () => {
                     <option value="other">Other</option>
                   </select>
                 ) : (
-                  <span>{userData?.gender || 'Not available'}</span>
+                  <p className="ml-6 sm:ml-8 text-sm sm:text-base">{userData?.gender || 'Not available'}</p>
                 )}
               </div>
             </div>

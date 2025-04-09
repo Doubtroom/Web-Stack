@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { MessageSquare, ThumbsUp, Clock, ArrowLeft } from 'lucide-react';
+import { MessageSquare, ThumbsUp, Clock, ArrowLeft, ZoomIn } from 'lucide-react';
 import DataService from '../firebase/DataService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Button from '../components/Button';
 import { toast } from 'sonner';
 import CommentSection from '../components/CommentSection';
+import ImageModal from '../components/ImageModal';
 
 const Answer = () => {
   const { questionId, answerId } = useParams();
@@ -15,6 +16,7 @@ const Answer = () => {
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
   const commentSectionRef = useRef(null);
 
@@ -207,12 +209,18 @@ const Answer = () => {
           </div>
 
           {answer?.photo && (
-            <div className="rounded-lg overflow-hidden mb-8">
+            <div 
+              className="rounded-lg overflow-hidden mb-8 relative group cursor-pointer"
+              onClick={() => setIsImageModalOpen(true)}
+            >
               <img
                 src={answer.photo}
                 alt="Answer"
-                className="w-full h-auto object-cover"
+                className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-[1.02]"
               />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <ZoomIn className="w-8 h-8 text-white" />
+              </div>
             </div>
           )}
 
@@ -249,6 +257,13 @@ const Answer = () => {
           <CommentSection answerId={answerId} />
         </div>
       </div>
+
+      {/* Image Modal */}
+      <ImageModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        imageUrl={answer?.photo}
+      />
     </div>
   );
 };

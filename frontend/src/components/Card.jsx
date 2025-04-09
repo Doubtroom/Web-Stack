@@ -6,7 +6,20 @@ import { toast } from "sonner";
 import DataService from "../firebase/DataService";
 import ConfirmationDialog from './ConfirmationDialog';
 
-const Card = ({id, collegeName, img, branch, topic, noOfAnswers, postedOn, postedBy, showAnswerButton = true, onDelete}) => {
+const Card = ({
+  id, 
+  collegeName, 
+  img, 
+  branch, 
+  topic, 
+  noOfAnswers, 
+  postedOn, 
+  postedBy, 
+  showAnswerButton = true, 
+  onDelete,
+  type = 'question', // New prop to distinguish between question and answer cards
+  answerId = null // New prop for answer ID when type is 'answer'
+}) => {
   const navigate = useNavigate();
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
   const isQuestionOwner = userData.uid === postedBy;
@@ -17,7 +30,13 @@ const Card = ({id, collegeName, img, branch, topic, noOfAnswers, postedOn, poste
     if (e.target.closest('.action-buttons')) {
       return;
     }
-    navigate(`/question/${id}`);
+    
+    // Navigate based on card type
+    if (type === 'answer') {
+      navigate(`/question/${id}/answer/${answerId}`);
+    } else {
+      navigate(`/question/${id}`);
+    }
   };
 
   const handleAnswerClick = (e) => {
@@ -27,7 +46,11 @@ const Card = ({id, collegeName, img, branch, topic, noOfAnswers, postedOn, poste
 
   const handleEditClick = (e) => {
     e.stopPropagation();
-    navigate(`/question/${id}/edit`);
+    if (type === 'answer') {
+      navigate(`/answer/${answerId}/edit`);
+    } else {
+      navigate(`/question/${id}/edit`);
+    }
   };
 
   const handleDeleteClick = async (e) => {
@@ -37,7 +60,7 @@ const Card = ({id, collegeName, img, branch, topic, noOfAnswers, postedOn, poste
 
   const handleDeleteConfirm = async () => {
     try {
-      const dataService = new DataService('questions');
+      const dataService = new DataService(type === 'answer' ? 'answers' : 'questions');
       
       // Delete associated image if exists
       if (img && !img.includes('placeholder')) {
@@ -45,14 +68,14 @@ const Card = ({id, collegeName, img, branch, topic, noOfAnswers, postedOn, poste
         await dataService.deleteImage(fileId);
       }
 
-      // Delete the question document
-      await dataService.deleteDocument(id);
+      // Delete the document
+      await dataService.deleteDocument(type === 'answer' ? answerId : id);
       
-      toast.success('Question deleted successfully!');
+      toast.success(`${type === 'answer' ? 'Answer' : 'Question'} deleted successfully!`);
       window.location.reload(); // Refresh to update the list
     } catch (error) {
-      console.error('Error deleting question:', error);
-      toast.error('Failed to delete question. Please try again.');
+      console.error(`Error deleting ${type}:`, error);
+      toast.error(`Failed to delete ${type}. Please try again.`);
     } finally {
       setShowDeleteDialog(false);
     }
@@ -78,7 +101,7 @@ const Card = ({id, collegeName, img, branch, topic, noOfAnswers, postedOn, poste
           {isQuestionOwner && (
             <div className="absolute top-2 right-2 flex gap-2 action-buttons">
               <Link
-                to={`/question/${id}/edit`}
+                to={type === 'answer' ? `/answer/${answerId}/edit` : `/question/${id}/edit`}
                 className="p-2 bg-white dark:bg-gray-700 rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
               >
                 <Edit2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -101,7 +124,7 @@ const Card = ({id, collegeName, img, branch, topic, noOfAnswers, postedOn, poste
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-1 text-gray-600 dark:text-gray-300">
               <MessageSquare className="w-4 h-4" />
-              <span>{noOfAnswers} answers</span>
+              <span>{noOfAnswers} {type === 'answer' ? 'upvotes' : 'answers'}</span>
             </div>
             <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
               <Clock className="w-4 h-4" />
@@ -115,8 +138,8 @@ const Card = ({id, collegeName, img, branch, topic, noOfAnswers, postedOn, poste
         isOpen={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete Question"
-        message="Are you sure you want to delete this question?"
+        title={`Delete ${type === 'answer' ? 'Answer' : 'Question'}`}
+        message={`Are you sure you want to delete this ${type}?`}
       />
     </>
   );
