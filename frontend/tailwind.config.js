@@ -8,7 +8,9 @@ export default {
   theme: {
     extend: {
       fontFamily:{
-        'custom-font1':['Josefin Sans',"sans-serif"],
+        josefin: ['"Josefin Sans"', 'sans-serif'],
+        kanit: ['"Kanit"', 'sans-serif'],
+        anton: ['"Anton"', 'sans-serif'],
       },
       colors: {
         primary: '#173f67',
