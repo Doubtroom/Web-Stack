@@ -3,7 +3,6 @@ import { Search, Instagram, Youtube, Linkedin, Menu } from 'lucide-react';
 import { NavLink, Link } from 'react-router-dom';
 import Logo from '../assets/logoWhite.png';
 import { useState } from 'react';
-import art from '../assets/art2.png';
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -133,7 +132,7 @@ const DoubtRoomPage = () => {
             <HeroText />
           </div>
           <div className="w-full md:w-1/2 flex justify-center items-center">
-            <img src={art} alt="Doubtroom illustration" className="w-4/5 max-w-md object-contain" />
+          <img src="https://doubtroom.sirv.com/Doubtroom/art2.png" className="w-4/5 max-w-md object-contain" alt="art" />
           </div>
         </div>
                 
