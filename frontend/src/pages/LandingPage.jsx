@@ -3,6 +3,7 @@ import { Search, Instagram, Youtube, Linkedin, Menu } from 'lucide-react';
 import { NavLink, Link } from 'react-router-dom';
 import Logo from '../assets/logoWhite.png';
 import { useState } from 'react';
+import art from '../assets/art2.png';
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -74,26 +75,10 @@ const HeroText = () => {
   );
 };
 
-// Search Bar Component
-const SearchBar = () => {
-  return (
-    <div className="relative max-w-md w-full px-4 sm:px-0">
-      <input
-        type="text"
-        placeholder="Ask a question..."
-        className="w-full py-3 px-6 pr-12 rounded-full bg-white bg-opacity-20 backdrop-blur-sm text-white placeholder-white outline-none"
-      />
-      <button className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white p-2 rounded-full">
-        <Link to='/signup'>
-          <Search size={24} />
-        </Link>
-      </button>
-    </div>
-  );
-};
+
 
 // Social Link Component
-const SocialLink = ({ icon, platform, username }) => {
+const SocialLink = ({ icon, username }) => {
   return (
     <Link>
       <div className="flex items-center space-x-4 hover:scale-105 transition-transform delay-100 cursor-pointer">
@@ -143,9 +128,13 @@ const DoubtRoomPage = () => {
       <div className="relative z-10 min-h-screen flex flex-col">
         <NavBar />
         
-        <div className="flex-1 flex flex-col md:flex-row justify-between items-center px-4 sm:px-8 py-8 md:py-0 space-y-8 md:space-y-0">
-          <HeroText />
-          <SearchBar />
+        <div className="flex-1 flex flex-col md:flex-row justify-between items-center px-4 sm:px-8 py-8 md:py-12 gap-8">
+          <div className="w-full md:w-1/2">
+            <HeroText />
+          </div>
+          <div className="w-full md:w-1/2 flex justify-center items-center">
+            <img src={art} alt="Doubtroom illustration" className="w-4/5 max-w-md object-contain" />
+          </div>
         </div>
                 
         <Footer />
