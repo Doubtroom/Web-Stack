@@ -58,11 +58,17 @@ const LoginPage = () => {
     
     try {
       const user = await authService.login(formData.email, formData.password);
+      console.log('Firebase auth user:', user); // Debug log
       
       localStorage.setItem("authStatus", "true");
       
       const dataService = new DataService("users");
       const response = await dataService.getUserData(user.uid);
+      console.log('User data from Firestore:', response); // Debug log
+
+      if (!response) {
+        throw new Error('User data not found in Firestore');
+      }
 
       const userData = {
         uid: user.uid,

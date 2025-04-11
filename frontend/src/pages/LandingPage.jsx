@@ -26,7 +26,7 @@ const NavBar = () => {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       className={`fixed w-full z-50 transition-all duration-300 ${
-        isScrolled 
+        isScrolled || isMenuOpen
           ? 'bg-[#0a192f]/90 shadow-lg' 
           : 'bg-transparent'
       }`}
@@ -38,12 +38,12 @@ const NavBar = () => {
           whileTap={{ scale: 0.98 }}
         >
           <div className={`w-10 h-10 rounded-xl ${
-            isScrolled ? 'bg-teal-500/20' : 'bg-white/10'
+            isScrolled || isMenuOpen ? 'bg-teal-500/20' : 'bg-white/10'
           } flex items-center justify-center`}>
             <img src={Logo} alt="Logo" className="w-7 h-7" />
           </div>
           <div className={`text-2xl font-bold ${
-            isScrolled ? 'text-teal-400' : 'text-white'
+            isScrolled || isMenuOpen ? 'text-teal-400' : 'text-white'
           } font-space`}>Doubtroom</div>
         </motion.div>
 
@@ -83,14 +83,12 @@ const NavBar = () => {
           height: isMenuOpen ? 'auto' : 0,
           opacity: isMenuOpen ? 1 : 0
         }}
-        className={`md:hidden overflow-hidden ${
-          isScrolled ? 'bg-[#0a192f]/90' : 'bg-transparent'
-        }`}
+        className={`md:hidden overflow-hidden bg-[#0a192f]/90`}
       >
         <div className="py-4 space-y-4 px-2">
-          <Navitem link="/about" text="About" isScrolled={isScrolled} />
-          <Navitem link="/login" text="Log in" isScrolled={isScrolled} />
-          <Navitem link="/signup" text="Sign up" isScrolled={isScrolled} />
+          <Navitem link="/about" text="About" isScrolled={true} />
+          <Navitem link="/login" text="Log in" isScrolled={true} />
+          <Navitem link="/signup" text="Sign up" isScrolled={true} />
         </div>
       </motion.div>
     </motion.nav>
@@ -134,10 +132,10 @@ const SocialLink = ({ icon, username, platform }) => {
 
 const Footer = () => {
   return (
-    <footer className="w-full border-t border-white/20 py-6 sm:py-12 bg-gradient-to-b from-transparent to-[#0a192f]/50">
-      <div className="container mx-auto px-4 sm:px-8">
-        <div className="flex flex-col items-center space-y-6 sm:space-y-0">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-16">
+    <footer className="w-full border-t border-white/20 py-4 bg-gradient-to-b from-transparent to-[#0a192f]/50">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-12">
             <SocialLink 
               icon={<Instagram size={18} className="sm:w-5 sm:h-5" />} 
               platform="Join US" 
@@ -154,7 +152,9 @@ const Footer = () => {
               username="LinkedIN" 
             />
           </div>
-          <div className="text-white/60 text-xs sm:text-sm text-center">
+        </div>
+        <div className="mt-2 text-center">
+          <div className="text-white/60 text-xs sm:text-sm">
             © 2024 Doubtroom. All rights reserved.
           </div>
         </div>
