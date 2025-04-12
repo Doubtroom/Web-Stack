@@ -33,30 +33,30 @@ const SignupPage = () => {
           setErrors(prev => ({ ...prev, [id]: '' }));
       }
     };
-  
-    const handleBlur = async (e) => {
-      const { id, value } = e.target;
+    
+    // const handleBlur = async (e) => {
+    //   const { id, value } = e.target;
       
-      if (id === 'email' && value) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (emailRegex.test(value)) {
-          setIsCheckingEmail(true);
-          try {
-            const result = await authService.signUp(value, 'tempPassword123');
-            await authService.logout();
-            await authService.deleteUserByEmail(value);
-            console.log("deleted user");
-          } catch (error) {
-            if (error.code === 'auth/email-already-in-use') {
-              toast.error("Email already in use");
-              setErrors(prev => ({ ...prev, email: 'Email already in use' }));
-            }
-          } finally {
-            setIsCheckingEmail(false);
-          }
-        }
-      }
-    };
+    //   if (id === 'email' && value) {
+    //     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    //     if (emailRegex.test(value)) {
+    //       setIsCheckingEmail(true);
+    //       try {
+    //         const result = await authService.signUp(value, 'tempPassword123');
+    //         await authService.logout();
+    //         await authService.deleteUserByEmail(value);
+    //         console.log("deleted user");
+    //       } catch (error) {
+    //         if (error.code === 'auth/email-already-in-use') {
+    //           toast.error("Email already in use");
+    //           setErrors(prev => ({ ...prev, email: 'Email already in use' }));
+    //         }
+    //       } finally {
+    //         setIsCheckingEmail(false);
+    //       }
+    //     }
+    //   }
+    // };
 
     const handleSignup = async (e) => {
       e.preventDefault();
@@ -111,13 +111,13 @@ const SignupPage = () => {
         }, 3000); // Check every 3 seconds
         
         // Stop checking after 5 minutes
-        setTimeout(() => {
-          clearInterval(checkVerification);
-          if (isVerifying) {
-            setIsVerifying(false);
-            toast.error('Email verification timed out. Please try again.');
-          }
-        }, 300000);
+        // setTimeout(() => {
+        //   clearInterval(checkVerification);
+        //   if (isVerifying) {
+        //     setIsVerifying(false);
+        //     toast.error('Email verification timed out. Please try again.');
+        //   }
+        // }, 300000);
         
       } catch (error) {
         let errorMessage = 'Signup failed. Please try again.';
@@ -215,10 +215,8 @@ const SignupPage = () => {
                 error={errors.email}
                 onChange={handleChange}
                 disabled={isCheckingEmail}
-                onBlur={handleBlur}
               />
             </div>
-
             <div className="mb-2">
               <InputField
                 type="password"
