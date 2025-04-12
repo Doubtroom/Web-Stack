@@ -14,7 +14,7 @@ const SliderSwitch = ({classNames}) => {
   return (
     <button
       onClick={handleToggle}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-700 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#173f67] focus:ring-offset-2 ${classNames}`}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-700 transition-colors duration-200 ease-in-out focus:outline-none ${classNames}`}
     >
       <span
         className={`${

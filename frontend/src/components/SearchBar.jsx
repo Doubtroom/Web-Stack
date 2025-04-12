@@ -169,7 +169,6 @@ const SearchBar = ({ isMobile = false, onClose, isOpen }) => {
               : 'bg-gray-100 text-gray-900 placeholder-gray-500'
           } ${isMobile ? 'py-3 text-base' : ''}`}
           placeholder="Search by question, topic, or branch..."
-          autoFocus={isMobile}
         />
         <button
           type="submit"

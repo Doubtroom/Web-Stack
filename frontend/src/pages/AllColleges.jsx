@@ -67,8 +67,8 @@ const AllCollege = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div className="flex items-center justify-between w-full sm:w-auto">
             <div className="flex items-center gap-3">
-              <Building2 className="w-8 h-8 text-[#173f67] dark:text-blue-400" />
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#173f67] dark:text-white">All College Questions</h1>
+              <Building2 className="w-16 h-16 lg:w-8 lg:h-8 text-blue-900 dark:text-blue-300" />
+              <h1 className="text-3xl sm:text-4xl font-bold text-blue-900 dark:text-blue-300">All Colleges</h1>
             </div>
             {/* Mobile Filter Button */}
             {userData.branch && (

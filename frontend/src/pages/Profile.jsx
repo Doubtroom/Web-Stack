@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { User, Building2, GraduationCap, Phone, Briefcase, Mail, Edit2, Save, X, Camera } from 'lucide-react';
+import { User,Calendar , Building2, GraduationCap, Phone, Briefcase, Mail, Edit2, Save, X, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import DataService from '../firebase/DataService';
 import userService from '../firebase/UserService';
@@ -17,7 +17,8 @@ const Profile = () => {
     phone: '',
     gender: '',
     role: '',
-    collegeName: ''
+    collegeName: '',
+    dob: ''
   });
 
   useEffect(() => {
@@ -37,7 +38,8 @@ const Profile = () => {
             gender: userProfile.gender || '',
             role: userProfile.role || '',
             collegeName: userProfile.collegeName || '',
-            email:userProfile.email || ''
+            email: userProfile.email || '',
+            dob: userProfile.dob || ''
           });
         }
       } catch (error) {
@@ -88,6 +90,16 @@ const Profile = () => {
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Not available';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   if (loading) {
@@ -308,6 +320,30 @@ const Profile = () => {
                   </select>
                 ) : (
                   <p className="ml-6 sm:ml-8 text-sm sm:text-base">{userData?.gender || 'Not available'}</p>
+                )}
+              </div>
+
+              <div className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                  <span className="font-semibold text-sm sm:text-base">Date of Birth</span>
+                </div>
+                {isEditing ? (
+                  <input
+                    type="date"
+                    name="dob"
+                    value={formData.dob}
+                    onChange={handleInputChange}
+                    className={`ml-6 sm:ml-8 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border text-sm sm:text-base ${
+                      isDarkMode 
+                        ? 'bg-gray-700 border-gray-600 text-white' 
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
+                    max={new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split('T')[0]}
+                    min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]}
+                  />
+                ) : (
+                  <p className="ml-6 sm:ml-8 text-sm sm:text-base">{formatDate(userData?.dob) || 'Not available'}</p>
                 )}
               </div>
             </div>

@@ -27,7 +27,7 @@ function MobileBottomNavbar() {
         }`}
       >
         <HelpCircle className="w-5 h-5" />
-        <span className="text-xs mt-1">My Contributions</span>
+        <span className="text-xs mt-1">My Content</span>
       </NavLink>
       
       <NavLink 

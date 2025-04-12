@@ -16,7 +16,8 @@ const UserInfoForm = () => {
         studyType: '',
         phone: '',
         gender: '',
-        role: ''
+        role: '',
+        dob: ''
     });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -133,11 +134,25 @@ const UserInfoForm = () => {
             newErrors.studyType = 'Type of study is required';
         }
         
-        // Phone validation
-        if (!formData.phone.trim()) {
-            newErrors.phone = 'Phone number is required';
-        } else if (!/^[0-9]{10}$/.test(formData.phone)) {
+        // Phone validation - now optional
+        if (formData.phone && !/^[0-9]{10}$/.test(formData.phone)) {
             newErrors.phone = 'Please enter a valid 10-digit phone number';
+        }
+        
+        // DOB validation
+        if (!formData.dob) {
+            newErrors.dob = 'Date of Birth is required';
+        } else {
+            const dob = new Date(formData.dob);
+            const today = new Date();
+            const minDate = new Date();
+            minDate.setFullYear(today.getFullYear() - 100); // 100 years ago
+            const maxDate = new Date();
+            maxDate.setFullYear(today.getFullYear() - 13); // 13 years ago (minimum age)
+
+            if (dob < minDate || dob > maxDate) {
+                newErrors.dob = 'Please enter a valid date of birth (between 13 and 100 years)';
+            }
         }
         
         // Gender validation
@@ -162,15 +177,6 @@ const UserInfoForm = () => {
                 ? formData.otherBranch.toLowerCase().replace(/\s+/g, '_')
                 : formData.branch;
 
-            const updatedUserData1 = {
-                uid: existingUserData.uid,
-                email: existingUserData.email,
-                displayName: existingUserData.displayName,
-                collegeName: formData.collegeName.trim(),
-                branch: formattedBranch,
-                role: formData.role
-            };
-
             const updatedUserData = {
                 uid: existingUserData.uid,
                 email: existingUserData.email,
@@ -179,11 +185,12 @@ const UserInfoForm = () => {
                 role: formData.role,
                 branch: formattedBranch,
                 studyType: formData.role === 'faculty' ? '--faculty' : formData.studyType,
-                phone: formData.phone,
-                gender: formData.gender
+                phone: formData.phone || null,
+                gender: formData.gender,
+                dob: formData.dob
             };
             
-            localStorage.setItem("userData", JSON.stringify(updatedUserData1));
+            localStorage.setItem("userData", JSON.stringify(updatedUserData));
             localStorage.setItem("profileCompleted", "true");
             localStorage.removeItem("fromSignup");
             
@@ -358,7 +365,7 @@ const UserInfoForm = () => {
                             )}
                         </div>
 
-                        {/* Phone Number */}
+                        {/* Phone Number - now optional */}
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <Phone className="h-5 w-5 text-blue-500 dark:text-blue-400" />
@@ -371,10 +378,32 @@ const UserInfoForm = () => {
                                 className={`block w-full pl-10 pr-3 py-2.5 sm:py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
                                     errors.phone ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
                                 }`}
-                                placeholder="Enter your phone number"
+                                placeholder="Enter your phone number (optional)"
                             />
                             {errors.phone && (
                                 <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.phone}</p>
+                            )}
+                        </div>
+
+                        {/* Date of Birth */}
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <User className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+                            </div>
+                            <input
+                                type="date"
+                                name="dob"
+                                value={formData.dob}
+                                onChange={handleChange}
+                                className={`block w-full pl-10 pr-3 py-2.5 sm:py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                                    errors.dob ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
+                                }`}
+                                placeholder="Select your date of birth"
+                                max={new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split('T')[0]}
+                                min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]}
+                            />
+                            {errors.dob && (
+                                <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.dob}</p>
                             )}
                         </div>
 

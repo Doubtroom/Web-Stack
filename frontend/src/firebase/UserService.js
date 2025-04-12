@@ -28,8 +28,9 @@ class UserService {
                 gender: userData.gender,
                 role: userData.role,
                 collegeName: userData.collegeName,
+                dob: userData.dob,
                 createdAt: new Date().toISOString(),
-                email:userData.email
+                email: userData.email
             });
             return true;
         } catch (error) {

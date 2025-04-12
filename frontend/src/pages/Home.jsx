@@ -139,7 +139,7 @@ const Home = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 lg:py-12">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div className="flex items-center justify-between w-full sm:w-auto">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Recent Questions</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-blue-900 dark:text-blue-300">Recent Questions</h1>
             {/* Mobile Filter Button */}
             {userData.branch && (
               <div className="sm:hidden">

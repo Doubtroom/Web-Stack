@@ -121,13 +121,13 @@ const Navbar = () => {
         <div className="hidden lg:flex items-center space-x-6">
           <SliderSwitch/>
           <NavItem to='/home' icon={<Home className="w-4 h-4" />} label="Home" />
-          <NavItem to="/my-questions" icon={<HelpCircle className="w-4 h-4" />} label="My Contributions" />
+          <NavItem to="/my-questions" icon={<HelpCircle className="w-4 h-4" />} label="My Content" />
           <NavItem to="/my-college" icon={<School className="w-4 h-4" />} label="My College" />
           <NavItem to="/all-colleges" icon={<Grid className="w-4 h-4" />} label="All Colleges" />
           
-          <div className={`flex items-center text-sm text-white hover:bg-gray-100 lg:hover:bg-transparent lg:hover:text-gray-200 cursor-pointer p-1`} onClick={handleLogoutClick}>
-            <span className="mr-1">{<LogOut className="w-4 h-4" />}</span>
-            <span className="text-">{"Logout"}</span>
+          <div className={`flex items-center text-sm text-white hover:bg-gray-100 lg:hover:bg-transparent lg:hover:text-gray-200 cursor-pointer p-1 group`} onClick={handleLogoutClick}>
+            <span className="mr-1 group-hover:text-red-500"><LogOut className="w-4 h-4" /></span>
+            <span className="group-hover:text-red-500">{"Logout"}</span>
           </div>
           <NavLink to="/profile">
             <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
