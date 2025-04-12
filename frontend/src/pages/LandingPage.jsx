@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Instagram, Youtube, Linkedin, Menu, ChevronRight } from 'lucide-react';
+import { Search, Instagram, Youtube, Linkedin, Menu, ChevronRight, User, MessageSquare, CheckCircle, MessageCircle } from 'lucide-react';
 import { NavLink,Link } from 'react-router-dom';
 import Logo from '../assets/logoWhite.png';
 import { motion } from 'framer-motion';
@@ -98,7 +98,7 @@ const Navitem = ({ text, link = "", isScrolled }) => {
     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
       <NavLink
         to={link}
-        className={`text-base font-space transition-colors duration-200 ${
+        className={`text-base font-space transition-colors duration-200 cursor-pointer ${
           isScrolled 
             ? 'text-teal-400/80 hover:text-teal-400' 
             : 'text-white/80 hover:text-white'
@@ -112,7 +112,7 @@ const Navitem = ({ text, link = "", isScrolled }) => {
 
 const SocialLink = ({ icon, username, platform }) => {
   return (
-    <Link className="group">
+    <Link className="group cursor-pointer">
       <div className="flex items-center space-x-3 sm:space-x-4 transition-all duration-300 hover:scale-105">
         <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full border border-white/30 flex items-center justify-center text-white group-hover:border-teal-400 group-hover:bg-teal-400/10 group-hover:shadow-lg group-hover:shadow-teal-400/20 transition-all duration-300">
           <div className="group-hover:scale-110 transition-transform duration-300">
@@ -127,6 +127,83 @@ const SocialLink = ({ icon, username, platform }) => {
     </Link>
   )
 }
+
+const FeatureCard = ({ icon, title, description, delay }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      viewport={{ once: true }}
+      className="group relative p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-teal-400/30 transition-all duration-300"
+    >
+      <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-blue-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="relative z-10">
+        <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+          {icon}
+        </div>
+        <h3 className="text-xl font-bold text-white mb-2 group-hover:text-teal-400 transition-colors duration-300">{title}</h3>
+        <p className="text-white/70 text-sm">{description}</p>
+      </div>
+    </motion.div>
+  );
+};
+
+const FeaturesSection = () => {
+  const features = [
+    {
+      icon: <User size={24} className="text-teal-400" />,
+      title: "100% Anonymous",
+      description: "Ask questions without revealing your identity. Your privacy is our top priority."
+    },
+    {
+      icon: <MessageSquare size={24} className="text-teal-400" />,
+      title: "Easy Question Posting",
+      description: "Post your questions in seconds. No complicated forms or lengthy processes."
+    },
+    {
+      icon: <CheckCircle size={24} className="text-teal-400" />,
+      title: "Verified Faculty Answers",
+      description: "Get answers from verified faculty members. Look for the special faculty badge."
+    },
+    {
+      icon: <MessageCircle size={24} className="text-teal-400" />,
+      title: "Rich Discussions",
+      description: "Engage in meaningful discussions through comments and follow-up questions."
+    }
+  ];
+
+  return (
+    <section className="w-full py-20 bg-gradient-to-b from-transparent to-[#0a192f]/50">
+      <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-500">Doubtroom</span>
+          </h2>
+          <p className="text-white/70 max-w-2xl mx-auto">
+            Experience a modern way of learning where every question matters and every answer counts.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {features.map((feature, index) => (
+            <FeatureCard
+              key={index}
+              {...feature}
+              delay={index * 0.1}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
 
 const Footer = () => {
   return (
@@ -195,7 +272,7 @@ const HeroSection = () => {
               >
                 <Link to="/signup">
                   <motion.button 
-                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-teal-400 to-teal-500 text-white rounded-xl font-medium font-space hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-200 flex items-center justify-center gap-2 group"
+                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-teal-400 to-teal-500 text-white rounded-xl font-medium font-space hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -205,7 +282,7 @@ const HeroSection = () => {
                 </Link>
                 <Link to="/about">
                   <motion.button 
-                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl font-medium font-space hover:bg-white/20 transition-all duration-200"
+                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl font-medium font-space hover:bg-white/20 transition-all duration-200 cursor-pointer"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -250,14 +327,14 @@ const HeroSection = () => {
               </motion.div>
 
               <motion.div 
-                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-2 hidden lg:flex"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-2  lg:flex"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 }}
               >
                 <Link to="/signup">
                   <motion.button 
-                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-teal-400 to-teal-500 text-white rounded-xl font-medium font-space hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-200 flex items-center justify-center gap-2 group"
+                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-teal-400 to-teal-500 text-white rounded-xl font-medium font-space hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -267,7 +344,7 @@ const HeroSection = () => {
                 </Link>
                 <Link to="/about">
                   <motion.button 
-                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl font-medium font-space hover:bg-white/20 transition-all duration-200"
+                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl font-medium font-space hover:bg-white/20 transition-all duration-200 cursor-pointer"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -337,6 +414,7 @@ const DoubtRoomPage = () => {
       <div className="absolute inset-0 bg-grid-pattern opacity-5" />
       <NavBar />
       <HeroSection />
+      <FeaturesSection />
       <Footer/>
     </div>
   );
