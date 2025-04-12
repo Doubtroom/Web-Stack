@@ -27,7 +27,7 @@ const NavBar = () => {
       animate={{ y: 0 }}
       className={`fixed w-full z-50 transition-all duration-300 ${
         isScrolled || isMenuOpen
-          ? 'bg-[#0a192f]/90 shadow-lg' 
+          ? 'bg-[#0a192f]/80 backdrop-blur-md shadow-lg shadow-teal-500/10' 
           : 'bg-transparent'
       }`}
     >
@@ -42,9 +42,7 @@ const NavBar = () => {
           } flex items-center justify-center`}>
             <img src={Logo} alt="Logo" className="w-7 h-7" />
           </div>
-          <div className={`text-2xl font-bold ${
-            isScrolled || isMenuOpen ? 'text-teal-400' : 'text-white'
-          } font-space`}>Doubtroom</div>
+          <div className={`text-2xl font-bold text-white font-space`}>Doubtroom</div>
         </motion.div>
 
         <div className="hidden md:flex items-center gap-8">
@@ -171,7 +169,7 @@ const HeroSection = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col lg:flex-row items-center gap-8 py-8">
           <motion.div 
-            className="flex-1 text-center lg:text-left"
+            className="flex-1 text-center lg:text-left order-2 lg:order-1 mt-4 lg:mt-0"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -188,6 +186,33 @@ const HeroSection = () => {
                   Doubtroom
                 </span>
               </h1>
+
+              <motion.div 
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-2 lg:hidden"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+              >
+                <Link to="/signup">
+                  <motion.button 
+                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-teal-400 to-teal-500 text-white rounded-xl font-medium font-space hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-200 flex items-center justify-center gap-2 group"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="text-sm sm:text-base">Start Your Journey</span>
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+                  </motion.button>
+                </Link>
+                <Link to="/about">
+                  <motion.button 
+                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl font-medium font-space hover:bg-white/20 transition-all duration-200"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="text-sm sm:text-base">Learn More</span>
+                  </motion.button>
+                </Link>
+              </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -225,7 +250,7 @@ const HeroSection = () => {
               </motion.div>
 
               <motion.div 
-                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-2"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-2 hidden lg:flex"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 }}
@@ -254,7 +279,7 @@ const HeroSection = () => {
           </motion.div>
 
           <motion.div 
-            className="flex-1 relative flex flex-col items-center"
+            className="flex-1 relative flex flex-col items-center order-1 lg:order-2"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ 
@@ -264,39 +289,41 @@ const HeroSection = () => {
               damping: 15
             }}
           >
-            <div className="relative w-full max-w-[280px] sm:max-w-md md:max-w-lg lg:max-w-2xl mx-auto">
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-teal-500/30 to-blue-500/30 rounded-3xl blur-3xl"
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.3, 0.5, 0.3]
-                }}
-                transition={{
-                  duration: 4,
-                  repeat: Infinity,
-                  repeatType: "reverse"
-                }}
-              />
-              <motion.img 
-                src="https://doubtroom.sirv.com/Doubtroom/art2.png"
-                className="relative z-10 w-full h-auto object-contain"
-                alt="Doubtroom Illustration"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.3 }}
-              />
+            <div className="flex flex-col items-center gap-0">
+              <motion.h2 
+                className="text-xl sm:text-2xl md:text-3xl font-bold text-center max-w-[280px] sm:max-w-md md:max-w-2xl relative px-4 pb-0"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1 }}
+              >
+                <div className="absolute -left-4 top-0 text-3xl sm:text-4xl text-teal-400/20">"</div>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-violet-400">
+                  Ask Freely. Learn Boldly. Anonymously
+                </span>
+                <div className="absolute -right-4 bottom-0 text-3xl sm:text-4xl text-teal-400/20">"</div>
+              </motion.h2>
+              <div className="relative w-full max-w-[280px] sm:max-w-md md:max-w-lg lg:max-w-2xl mx-auto -mt-1">
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-teal-500/30 to-blue-500/30 rounded-3xl blur-3xl"
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                    opacity: [0.3, 0.5, 0.3]
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }}
+                />
+                <motion.img 
+                  src="https://doubtroom.sirv.com/Doubtroom/art2.png"
+                  className="relative z-10 w-full h-auto object-contain drop-shadow-2xl"
+                  alt="Doubtroom Illustration"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
             </div>
-            <motion.h2 
-              className="text-xl sm:text-2xl md:text-3xl font-bold mt-4 sm:mt-6 text-center max-w-[280px] sm:max-w-md md:max-w-2xl relative"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1 }}
-            >
-              <div className="absolute -left-4 top-0 text-3xl sm:text-4xl text-teal-400/20">"</div>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-violet-400">
-                Ask Freely. Learn Boldly. Anonymously
-              </span>
-              <div className="absolute -right-4 bottom-0 text-3xl sm:text-4xl text-teal-400/20">"</div>
-            </motion.h2>
           </motion.div>
         </div>
       </div>
