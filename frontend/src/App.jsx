@@ -21,6 +21,8 @@ import Protected from './layout/AuthLayout'
 import EditQuestion from './pages/EditQuestion'
 import ForgotPassword from './pages/ForgotPassword'
 import LearnMorePage from './pages/LearnMorePage'
+import CustomerSupportPage from './pages/CustomerSupportPage'
+
 function App() {
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
 
@@ -85,6 +87,7 @@ function App() {
             <Route path="/all-colleges" element={<AllColleges />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/search/:query" element={<SearchResults />} />
+            <Route path="/customer-support" element={<CustomerSupportPage />} />
           </Route>
 
           {/* Catch all route - redirect to home or landing based on auth status */}

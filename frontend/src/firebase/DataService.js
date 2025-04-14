@@ -437,6 +437,16 @@ class DataService {
       throw error;
     }
   }
+  async sendCustomerSupportQuery(data) {
+    this.checkAuth();
+    try {
+      const docRef = await addDoc(this.collectionRef, data);
+      return docRef.id; 
+    } catch (error) {
+      console.error('Error sending customer support query:', error);
+      throw error;
+    }
+  }
 }
 
 export default DataService;

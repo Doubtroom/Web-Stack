@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { NavLink, Link } from 'react-router-dom';
 import Logo from '../assets/logoWhite.png';
 import { Instagram, Youtube, Linkedin, Menu, ChevronRight } from 'lucide-react';
 import NavBar from '../components/LandingNavbar';
-import Footer from '../components/LandingFooter';
+import Footer from '../components/LandingFooter'    ;
 
 const StorySection = () => {
   return (

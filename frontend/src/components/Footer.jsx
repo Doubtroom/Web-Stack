@@ -58,17 +58,12 @@ function Footer({classNames}) {
                   </Link>
                 </li>
                 <li className="mb-2">
-                  <Link to="/help" className="hover:text-gray-200">
-                    Help
-                  </Link>
-                </li>
-                <li className="mb-2">
                   <Link to="/contact" className="hover:text-gray-200">
                     Contact Us
                   </Link>
                 </li>
                 <li>
-                  <Link to="/support" className="hover:text-gray-200">
+                  <Link to="/customer-support" className="hover:text-gray-200">
                     Customer Support
                   </Link>
                 </li>

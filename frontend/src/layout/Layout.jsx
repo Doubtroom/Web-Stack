@@ -14,7 +14,8 @@ const Layout = () => {
     '/profile',
     '/login',
     '/signup',
-    '/user-info'
+    '/user-info',
+    '/customer-support'
   ];
 
   const noFABPages = [
@@ -22,7 +23,8 @@ const Layout = () => {
     '/login',
     '/signup',
     '/user-info',
-    '/question/'
+    '/question/',
+    '/customer-support'
   ];
 
   const shouldShowSearch = !noSearchPages.some(path => location.pathname.startsWith(path));
