@@ -79,11 +79,26 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
+    // Add passive: true for better performance
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [lastScrollY, navbarVisibility]);
+
+  // Safari-specific fix: Force a re-render when visibility changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+      if (isSafari) {
+        const forceUpdate = () => {
+          setNavbarVisibility(prev => prev);
+        };
+        window.addEventListener('scroll', forceUpdate, { passive: true });
+        return () => window.removeEventListener('scroll', forceUpdate);
+      }
+    }
+  }, []);
 
   return (
     <>
@@ -96,7 +111,9 @@ const Navbar = () => {
         style={{ 
           opacity: navbarVisibility,
           transform: `translateY(${-100 + (navbarVisibility * 100)}%)`,
-          transition: 'opacity 0.3s ease, transform 0.3s ease'
+          transition: 'opacity 0.3s ease, transform 0.3s ease',
+          // Safari-specific fix: Add will-change property
+          willChange: 'transform, opacity'
         }}
       >
         <div className="flex gap-4 sm:gap-5 md:gap-7">
@@ -165,9 +182,7 @@ const Navbar = () => {
                       onClick={() => setIsOpen(false)}
                     >
                       <User className="w-5 h-5 mr-3" />
-                      <NavLink to="/profile">
-                        <span>Profile</span>
-                      </NavLink>
+                      <span>Profile</span>
                     </NavLink>
                     <div 
                       className="flex items-center text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md cursor-pointer p-3 transition-colors duration-200" 

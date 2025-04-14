@@ -114,7 +114,7 @@ const Profile = () => {
     <div className={`min-h-screen p-3 sm:p-6 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       <div className="max-w-4xl mx-auto mt-12 sm:mt-20">
         {/* Profile Header */}
-        <div className={`rounded-t-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? 'bg-gradient-to-r from-gray-800 to-gray-700' : 'bg-gradient-to-r from-blue-500 to-blue-600'} text-white relative`}>
+        <div className={`rounded-t-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? 'bg-gradient-to-r from-gray-800 to-gray-700' : 'bg-gradient-to-r from-[#1e6eab] to-[#02254b]'} text-white relative`}>
           <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
             {!isEditing ? (
               <button

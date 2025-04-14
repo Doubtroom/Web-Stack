@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './layout/Layout';
@@ -16,6 +16,7 @@ import MyCollege from './pages/MyCollege';
 import AllColleges from './pages/AllColleges';
 import Profile from './pages/Profile';
 import SearchResults from './pages/SearchResults';
+import ContactUs from './pages/ContactUs';
 import { Toaster } from 'sonner';
 import Protected from './layout/AuthLayout'
 import EditQuestion from './pages/EditQuestion'
@@ -25,6 +26,13 @@ import CustomerSupportPage from './pages/CustomerSupportPage'
 
 function App() {
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
+
+  useEffect(() => {
+    const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+    if (isMac) {
+      document.body.style.zoom = '110%';
+    }
+  }, []);
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
@@ -88,6 +96,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/search/:query" element={<SearchResults />} />
             <Route path="/customer-support" element={<CustomerSupportPage />} />
+            <Route path="/contact" element={<ContactUs />} />
           </Route>
 
           {/* Catch all route - redirect to home or landing based on auth status */}

@@ -5,18 +5,15 @@ import { motion } from 'framer-motion';
 
 const StyledButton = styled(Button)(({ theme }) => ({
   borderRadius: '12px',
-  padding: '8px 16px',
+  padding: '8px',
   textTransform: 'none',
   transition: 'all 0.3s ease-in-out',
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
-  minWidth: '120px',
   justifyContent: 'center',
+  minWidth: '40px',
+  height: '40px',
   backdropFilter: 'blur(8px)',
-  '@media (min-width: 640px)': {
-    minWidth: '160px',
-  },
   '&:hover': {
     transform: 'translateY(-2px)',
   },
@@ -31,12 +28,12 @@ const DropdownMenu = styled('div')(({ theme }) => ({
   borderRadius: '12px',
   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
   padding: '8px',
-  minWidth: '160px',
+  minWidth: '120px',
   zIndex: 50,
   border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
 }));
 
-const FilterButton = ({ isActive, onClick, activeText, inactiveText }) => {
+const MobileFilterButton = ({ isActive, onClick, activeText, inactiveText }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -80,20 +77,9 @@ const FilterButton = ({ isActive, onClick, activeText, inactiveText }) => {
             hover:border-primary-700 dark:hover:border-primary-500
             hover:shadow-lg dark:hover:shadow-gray-900/30
             transition-all duration-300
-            text-sm sm:text-base
-            px-3 sm:px-4
-            py-2 sm:py-2.5
           `}
-          sx={{
-            '& .MuiSvgIcon-root': {
-              color: isActive 
-                ? 'white' 
-                : 'currentColor',
-            }
-          }}
         >
-          <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
-          {isActive ? activeText : inactiveText}
+          <Filter className="w-5 h-5" />
         </StyledButton>
       </motion.div>
 
@@ -102,7 +88,7 @@ const FilterButton = ({ isActive, onClick, activeText, inactiveText }) => {
           <button
             onClick={handleOptionClick}
             className={`
-              w-full text-left px-3 py-2 rounded-lg text-sm sm:text-base
+              w-full text-left px-3 py-2 rounded-lg text-sm
               flex items-center gap-2
               ${isActive 
                 ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' 
@@ -119,4 +105,4 @@ const FilterButton = ({ isActive, onClick, activeText, inactiveText }) => {
   );
 };
 
-export default FilterButton; 
+export default MobileFilterButton; 

@@ -14,9 +14,7 @@ class DataService {
     
     // Enable persistent authentication
     setPersistence(this.auth, browserLocalPersistence)
-      .then(() => {
-        console.log("");
-      })
+      .then(() => {})
       .catch((error) => {
         console.error("Error enabling auth persistence:", error);
       });
@@ -148,7 +146,6 @@ class DataService {
       if (docSnap.exists()) {
         return { id: docSnap.id, ...docSnap.data() };
       } else {
-        console.log('No such document!');
         return null;
       }
     } catch (error) {

@@ -6,6 +6,7 @@ import DataService from '../firebase/DataService'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { toast } from 'sonner'
 import FilterButton from '../components/FilterButton'
+import MobileFilterButton from '../components/MobileFilterButton'
 import placeholder from '../assets/placeholder.png'
 
 const Home = () => {
@@ -139,16 +140,16 @@ const Home = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 lg:py-12">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div className="flex items-center justify-between w-full sm:w-auto">
-            <h1 className="text-3xl sm:text-4xl font-bold text-blue-900 dark:text-blue-300">Recent Questions</h1>
+            <h1 className="text-2xl sm:text-4xl font-bold text-blue-900 dark:text-blue-300">Recent Questions</h1>
             {/* Mobile Filter Button */}
             {userData.branch && (
               <div className="sm:hidden">
-                <FilterButton
+                <MobileFilterButton
                   isActive={showMyBranch}
                   onClick={() => setShowMyBranch(!showMyBranch)}
-                >
-                  {showMyBranch ? 'All' : 'My Branch'}
-                </FilterButton>
+                  activeText="Show My Branch Only"
+                  inactiveText="Show All Questions"
+                />
               </div>
             )}
           </div>
@@ -158,9 +159,9 @@ const Home = () => {
               <FilterButton
                 isActive={showMyBranch}
                 onClick={() => setShowMyBranch(!showMyBranch)}
-              >
-                {showMyBranch ? 'Show All Questions' : `Show My Branch Only`}
-              </FilterButton>
+                activeText="Show My Branch Only"
+                inactiveText="Show All Questions"
+              />
             </div>
           )}
         </div>

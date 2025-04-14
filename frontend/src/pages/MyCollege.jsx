@@ -7,6 +7,7 @@ import CollegeCard from '../components/CollegeCard';
 import { toast } from 'sonner';
 import LoadingSpinner from '../components/LoadingSpinner';
 import FilterButton from '../components/FilterButton';
+import MobileFilterButton from '../components/MobileFilterButton';
 import placeholder from '../assets/placeholder.png'
 
 const MyCollege = () => {
@@ -104,38 +105,37 @@ const MyCollege = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 lg:mt-16">
       {/* Questions Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:py-12">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div className="flex items-center justify-between w-full sm:w-auto">
-            <div className="flex items-center gap-3">
-              <Building2 className="w-16 h-16 lg:w-8 lg:h-8 text-blue-900 dark:text-blue-300" />
-              <h1 className="text-3xl sm:text-4xl font-bold text-blue-900 dark:text-blue-300 break-words max-w-[300px] sm:max-w-[400px] md:max-w-[500px]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-12">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+            <div className="flex items-center gap-2">
+              <Building2 className="w-6 h-6 lg:w-8 lg:h-8 text-blue-900 dark:text-blue-300" />
+              <h1 className="text-xl sm:text-4xl font-bold text-blue-900 dark:text-blue-300 break-words max-w-[250px] sm:max-w-[400px] md:max-w-[500px]">
                 {userData.collegeName || 'Your College'}
               </h1>
             </div>
             {/* Mobile Filter Button */}
             {userData.branch && (
               <div className="sm:hidden">
-                <FilterButton
+                <MobileFilterButton
                   isActive={showMyBranch}
                   onClick={() => setShowMyBranch(!showMyBranch)}
-                >
-                  {showMyBranch ? 'All' : 'My Branch'}
-                </FilterButton>
+                  activeText="Show My Branch Only"
+                  inactiveText="Show All Questions"
+                />
               </div>
             )}
           </div>
           <div className="flex items-center gap-4">
-
             {/* Desktop Filter Button */}
             {userData.branch && (
               <div className="hidden sm:block">
                 <FilterButton
                   isActive={showMyBranch}
                   onClick={() => setShowMyBranch(!showMyBranch)}
-                >
-                  {showMyBranch ? 'Show All Questions' : `Show My Branch Only`}
-                </FilterButton>
+                  activeText="Show My Branch Only"
+                  inactiveText="Show All Questions"
+                />
               </div>
             )}
           </div>

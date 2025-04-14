@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
 import { useSelector } from 'react-redux';
 
 function Footer({classNames}) {
@@ -24,31 +24,6 @@ function Footer({classNames}) {
 
           {/* Links Section */}
           <div className="w-full md:w-1/3 flex flex-col md:flex-row justify-between">
-            <div className="mb-6 md:mb-0">
-              <h3 className="font-semibold mb-4 text-lg">Company</h3>
-              <ul>
-                <li className="mb-2">
-                  <Link target='_blank' to="/features" className="hover:text-gray-200">
-                    Features
-                  </Link>
-                </li>
-                <li className="mb-2">
-                  <Link target='_blank' to="/pricing" className="hover:text-gray-200">
-                    Pricing
-                  </Link>
-                </li>
-                <li className="mb-2">
-                  <Link target='_blank' to="/affiliate" className="hover:text-gray-200">
-                    Affiliate Program
-                  </Link>
-                </li>
-                <li>
-                  <Link target='_blank' to="/press" className="hover:text-gray-200">
-                    Press Kit
-                  </Link>
-                </li>
-              </ul>
-            </div>
             <div>
               <h3 className="font-semibold mb-4 text-lg">Support</h3>
               <ul>
@@ -75,17 +50,23 @@ function Footer({classNames}) {
           <div className="w-full md:w-1/4 flex flex-col items-start">
             <h3 className="font-semibold mb-4 text-lg">Follow Us</h3>
             <div className="space-x-4">
-                <Link to="#" className="hover:text-gray-200">
-                    <Facebook />
+                <Link to="https://www.youtube.com/@Doubt_Room" target='_blank' className="hover:text-gray-200">
+                  <div className='flex items-center gap-2'>
+                  <Youtube/>
+                  Youtube
+                  </div>
                 </Link>
-                <Link to="#" className="hover:text-gray-200">
-                    <Twitter/>
-                </Link>
-                <Link to="#" className="hover:text-gray-200">
+                <Link to="https://www.instagram.com/doubt_room?igsh=eXQxaTUxOTdiZDRz" target='_blank' className="hover:text-gray-200">
+                    <div className='flex items-center gap-2'>
                     <Instagram />
+                    Instagram
+                    </div>
                 </Link>
-                <Link to="#" className="hover:text-gray-200">
+                <Link to="https://www.linkedin.com/company/doubt-room" target='_blank' className="hover:text-gray-200">
+                    <div className='flex items-center gap-2'>
                     <Linkedin/>
+                    LinkedIn
+                    </div>
                 </Link>
             </div>
           </div>
