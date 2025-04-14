@@ -20,6 +20,7 @@ import { Toaster } from 'sonner';
 import Protected from './layout/AuthLayout'
 import EditQuestion from './pages/EditQuestion'
 import ForgotPassword from './pages/ForgotPassword'
+import LearnMorePage from './pages/LearnMorePage'
 function App() {
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
 
@@ -41,6 +42,11 @@ function App() {
           <Route path="/landing" element={
             <Protected authentication={false}>
               <LandingPage />
+            </Protected>
+          } />
+          <Route path="/about" element={
+            <Protected authentication={false}>
+              <LearnMorePage />
             </Protected>
           } />
           <Route path="/login" element={
