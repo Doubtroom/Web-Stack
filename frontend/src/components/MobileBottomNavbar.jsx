@@ -4,7 +4,7 @@ import { Home, HelpCircle, School, Grid } from 'lucide-react'
 
 function MobileBottomNavbar() {
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-30">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-30">
     <div className="flex justify-around items-center h-16">
       <NavLink 
         to="/home" 

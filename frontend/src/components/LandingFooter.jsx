@@ -35,7 +35,7 @@ const Footer = () => {
                 icon={<Youtube size={18} className="sm:w-5 sm:h-5" />} 
                 platform="Build with us" 
                 username="Youtube" 
-                link="https://www.youtube.com/@doubtroom"
+                link="https://www.youtube.com/@Doubt_Room"
               />
               <SocialLink 
                 icon={<Linkedin size={18} className="sm:w-5 sm:h-5" />} 
