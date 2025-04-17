@@ -111,7 +111,7 @@ const HeroSection = () => {
               </h1>
 
               <motion.div 
-                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-2 lg:hidden"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-2 lg:hidden pb-2"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 }}
@@ -170,33 +170,6 @@ const HeroSection = () => {
                     syllabus, and pace.
                   </p>
                 </div>
-              </motion.div>
-
-              <motion.div 
-                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-2  lg:flex"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
-              >
-                <Link to="/signup">
-                  <motion.button 
-                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-teal-400 to-teal-500 text-white rounded-xl font-medium font-space hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span className="text-sm sm:text-base">Start Your Journey</span>
-                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
-                  </motion.button>
-                </Link>
-                <Link to="/about">
-                  <motion.button 
-                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl font-medium font-space hover:bg-white/20 transition-all duration-200 cursor-pointer"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span className="text-sm sm:text-base">Learn More</span>
-                  </motion.button>
-                </Link>
               </motion.div>
             </motion.div>
           </motion.div>
