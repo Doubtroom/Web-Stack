@@ -62,13 +62,9 @@ const CollegeCard = ({ id, collegeName, img, branch, topic, noOfAnswers, postedO
     >
       <div className="p-5 border-b border-gray-100 dark:border-gray-700">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-[#173f67] dark:text-blue-400 font-bold text-xl mb-1 line-clamp-1">{collegeName}</h2>
+          <div className="min-w-[200px]">
+            <h2 className="text-[#173f67] dark:text-blue-400 font-bold text-xl mb-1 line-clamp-2 min-h-[3rem]">{collegeName}</h2>
             <p className="text-gray-600 dark:text-gray-300 text-sm">{formatBranchName(branch)}</p>
-          </div>
-          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-            <Clock size={16} />
-            <span className="text-xs w-20">{getTimeAgo(postedOn)}</span>
           </div>
         </div>
       </div>
@@ -89,32 +85,30 @@ const CollegeCard = ({ id, collegeName, img, branch, topic, noOfAnswers, postedO
 
       {/* Content Section */}
       <div className="p-5">
-        <h3 className="text-gray-900 dark:text-white font-semibold text-lg mb-3 line-clamp-2 whitespace-nowrap overflow-hidden text-ellipsis">{topic}</h3>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button 
-              onClick={handleAnswerClick}
-              variant="ghost"
-              size="sm"
-              className="text-[#173f67] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
-            >
-              <MessageSquare className="w-4 h-4 mr-1" />
-              <span>Answer</span>
-            </Button>
-            {/* <Button 
-              onClick={(e) => e.stopPropagation()}
-              variant="ghost"
-              size="sm"
-              className="text-[#173f67] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
-            >
-              <Lightbulb className="w-4 h-4 mr-1" />
-              <span>Hints</span>
-            </Button> */}
+        <div className='flex flex-col gap-2'>
+          <div className="flex items-center justify-between">
+            <h3 className="text-gray-900 dark:text-white font-semibold text-lg whitespace-nowrap overflow-hidden">{topic}</h3>
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            {noOfAnswers} answers
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+              <Clock size={16} />
+              <span className="text-xs">{getTimeAgo(postedOn)}</span>
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              {noOfAnswers} answers
+            </div>
           </div>
+        </div>
+        <div className="flex items-center justify-start mt-4">
+          <Button 
+            onClick={handleAnswerClick}
+            variant="ghost"
+            size="sm"
+            className="text-[#173f67] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+          >
+            <MessageSquare className="w-4 h-4 mr-1" />
+            <span>Answer</span>
+          </Button>
         </div>
       </div>
     </div>
