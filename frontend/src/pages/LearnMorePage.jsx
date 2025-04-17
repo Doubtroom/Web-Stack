@@ -197,15 +197,36 @@ const FinalSection = () => {
             You've just been unheard—until now.
           </p>
 
-          <div className="mt-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-12 flex justify-center"
+          >
             <Link 
               to="/signup" 
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-400 to-teal-500 text-white rounded-xl font-medium font-space hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-200"
+              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-teal-400 to-teal-500 text-white rounded-xl font-medium font-space hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-300 overflow-hidden"
             >
-              Start Your Journey
-              <ChevronRight className="w-5 h-5" />
+              <span className="relative z-10">Start Your Journey</span>
+              <motion.div
+                className="relative z-10 w-5 h-5"
+                initial={{ x: 0 }}
+                animate={{ x: [0, 4, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </motion.div>
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-teal-500 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                initial={{ x: '-100%' }}
+                whileHover={{ x: '0%' }}
+                transition={{ duration: 0.3 }}
+              />
             </Link>
-          </div>
+          </motion.div>
         </motion.div>
       </div>
     </section>
