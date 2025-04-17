@@ -197,18 +197,15 @@ const FinalSection = () => {
             You've just been unheard—until now.
           </p>
 
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="mt-8"
-          >
-            <Link to="/signup">
-            <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-400 to-teal-500 text-white rounded-xl font-medium font-space hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-200">
+          <div className="mt-8">
+            <Link 
+              to="/signup" 
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-400 to-teal-500 text-white rounded-xl font-medium font-space hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-200"
+            >
               Start Your Journey
               <ChevronRight className="w-5 h-5" />
-            </div>
             </Link>
-          </motion.div>
+          </div>
         </motion.div>
       </div>
     </section>

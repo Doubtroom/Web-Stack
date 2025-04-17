@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, GraduationCap, Phone, User, Briefcase } from 'lucide-react';
+import { Building2, GraduationCap, Phone, User, Briefcase, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import userService from '../firebase/UserService';
 import { useDispatch } from 'react-redux';
@@ -11,6 +11,7 @@ const UserInfoForm = () => {
     const dispatch = useDispatch();
     const [formData, setFormData] = useState({
         collegeName: '',
+        otherCollege: '',
         branch: '',
         otherBranch: '',
         studyType: '',
@@ -21,6 +22,12 @@ const UserInfoForm = () => {
     });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const [dobInput, setDobInput] = useState({
+        day: '',
+        month: '',
+        year: ''
+    });
+    const [dobCursor, setDobCursor] = useState(0);
     
     // Check if user is coming from signup
     const fromSignup = localStorage.getItem("fromSignup") === "true";
@@ -117,11 +124,69 @@ const UserInfoForm = () => {
         { value: 'custom', label: 'Other (Specify)' }
     ];
 
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0];
+    };
+
+    const handleDateChange = (e) => {
+        const { name, value } = e.target;
+        let formattedDate = value;
+        
+        // If it's a date input, format it properly
+        if (e.target.type === 'date') {
+            formattedDate = formatDate(value);
+        } else {
+            // For text input, validate and format as user types
+            const cleaned = value.replace(/\D/g, '');
+            if (cleaned.length > 0) {
+                const year = cleaned.slice(0, 4);
+                const month = cleaned.slice(4, 6);
+                const day = cleaned.slice(6, 8);
+                
+                if (cleaned.length <= 4) {
+                    formattedDate = year;
+                } else if (cleaned.length <= 6) {
+                    formattedDate = `${year}-${month}`;
+                } else {
+                    formattedDate = `${year}-${month}-${day}`;
+                }
+            }
+        }
+        
+        setFormData(prev => ({ ...prev, [name]: formattedDate }));
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: '' }));
+        }
+    };
+
+    const validateDate = (dateString) => {
+        if (!dateString) return 'Date of Birth is required';
+        
+        const date = new Date(dateString);
+        const today = new Date();
+        const minDate = new Date();
+        minDate.setFullYear(today.getFullYear() - 100);
+        const maxDate = new Date();
+        maxDate.setFullYear(today.getFullYear() - 13);
+
+        if (isNaN(date.getTime())) return 'Please enter a valid date';
+        if (date < minDate || date > maxDate) {
+            return 'Please enter a valid date of birth (between 13 and 100 years)';
+        }
+        return '';
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name === 'collegeName') {
-            const selectedCollege = colleges.find(college => college.value === value);
-            setFormData(prev => ({ ...prev, [name]: selectedCollege ? selectedCollege.label : value }));
+            if (value === 'custom') {
+                setFormData(prev => ({ ...prev, [name]: 'Other (Specify)' }));
+            } else {
+                const selectedCollege = colleges.find(college => college.value === value);
+                setFormData(prev => ({ ...prev, [name]: selectedCollege ? selectedCollege.label : value }));
+            }
         } else if (name === 'phone') {
             // Remove all whitespace and non-digit characters from phone number
             const cleanPhoneNumber = value.replace(/\D/g, '');
@@ -165,19 +230,9 @@ const UserInfoForm = () => {
         }
         
         // DOB validation
-        if (!formData.dob) {
-            newErrors.dob = 'Date of Birth is required';
-        } else {
-            const dob = new Date(formData.dob);
-            const today = new Date();
-            const minDate = new Date();
-            minDate.setFullYear(today.getFullYear() - 100); // 100 years ago
-            const maxDate = new Date();
-            maxDate.setFullYear(today.getFullYear() - 13); // 13 years ago (minimum age)
-
-            if (dob < minDate || dob > maxDate) {
-                newErrors.dob = 'Please enter a valid date of birth (between 13 and 100 years)';
-            }
+        const dobError = validateDate(formData.dob);
+        if (dobError) {
+            newErrors.dob = dobError;
         }
         
         // Gender validation
@@ -202,11 +257,19 @@ const UserInfoForm = () => {
                 ? formData.otherBranch.toLowerCase().replace(/\s+/g, '_')
                 : formData.branch;
 
+            // Get the college name based on selection
+            let collegeName;
+            if (formData.collegeName === 'Other (Specify)') {
+                collegeName = formData.otherCollege.trim();
+            } else {
+                collegeName = formData.collegeName.trim();
+            }
+
             const updatedUserData = {
                 uid: existingUserData.uid,
                 email: existingUserData.email,
                 displayName: existingUserData.displayName,
-                collegeName: formData.collegeName.trim(),
+                collegeName: collegeName,
                 role: formData.role,
                 branch: formattedBranch,
                 studyType: formData.role === 'faculty' ? '--faculty' : formData.studyType,
@@ -232,6 +295,77 @@ const UserInfoForm = () => {
             toast.error('Failed to save profile information');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleDobKeyDown = (e) => {
+        const { key } = e;
+        const currentValue = dobInput;
+        const cursor = dobCursor;
+
+        // Allow navigation keys
+        if (['ArrowLeft', 'ArrowRight', 'Backspace', 'Delete', 'Tab'].includes(key)) {
+            if (key === 'ArrowLeft' && cursor > 0) {
+                setDobCursor(cursor - 1);
+            } else if (key === 'ArrowRight' && cursor < 10) {
+                setDobCursor(cursor + 1);
+            } else if (key === 'Backspace' && cursor > 0) {
+                const newValue = currentValue.split('');
+                if (newValue[cursor - 1] !== '/') {
+                    newValue[cursor - 1] = '-';
+                    setDobInput(newValue.join(''));
+                    setDobCursor(cursor - 1);
+                } else {
+                    setDobCursor(cursor - 1);
+                }
+            } else if (key === 'Delete' && cursor < 10) {
+                const newValue = currentValue.split('');
+                if (newValue[cursor] !== '/') {
+                    newValue[cursor] = '-';
+                    setDobInput(newValue.join(''));
+                }
+            }
+            return;
+        }
+
+        // Only allow numbers
+        if (!/^\d$/.test(key)) {
+            e.preventDefault();
+            return;
+        }
+
+        // Handle number input
+        const newValue = currentValue.split('');
+        if (cursor < 10) {
+            if (cursor === 2 || cursor === 5) {
+                setDobCursor(cursor + 1);
+            }
+            if (newValue[cursor] !== '/') {
+                newValue[cursor] = key;
+                setDobInput(newValue.join(''));
+                setDobCursor(cursor + 1);
+            }
+        }
+    };
+
+    const handleDobChange = (e) => {
+        const { name, value } = e.target;
+        // Only allow numbers
+        const numericValue = value.replace(/\D/g, '');
+        
+        // Set max lengths and validate
+        if (name === 'day' && numericValue.length <= 2) {
+            setDobInput(prev => ({ ...prev, [name]: numericValue }));
+        } else if (name === 'month' && numericValue.length <= 2) {
+            setDobInput(prev => ({ ...prev, [name]: numericValue }));
+        } else if (name === 'year' && numericValue.length <= 4) {
+            setDobInput(prev => ({ ...prev, [name]: numericValue }));
+        }
+
+        // Update form data when all fields are filled
+        if (dobInput.day.length === 2 && dobInput.month.length === 2 && dobInput.year.length === 4) {
+            const formattedDate = `${dobInput.day}-${dobInput.month}-${dobInput.year}`;
+            setFormData(prev => ({ ...prev, dob: formattedDate }));
         }
     };
 
@@ -411,24 +545,55 @@ const UserInfoForm = () => {
                         </div>
 
                         {/* Date of Birth */}
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <User className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Date of Birth
+                            </label>
+                            <div className="flex items-center space-x-2">
+                                <div className="relative flex-1">
+                                    <input
+                                        type="text"
+                                        name="day"
+                                        value={dobInput.day}
+                                        onChange={handleDobChange}
+                                        className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                                            errors.dob ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
+                                        }`}
+                                        placeholder="DD"
+                                        maxLength={2}
+                                    />
+                                </div>
+                                <span className="text-gray-500 dark:text-gray-400">/</span>
+                                <div className="relative flex-1">
+                                    <input
+                                        type="text"
+                                        name="month"
+                                        value={dobInput.month}
+                                        onChange={handleDobChange}
+                                        className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                                            errors.dob ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
+                                        }`}
+                                        placeholder="MM"
+                                        maxLength={2}
+                                    />
+                                </div>
+                                <span className="text-gray-500 dark:text-gray-400">/</span>
+                                <div className="relative flex-1">
+                                    <input
+                                        type="text"
+                                        name="year"
+                                        value={dobInput.year}
+                                        onChange={handleDobChange}
+                                        className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                                            errors.dob ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
+                                        }`}
+                                        placeholder="YYYY"
+                                        maxLength={4}
+                                    />
+                                </div>
                             </div>
-                            <input
-                                type="date"
-                                name="dob"
-                                value={formData.dob}
-                                onChange={handleChange}
-                                className={`block w-full pl-10 pr-3 py-2.5 sm:py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
-                                    errors.dob ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
-                                }`}
-                                placeholder="Select your date of birth"
-                                max={new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split('T')[0]}
-                                min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]}
-                            />
                             {errors.dob && (
-                                <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.dob}</p>
+                                <p className="text-sm text-red-500 dark:text-red-400">{errors.dob}</p>
                             )}
                         </div>
 
