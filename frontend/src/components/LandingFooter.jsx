@@ -47,7 +47,7 @@ const Footer = () => {
           </div>
           <div className="mt-2 text-center">
             <div className="text-white/60 text-xs sm:text-sm">
-              © 2024 Doubtroom. All rights reserved.
+              © {new Date().getFullYear()} Doubtroom. All rights reserved.
             </div>
           </div>
         </div>
