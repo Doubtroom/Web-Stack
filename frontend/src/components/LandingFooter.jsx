@@ -24,7 +24,7 @@ const Footer = () => {
       <footer className="w-full border-t border-white/20 py-4 bg-gradient-to-b from-transparent to-[#0a192f]/50">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center space-y-4">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-12">
+            <div className="flex flex-col sm:flex-row  sm:items-start gap-4 sm:gap-12">
               <SocialLink 
                 icon={<Instagram size={18} className="sm:w-5 sm:h-5" />} 
                 platform="Join US" 

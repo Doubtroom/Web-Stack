@@ -58,47 +58,37 @@ const Navbar = () => {
   const handleScroll = () => {
     const currentScrollY = window.scrollY;
     
-    // Calculate scroll direction and distance
-    const scrollDiff = lastScrollY - currentScrollY;
-    
-    // If scrolling up
-    if (scrollDiff > 0) {
-      // Gradually increase visibility as user scrolls up
-      // The more they scroll up, the more visible the navbar becomes
-      const newVisibility = Math.min(1, navbarVisibility + (scrollDiff * 0.01));
-      setNavbarVisibility(newVisibility);
+    // Show navbar when scrolling up or at the top
+    if (currentScrollY < lastScrollY || currentScrollY < 50) {
+      setNavbarVisibility(1);
     } 
-    // If scrolling down
-    else if (scrollDiff < 0) {
-      // Gradually decrease visibility as user scrolls down
-      const newVisibility = Math.max(0, navbarVisibility - (Math.abs(scrollDiff) * 0.01));
-      setNavbarVisibility(newVisibility);
+    // Hide navbar when scrolling down and not at the top
+    else if (currentScrollY > lastScrollY && currentScrollY > 50) {
+      setNavbarVisibility(0);
     }
     
     setLastScrollY(currentScrollY);
   };
 
   useEffect(() => {
-    // Add passive: true for better performance
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [lastScrollY, navbarVisibility]);
-
-  // Safari-specific fix: Force a re-render when visibility changes
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-      if (isSafari) {
-        const forceUpdate = () => {
-          setNavbarVisibility(prev => prev);
-        };
-        window.addEventListener('scroll', forceUpdate, { passive: true });
-        return () => window.removeEventListener('scroll', forceUpdate);
+    let timeoutId;
+    
+    const throttledScroll = () => {
+      if (!timeoutId) {
+        timeoutId = setTimeout(() => {
+          handleScroll();
+          timeoutId = null;
+        }, 100); // Throttle to run max every 100ms
       }
-    }
-  }, []);
+    };
+
+    window.addEventListener("scroll", throttledScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener("scroll", throttledScroll);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [lastScrollY]);
 
   return (
     <>
@@ -110,9 +100,8 @@ const Navbar = () => {
         } shadow-sm`}
         style={{ 
           opacity: navbarVisibility,
-          transform: `translateY(${-100 + (navbarVisibility * 100)}%)`,
-          transition: 'opacity 0.3s ease, transform 0.3s ease',
-          // Safari-specific fix: Add will-change property
+          transform: `translateY(${navbarVisibility === 0 ? '-100%' : '0%'})`,
+          transition: 'all 0.3s ease',
           willChange: 'transform, opacity'
         }}
       >
