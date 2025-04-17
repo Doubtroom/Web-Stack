@@ -161,21 +161,71 @@ const UserInfoForm = () => {
         }
     };
 
-    const validateDate = (dateString) => {
-        if (!dateString) return 'Date of Birth is required';
+    const validateDate = () => {
+        const { day, month, year } = dobInput;
         
-        const date = new Date(dateString);
-        const today = new Date();
-        const minDate = new Date();
-        minDate.setFullYear(today.getFullYear() - 100);
-        const maxDate = new Date();
-        maxDate.setFullYear(today.getFullYear() - 13);
-
-        if (isNaN(date.getTime())) return 'Please enter a valid date';
-        if (date < minDate || date > maxDate) {
-            return 'Please enter a valid date of birth (between 13 and 100 years)';
+        // Check if all fields are filled
+        if (!day || !month || !year) {
+            return 'Date of Birth is required';
         }
+
+        // Convert to numbers for validation
+        const dayNum = parseInt(day);
+        const monthNum = parseInt(month);
+        const yearNum = parseInt(year);
+
+        // Basic validation
+        if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) {
+            return 'Please enter valid numbers';
+        }
+
+        // Validate ranges
+        if (dayNum < 1 || dayNum > 31) {
+            return 'Day must be between 1 and 31';
+        }
+        if (monthNum < 1 || monthNum > 12) {
+            return 'Month must be between 1 and 12';
+        }
+        if (yearNum < 1900 || yearNum > new Date().getFullYear()) {
+            return `Year must be between 1900 and ${new Date().getFullYear()}`;
+        }
+
+        // Validate specific month days
+        const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
+        if (dayNum > daysInMonth) {
+            return `Invalid day for the selected month`;
+        }
+
         return '';
+    };
+
+    const handleDobChange = (e) => {
+        const { name, value } = e.target;
+        // Only allow numbers
+        const numericValue = value.replace(/\D/g, '');
+        
+        // Set max lengths and validate
+        if (name === 'day' && numericValue.length <= 2) {
+            setDobInput(prev => ({ ...prev, [name]: numericValue }));
+        } else if (name === 'month' && numericValue.length <= 2) {
+            setDobInput(prev => ({ ...prev, [name]: numericValue }));
+        } else if (name === 'year' && numericValue.length <= 4) {
+            setDobInput(prev => ({ ...prev, [name]: numericValue }));
+        }
+
+        // Update form data when all fields are filled
+        if (dobInput.day.length === 2 && dobInput.month.length === 2 && dobInput.year.length === 4) {
+            const formattedDate = `${dobInput.day}-${dobInput.month}-${dobInput.year}`;
+            setFormData(prev => ({ ...prev, dob: formattedDate }));
+            
+            // Validate the date
+            const error = validateDate();
+            if (error) {
+                setErrors(prev => ({ ...prev, dob: error }));
+            } else {
+                setErrors(prev => ({ ...prev, dob: '' }));
+            }
+        }
     };
 
     const handleChange = (e) => {
@@ -230,7 +280,7 @@ const UserInfoForm = () => {
         }
         
         // DOB validation
-        const dobError = validateDate(formData.dob);
+        const dobError = validateDate();
         if (dobError) {
             newErrors.dob = dobError;
         }
@@ -345,27 +395,6 @@ const UserInfoForm = () => {
                 setDobInput(newValue.join(''));
                 setDobCursor(cursor + 1);
             }
-        }
-    };
-
-    const handleDobChange = (e) => {
-        const { name, value } = e.target;
-        // Only allow numbers
-        const numericValue = value.replace(/\D/g, '');
-        
-        // Set max lengths and validate
-        if (name === 'day' && numericValue.length <= 2) {
-            setDobInput(prev => ({ ...prev, [name]: numericValue }));
-        } else if (name === 'month' && numericValue.length <= 2) {
-            setDobInput(prev => ({ ...prev, [name]: numericValue }));
-        } else if (name === 'year' && numericValue.length <= 4) {
-            setDobInput(prev => ({ ...prev, [name]: numericValue }));
-        }
-
-        // Update form data when all fields are filled
-        if (dobInput.day.length === 2 && dobInput.month.length === 2 && dobInput.year.length === 4) {
-            const formattedDate = `${dobInput.day}-${dobInput.month}-${dobInput.year}`;
-            setFormData(prev => ({ ...prev, dob: formattedDate }));
         }
     };
 
