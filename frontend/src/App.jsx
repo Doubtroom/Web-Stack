@@ -29,6 +29,7 @@ function App() {
 
   useEffect(() => {
     const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+    console.log(isMac)
     if (isMac) {
       document.body.style.zoom = '110%';
     }
