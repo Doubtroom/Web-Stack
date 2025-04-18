@@ -27,7 +27,10 @@ const UserInfoForm = () => {
         month: '',
         year: ''
     });
-    const [dobCursor, setDobCursor] = useState(0);
+
+    useEffect(()=>{
+        console.log(formData)
+    },[formData])
     
     // Check if user is coming from signup
     const fromSignup = localStorage.getItem("fromSignup") === "true";
@@ -60,6 +63,7 @@ const UserInfoForm = () => {
         { value: 'mba', label: "Master's Degree (MBA)" },
         { value: 'phd', label: "Doctorate (Ph.D.)" }
       ];
+
       
 
       const branches = [
@@ -128,6 +132,7 @@ const UserInfoForm = () => {
         { value: 'vit_ap', label: 'Vellore Institute of Technology Andhra Pradesh' },
         { value: 'mit_b', label: 'Manipal Institute of Technology (MIT) Bangalore' },
         { value: 'srm_chennai', label: 'SRM Institute of Science and Technology Chennai' },
+        { value: 'srm_ap', label: 'SRM Institute of Science and Technology Andhra Pradesh' },
         { value: 'saveetha', label: 'Saveetha University' },
         { value: 'custom', label: 'Other (Specify)' }
     ];
@@ -138,38 +143,53 @@ const UserInfoForm = () => {
         return date.toISOString().split('T')[0];
     };
 
-    const handleDateChange = (e) => {
+    const handleDobChange = (e) => {
         const { name, value } = e.target;
-        let formattedDate = value;
+        // Only allow numbers
+        const numericValue = value.replace(/\D/g, '');
         
-        // If it's a date input, format it properly
-        if (e.target.type === 'date') {
-            formattedDate = formatDate(value);
-        } else {
-            // For text input, validate and format as user types
-            const cleaned = value.replace(/\D/g, '');
-            if (cleaned.length > 0) {
-                const year = cleaned.slice(0, 4);
-                const month = cleaned.slice(4, 6);
-                const day = cleaned.slice(6, 8);
-                
-                if (cleaned.length <= 4) {
-                    formattedDate = year;
-                } else if (cleaned.length <= 6) {
-                    formattedDate = `${year}-${month}`;
-                } else {
-                    formattedDate = `${year}-${month}-${day}`;
-                }
-            }
+        // Set max lengths and validate
+        if (name === 'day' && numericValue.length <= 2) {
+            setDobInput(prev => ({ ...prev, [name]: numericValue }));
+        } else if (name === 'month' && numericValue.length <= 2) {
+            setDobInput(prev => ({ ...prev, [name]: numericValue }));
+        } else if (name === 'year' && numericValue.length <= 4) {
+            setDobInput(prev => ({ ...prev, [name]: numericValue }));
         }
-        
-        setFormData(prev => ({ ...prev, [name]: formattedDate }));
-        if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: '' }));
+
+        // Create a new object with updated dobInput
+        const updatedDobInput = {
+            ...dobInput,
+            [name]: numericValue
+        };
+
+        // Update form data when all fields are filled
+        if (updatedDobInput.day.length === 2 && 
+            updatedDobInput.month.length === 2 && 
+            updatedDobInput.year.length === 4) {
+            
+            // Pad month and day with leading zeros if needed
+            const day = updatedDobInput.day.padStart(2, '0');
+            const month = updatedDobInput.month.padStart(2, '0');
+            const year = updatedDobInput.year;
+            
+            const formattedDate = `${year}-${month}-${day}`;
+            setFormData(prev => ({ ...prev, dob: formattedDate }));
+            
+            // Validate the date
+            const error = validateDate(updatedDobInput);
+            if (error) {
+                setErrors(prev => ({ ...prev, dob: error }));
+            } else {
+                setErrors(prev => ({ ...prev, dob: '' }));
+            }
+        } else {
+            // Clear the DOB if not all fields are filled
+            setFormData(prev => ({ ...prev, dob: '' }));
         }
     };
 
-    const validateDate = () => {
+    const validateDate = (dobInput) => {
         const { day, month, year } = dobInput;
         
         // Check if all fields are filled
@@ -204,41 +224,32 @@ const UserInfoForm = () => {
             return `Invalid day for the selected month`;
         }
 
+        // Check if date is in the future
+        const inputDate = new Date(yearNum, monthNum - 1, dayNum);
+        const today = new Date();
+        if (inputDate > today) {
+            return 'Date of Birth cannot be in the future';
+        }
+
+        // Check if user is at least 13 years old
+        const minAge = 13;
+        const minDate = new Date();
+        minDate.setFullYear(today.getFullYear() - minAge);
+        if (inputDate > minDate) {
+            return `You must be at least ${minAge} years old`;
+        }
+
         return '';
-    };
-
-    const handleDobChange = (e) => {
-        const { name, value } = e.target;
-        // Only allow numbers
-        const numericValue = value.replace(/\D/g, '');
-        
-        // Set max lengths and validate
-        if (name === 'day' && numericValue.length <= 2) {
-            setDobInput(prev => ({ ...prev, [name]: numericValue }));
-        } else if (name === 'month' && numericValue.length <= 2) {
-            setDobInput(prev => ({ ...prev, [name]: numericValue }));
-        } else if (name === 'year' && numericValue.length <= 4) {
-            setDobInput(prev => ({ ...prev, [name]: numericValue }));
-        }
-
-        // Update form data when all fields are filled
-        if (dobInput.day.length === 2 && dobInput.month.length === 2 && dobInput.year.length === 4) {
-            const formattedDate = `${dobInput.day}-${dobInput.month}-${dobInput.year}`;
-            setFormData(prev => ({ ...prev, dob: formattedDate }));
-            
-            // Validate the date
-            const error = validateDate();
-            if (error) {
-                setErrors(prev => ({ ...prev, dob: error }));
-            } else {
-                setErrors(prev => ({ ...prev, dob: '' }));
-            }
-        }
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        if (name === 'collegeName') {
+        
+        if (name === 'dob') {
+            setFormData(prev => ({ ...prev, [name]: value }));
+            const error = validateDate(value);
+            setErrors(prev => ({ ...prev, [name]: error }));
+        } else if (name === 'collegeName') {
             if (value === 'custom') {
                 setFormData(prev => ({ ...prev, [name]: 'Other (Specify)' }));
             } else {
@@ -252,6 +263,7 @@ const UserInfoForm = () => {
         } else {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
+        
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
@@ -288,7 +300,7 @@ const UserInfoForm = () => {
         }
         
         // DOB validation
-        const dobError = validateDate();
+        const dobError = validateDate(formData.dob);
         if (dobError) {
             newErrors.dob = dobError;
         }
@@ -323,6 +335,9 @@ const UserInfoForm = () => {
                 collegeName = formData.collegeName.trim();
             }
 
+            // Format DOB for Firebase
+            const formattedDob = formData.dob ? new Date(formData.dob).toISOString() : '';
+
             const updatedUserData = {
                 uid: existingUserData.uid,
                 email: existingUserData.email,
@@ -333,7 +348,7 @@ const UserInfoForm = () => {
                 studyType: formData.role === 'faculty' ? '--faculty' : formData.studyType,
                 phone: formData.phone || null,
                 gender: formData.gender,
-                dob: formData.dob
+                dob: formattedDob
             };
             
             localStorage.setItem("userData", JSON.stringify(updatedUserData));
@@ -353,56 +368,6 @@ const UserInfoForm = () => {
             toast.error('Failed to save profile information');
         } finally {
             setIsLoading(false);
-        }
-    };
-
-    const handleDobKeyDown = (e) => {
-        const { key } = e;
-        const currentValue = dobInput;
-        const cursor = dobCursor;
-
-        // Allow navigation keys
-        if (['ArrowLeft', 'ArrowRight', 'Backspace', 'Delete', 'Tab'].includes(key)) {
-            if (key === 'ArrowLeft' && cursor > 0) {
-                setDobCursor(cursor - 1);
-            } else if (key === 'ArrowRight' && cursor < 10) {
-                setDobCursor(cursor + 1);
-            } else if (key === 'Backspace' && cursor > 0) {
-                const newValue = currentValue.split('');
-                if (newValue[cursor - 1] !== '/') {
-                    newValue[cursor - 1] = '-';
-                    setDobInput(newValue.join(''));
-                    setDobCursor(cursor - 1);
-                } else {
-                    setDobCursor(cursor - 1);
-                }
-            } else if (key === 'Delete' && cursor < 10) {
-                const newValue = currentValue.split('');
-                if (newValue[cursor] !== '/') {
-                    newValue[cursor] = '-';
-                    setDobInput(newValue.join(''));
-                }
-            }
-            return;
-        }
-
-        // Only allow numbers
-        if (!/^\d$/.test(key)) {
-            e.preventDefault();
-            return;
-        }
-
-        // Handle number input
-        const newValue = currentValue.split('');
-        if (cursor < 10) {
-            if (cursor === 2 || cursor === 5) {
-                setDobCursor(cursor + 1);
-            }
-            if (newValue[cursor] !== '/') {
-                newValue[cursor] = key;
-                setDobInput(newValue.join(''));
-                setDobCursor(cursor + 1);
-            }
         }
     };
 

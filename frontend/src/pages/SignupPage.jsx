@@ -87,7 +87,8 @@ const SignupPage = () => {
               branch: '',
               studyType: '',
               phone: '',
-              gender: ''
+              gender: '',
+              isAdmin:false,
             };
             
             localStorage.setItem("userData", JSON.stringify(userData));
