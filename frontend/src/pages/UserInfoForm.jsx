@@ -186,6 +186,7 @@ const UserInfoForm = () => {
         } else {
             // Clear the DOB if not all fields are filled
             setFormData(prev => ({ ...prev, dob: '' }));
+            setErrors(prev => ({ ...prev, dob: 'Date of Birth is required' }));
         }
     };
 
@@ -193,7 +194,7 @@ const UserInfoForm = () => {
         const { day, month, year } = dobInput;
         
         // Check if all fields are filled
-        if (!day || !month || !year) {
+        if (!day || !month || !year || day.length !== 2 || month.length !== 2 || year.length !== 4) {
             return 'Date of Birth is required';
         }
 
@@ -300,7 +301,7 @@ const UserInfoForm = () => {
         }
         
         // DOB validation
-        const dobError = validateDate(formData.dob);
+        const dobError = validateDate(dobInput);
         if (dobError) {
             newErrors.dob = dobError;
         }
@@ -335,8 +336,8 @@ const UserInfoForm = () => {
                 collegeName = formData.collegeName.trim();
             }
 
-            // Format DOB for Firebase
-            const formattedDob = formData.dob ? new Date(formData.dob).toISOString() : '';
+            // Format DOB for Firebase - only date part, no time
+            const formattedDob = formData.dob ? formData.dob : '';
 
             const updatedUserData = {
                 uid: existingUserData.uid,
