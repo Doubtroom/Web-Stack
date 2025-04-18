@@ -134,6 +134,9 @@ const UserInfoForm = () => {
         { value: 'srm_chennai', label: 'SRM Institute of Science and Technology Chennai' },
         { value: 'srm_ap', label: 'SRM Institute of Science and Technology Andhra Pradesh' },
         { value: 'saveetha', label: 'Saveetha University' },
+        { value: 'klu_hyderabad', label: 'KL University Hyderabad' },
+        { value: 'saveetha', label: 'Saveetha University' },
+        { value: 'vishnu', label: 'Vishnu Institute of Technology' },
         { value: 'custom', label: 'Other (Specify)' }
     ];
 
