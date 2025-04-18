@@ -113,6 +113,8 @@ const UserInfoForm = () => {
         { value: 'iit_kanpur', label: 'Indian Institute of Technology Kanpur' },
         { value: 'iit_kharagpur', label: 'Indian Institute of Technology Kharagpur' },
         { value: 'iit_roorkee', label: 'Indian Institute of Technology Roorkee' },
+        { value: 'iit_patna', label: 'Indian Institute of Technology Patna' },
+        { value: 'iit_hyderabad', label: 'Indian Institute of Technology Hyderabad' },
         { value: 'iit_guwahati', label: 'Indian Institute of Technology Guwahati' },
         { value: 'nit_trichy', label: 'National Institute of Technology Tiruchirappalli' },
         { value: 'nit_surathkal', label: 'National Institute of Technology Karnataka' },
@@ -120,7 +122,13 @@ const UserInfoForm = () => {
         { value: 'vit_vellore', label: 'Vellore Institute of Technology' },
         { value: 'vit_bhopal', label: 'Vellore Institute of Technology Bhopal' },
         { value: 'vit_chennai', label: 'Vellore Institute of Technology Chennai' },
-        { value: 'vit_bhubaneswar', label: 'Vellore Institute of Technology Bhubaneswar' },
+        { value: 'iiit-basara', label: 'Vellore Institute of Technology Bhubaneswar' },
+        { value: 'vit_bhubaneswar', label: 'Indian Institute of Technology Basara' },
+        { value: 'vnr', label: '(VNR) Vallurupalli Nageswara Rao Vignana Jyothi Institute of Engineering &Technology' },
+        { value: 'vit_ap', label: 'Vellore Institute of Technology Andhra Pradesh' },
+        { value: 'mit_b', label: 'Manipal Institute of Technology (MIT) Bangalore' },
+        { value: 'srm_chennai', label: 'SRM Institute of Science and Technology Chennai' },
+        { value: 'saveetha', label: 'Saveetha University' },
         { value: 'custom', label: 'Other (Specify)' }
     ];
 
