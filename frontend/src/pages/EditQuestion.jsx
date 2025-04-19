@@ -147,10 +147,8 @@ const EditQuestion = () => {
         photo: null
       }));
       setPreviewUrl(null);
-      toast.success('Photo removed successfully');
     } catch (error) {
       console.error('Error removing photo:', error);
-      toast.error('Failed to remove photo. Please try again.');
     }
   };
 
@@ -219,6 +217,11 @@ const EditQuestion = () => {
 
   if (!question) {
     return null;
+  }
+
+  const handleCancel=(e)=>{
+    e.preventDefault()
+    navigate('/my-questions')
   }
 
   return (
@@ -363,7 +366,7 @@ const EditQuestion = () => {
             <div className="flex justify-end gap-4">
               <Button
                 variant="outline"
-                onClick={() => navigate('/my-questions')}
+                onClick={(e)=>handleCancel(e)}
                 className="text-black dark:text-white dark:hover:text-white dark:border-gray-600 dark:hover:bg-gray-700"
               >
                 Cancel

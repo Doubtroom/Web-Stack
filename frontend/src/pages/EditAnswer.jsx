@@ -145,6 +145,10 @@ const EditAnswer = () => {
   if (!answer) {
     return null;
   }
+  const handleCancel=(e)=>{
+    e.preventDefault()
+    navigate('/my-questions')
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 lg:pt-24">
@@ -222,7 +226,7 @@ const EditAnswer = () => {
             <div className="flex justify-end gap-4">
               <Button
                 variant="outline"
-                onClick={() => navigate('/my-questions')}
+                onClick={(e) => handleCancel(e)}
                 className=" dark:hover:text-white dark:border-gray-600 dark:text-white dark:hover:bg-gray-700"
               >
                 Cancel
