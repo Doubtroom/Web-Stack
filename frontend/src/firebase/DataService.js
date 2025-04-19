@@ -68,9 +68,9 @@ class DataService {
     try {
       if (!fileId) return; // Skip if no fileId provided
       
-      // Skip if it's a placeholder image
-      if (fileId.includes('placeholder')) {
-        console.log('Skipping deletion of placeholder image');
+      // Skip if it's a placeholder image or base64 data URL
+      if (fileId.includes('placeholder') || fileId.startsWith('data:')) {
+        console.log('Skipping deletion of placeholder or base64 image');
         return;
       }
       
