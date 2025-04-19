@@ -139,15 +139,13 @@ const MyQuestions = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 md:p-8 lg:mt-20">
+    <div className="min-h-screen  from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 md:p-8 lg:mt-20">
       <div className="max-w-7xl mx-auto">
-        {/* Page Header */}
         <div className="mb-8 text-center">
           <h1 className="text-2xl sm:text-4xl font-bold text-blue-900 dark:text-blue-300 lg:mb-2">My Content</h1>
           <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-base">Manage your questions and answers</p>
         </div>
 
-        {/* My Answers Section */}
         <div className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">

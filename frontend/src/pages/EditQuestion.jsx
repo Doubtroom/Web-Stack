@@ -39,6 +39,47 @@ const EditQuestion = () => {
     "Computer Architecture"
   ];
 
+  const branches = [
+    { value: 'biotechnology_biochemical_engineering', label: 'Biotechnology & Biochemical Engineering' },
+    { value: 'chemical_engineering', label: 'Chemical Engineering' },
+    { value: 'civil_engineering', label: 'Civil Engineering' },
+    { value: 'structural_engineering', label: 'Structural Engineering' },
+    { value: 'geo_technical_engineering', label: 'Geo-technical Engineering' },
+    { value: 'transportation_engineering', label: 'Transportation Engineering' },
+    { value: 'environmental_engineering', label: 'Environmental Engineering' },
+    { value: 'water_resources_engineering', label: 'Water Resources Engineering' },
+    { value: 'hydroinformatics_engineering', label: 'Hydroinformatics Engineering' },
+    { value: 'seismic_science_engineering', label: 'Seismic Science and Engineering' },
+    { value: 'computer_science_engineering', label: 'Computer Science & Engineering' },
+    { value: 'artificial_intelligence', label: 'Artificial Intelligence' },
+    { value: 'cyber_security', label: 'Cyber Security' },
+    { value: 'data_science_engineering', label: 'Data Science and Engineering' },
+    { value: 'electrical_engineering', label: 'Electrical Engineering' },
+    { value: 'power_electronics_drives', label: 'Power Electronics & Drives' },
+    { value: 'power_system_engineering', label: 'Power System Engineering' },
+    { value: 'instrumentation_engineering', label: 'Instrumentation Engineering' },
+    { value: 'integrated_energy_system', label: 'Integrated Energy System' },
+    { value: 'electronics_instrumentation_engineering', label: 'Electronics And Instrumentation Engineering' },
+    { value: 'electronics_communication_engineering', label: 'Electronics and Communication Engineering' },
+    { value: 'communication_signal_processing', label: 'Communication Systems & Signal Processing' },
+    { value: 'vlsi_design', label: 'VLSI Design' },
+    { value: 'mechanical_engineering', label: 'Mechanical Engineering' },
+    { value: 'material_science_engineering', label: 'Material Science and Engineering' },
+    { value: 'thermal_science_engineering', label: 'Thermal Science and Engineering' },
+    { value: 'manufacturing_technology', label: 'Manufacturing Technology' },
+    { value: 'automotive_engineering', label: 'Automotive Engineering' },
+    { value: 'machine_design', label: 'Machine Design' },
+    { value: 'production_engineering', label: 'Production Engineering' },
+    { value: 'computer_integrated_manufacturing', label: 'Computer Integrated Manufacturing' },
+    { value: 'humanities_social_sciences_management', label: 'Humanities & Social Sciences and Management' },
+    { value: 'physics', label: 'Physics' },
+    { value: 'engineering_physics', label: 'Engineering Physics' },
+    { value: 'chemistry', label: 'Chemistry' },
+    { value: 'mathematics_computing', label: 'Mathematics and Computing' },
+    { value: 'mathematics', label: 'Mathematics' },
+    { value: 'computational_mathematics', label: 'Computational Mathematics' }
+  ];
+
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
@@ -185,7 +226,7 @@ const EditQuestion = () => {
       <div className="max-w-2xl mx-auto px-4">
         <Button
           variant="ghost"
-          className="mb-6 text-gray-700 dark:text-gray-200 hover:text-gray-700 dark:hover:text-black"
+          className="mb-6 text-gray-700 dark:text-gray-200 dark:hover:text-white hover:text-gray-700"
           onClick={() => navigate('/my-questions')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -262,16 +303,21 @@ const EditQuestion = () => {
               <label htmlFor="branch" className="block text-sm font-medium text-[#173f67] dark:text-gray-200 mb-2">
                 Branch
               </label>
-              <input
-                type="text"
+              <select
                 id="branch"
                 name="branch"
                 value={formData.branch}
                 onChange={handleInputChange}
                 className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#173f67] focus:border-transparent dark:bg-gray-700 dark:text-white"
-                placeholder="Enter your branch"
                 required
-              />
+              >
+                <option value="">Select your branch</option>
+                {branches.map((branch) => (
+                  <option key={branch.value} value={branch.value}>
+                    {branch.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Photo Upload */}

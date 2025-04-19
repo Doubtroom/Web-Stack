@@ -20,6 +20,7 @@ import ContactUs from './pages/ContactUs';
 import { Toaster } from 'sonner';
 import Protected from './layout/AuthLayout'
 import EditQuestion from './pages/EditQuestion'
+import EditAnswer from './pages/EditAnswer'
 import ForgotPassword from './pages/ForgotPassword'
 import LearnMorePage from './pages/LearnMorePage'
 import CustomerSupportPage from './pages/CustomerSupportPage'
@@ -89,6 +90,7 @@ function App() {
             <Route path="/question/:id/edit" element={<EditQuestion />} />
             <Route path="/question/:id/answer" element={<AnswerForm />} />
             <Route path="/question/:id/answer/:answerId" element={<Answer />} />
+            <Route path="/answer/:id/edit" element={<EditAnswer />} />
             <Route path="/ask-question" element={<AskQuestion />} />
             <Route path="/my-questions" element={<MyQuestions />} />
             <Route path="/my-college" element={<MyCollege />} />
