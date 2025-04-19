@@ -68,10 +68,9 @@ const Card = ({
         const dataService = new DataService(type === 'answer' ? 'answers' : 'questions');
         
         if (type === 'question') {
-          // Delete associated image if exists
-          if (img && !img.includes('placeholder')) {
-            const fileId = img.split('/').pop();
-            await dataService.deleteImage(fileId);
+          // Delete associated image if exists and is not a base64/data URL
+          if (img && !img.startsWith('data:') && !img.includes('placeholder')) {
+            await dataService.deleteImage(img);
           }
 
           // Delete all answers and their images
@@ -80,9 +79,8 @@ const Card = ({
           
           // Delete each answer and its associated image
           for (const answer of answers) {
-            if (answer.photo && !answer.photo.includes('placeholder')) {
-              const photoId = answer.photo.split('/').pop();
-              await answersService.deleteImage(photoId);
+            if (answer.photo && !answer.photo.startsWith('data:') && !answer.photo.includes('placeholder')) {
+              await answersService.deleteImage(answer.photo);
             }
             await answersService.deleteDocument(answer.id);
           }
@@ -91,9 +89,8 @@ const Card = ({
           await dataService.deleteDocument(id);
         } else {
           // Handle answer deletion
-          if (img && !img.includes('placeholder')) {
-            const fileId = img.split('/').pop();
-            await dataService.deleteImage(fileId);
+          if (img && !img.startsWith('data:') && !img.includes('placeholder')) {
+            await dataService.deleteImage(img);
           }
           await dataService.deleteDocument(answerId);
         }

@@ -76,12 +76,10 @@ const MyQuestions = () => {
     try {
       const dataService = new DataService('questions');
       
-      // Delete the photo from storage if it exists
-      if (photoUrl) {
+      // Delete the photo from storage if it exists and is not a base64/data URL
+      if (photoUrl && !photoUrl.startsWith('data:') && !photoUrl.includes('placeholder')) {
         console.log('Deleting question photo:', photoUrl);
-        const fileId = photoUrl.split('/').pop();
-        console.log('Extracted fileId:', fileId);
-        await dataService.deleteImage(fileId);
+        await dataService.deleteImage(photoUrl);
       }
 
       // Delete the question document
@@ -100,12 +98,10 @@ const MyQuestions = () => {
     try {
       const dataService = new DataService('answers');
       
-      // Delete the photo from storage if it exists
-      if (photoUrl) {
+      // Delete the photo from storage if it exists and is not a base64/data URL
+      if (photoUrl && !photoUrl.startsWith('data:') && !photoUrl.includes('placeholder')) {
         console.log('Deleting answer photo:', photoUrl);
-        const fileId = photoUrl.split('/').pop();
-        console.log('Extracted fileId:', fileId);
-        await dataService.deleteImage(fileId);
+        await dataService.deleteImage(photoUrl);
       }
 
       // Delete the answer document
