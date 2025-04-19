@@ -41,10 +41,13 @@ const ForgotPassword = () => {
     setIsLoading(true);
     
     try {
-        await authService.sendPasswordResetEmail(email);
-      
-      toast.success('Reset password link has been sent to your email');
-      navigate('/login', { replace: true });
+        const response = await authService.sendPasswordResetEmail(email);
+        if (response.success) {
+          toast.success('Reset password link has been sent to your email');
+          navigate('/login', { replace: true });
+        } else {
+          toast.error('Failed to send reset password link. Please try again.');
+        }
     } catch (error) {
       console.error(error);
       toast.error('Failed to send reset password link. Please try again.');

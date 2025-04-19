@@ -133,8 +133,10 @@ class AuthService {
   async sendPasswordResetEmail(email) {
     try {
       await sendPasswordResetEmail(this.auth, email);
+      return { success: true };
     } catch (error) {
-       console.error("Error in AuthService :: sendPasswordResetEmail()", error);
+      console.error("Error in AuthService :: sendPasswordResetEmail()", error);
+      return { success: false, error };
     }
   }
 
