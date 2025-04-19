@@ -62,14 +62,36 @@ const Card = ({
     try {
       const dataService = new DataService(type === 'answer' ? 'answers' : 'questions');
       
-      // Delete associated image if exists
-      if (img && !img.includes('placeholder')) {
-        const fileId = img.split('/').pop();
-        await dataService.deleteImage(fileId);
-      }
+      if (type === 'question') {
+        // Delete associated image if exists
+        if (img && !img.includes('placeholder')) {
+          const fileId = img.split('/').pop();
+          await dataService.deleteImage(fileId);
+        }
 
-      // Delete the document
-      await dataService.deleteDocument(type === 'answer' ? answerId : id);
+        // Delete all answers and their images
+        const answersService = new DataService('answers');
+        const answers = await answersService.getAnswersByQuestionId(id);
+        
+        // Delete each answer and its associated image
+        for (const answer of answers) {
+          if (answer.photo && !answer.photo.includes('placeholder')) {
+            const photoId = answer.photo.split('/').pop();
+            await answersService.deleteImage(photoId);
+          }
+          await answersService.deleteDocument(answer.id);
+        }
+
+        // Delete the question document
+        await dataService.deleteDocument(id);
+      } else {
+        // Handle answer deletion
+        if (img && !img.includes('placeholder')) {
+          const fileId = img.split('/').pop();
+          await dataService.deleteImage(fileId);
+        }
+        await dataService.deleteDocument(answerId);
+      }
       
       toast.success(`${type === 'answer' ? 'Answer' : 'Question'} deleted successfully!`);
       window.location.reload(); // Refresh to update the list

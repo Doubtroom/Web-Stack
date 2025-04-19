@@ -68,6 +68,12 @@ class DataService {
     try {
       if (!fileId) return; // Skip if no fileId provided
       
+      // Skip if it's a placeholder image
+      if (fileId.includes('placeholder')) {
+        console.log('Skipping deletion of placeholder image');
+        return;
+      }
+      
       // Extract the actual file ID if a URL is provided
       const actualFileId = this.extractFileId(fileId);
       await storage.deleteFile(config.appwriteBucketId, actualFileId);
