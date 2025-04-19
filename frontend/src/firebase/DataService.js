@@ -90,8 +90,11 @@ class DataService {
 
   // Helper method to extract file ID from URL or handle direct file ID
   extractFileId(fileIdOrUrl) {
+    console.log('Input to extractFileId:', fileIdOrUrl);
+    
     // If it's already a valid file ID (36 chars or less, only alphanumeric and underscore)
     if (/^[a-zA-Z0-9_]{1,36}$/.test(fileIdOrUrl)) {
+      console.log('Valid file ID found:', fileIdOrUrl);
       return fileIdOrUrl;
     }
     
@@ -101,20 +104,27 @@ class DataService {
       const pathParts = url.pathname.split('/');
       // The file ID should be the last part of the path
       const potentialFileId = pathParts[pathParts.length - 1];
+      console.log('Extracted from URL:', potentialFileId);
       
       // Validate the extracted ID
       if (/^[a-zA-Z0-9_]{1,36}$/.test(potentialFileId)) {
+        console.log('Valid file ID from URL:', potentialFileId);
         return potentialFileId;
       }
     } catch (e) {
+      console.log('URL parsing failed, trying direct split');
       // If URL parsing fails, try to extract from the string directly
       const parts = fileIdOrUrl.split('/');
       const potentialFileId = parts[parts.length - 1];
+      console.log('Extracted from direct split:', potentialFileId);
+      
       if (/^[a-zA-Z0-9_]{1,36}$/.test(potentialFileId)) {
+        console.log('Valid file ID from direct split:', potentialFileId);
         return potentialFileId;
       }
     }
     
+    console.error('No valid file ID could be extracted from:', fileIdOrUrl);
     throw new Error('Invalid file ID format');
   }
 

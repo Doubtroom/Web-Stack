@@ -78,7 +78,9 @@ const MyQuestions = () => {
       
       // Delete the photo from storage if it exists
       if (photoUrl) {
+        console.log('Deleting question photo:', photoUrl);
         const fileId = photoUrl.split('/').pop();
+        console.log('Extracted fileId:', fileId);
         await dataService.deleteImage(fileId);
       }
 
@@ -100,7 +102,9 @@ const MyQuestions = () => {
       
       // Delete the photo from storage if it exists
       if (photoUrl) {
+        console.log('Deleting answer photo:', photoUrl);
         const fileId = photoUrl.split('/').pop();
+        console.log('Extracted fileId:', fileId);
         await dataService.deleteImage(fileId);
       }
 
