@@ -74,22 +74,20 @@ const MyQuestions = () => {
 
   const handleDeleteQuestion = async (questionId, photoUrl) => {
     try {
-      if (window.confirm('Are you sure you want to delete this question?')) {
-        const dataService = new DataService('questions');
-        
-        // Delete the photo from storage if it exists
-        if (photoUrl) {
-          const fileId = photoUrl.split('/').pop();
-          await dataService.deleteImage(fileId);
-        }
-
-        // Delete the question document
-        await dataService.deleteDocument(questionId);
-        
-        // Update local state
-        setQuestions(prev => prev.filter(q => q.id !== questionId));
-        toast.success('Question deleted successfully!');
+      const dataService = new DataService('questions');
+      
+      // Delete the photo from storage if it exists
+      if (photoUrl) {
+        const fileId = photoUrl.split('/').pop();
+        await dataService.deleteImage(fileId);
       }
+
+      // Delete the question document
+      await dataService.deleteDocument(questionId);
+      
+      // Update local state
+      setQuestions(prev => prev.filter(q => q.id !== questionId));
+      toast.success('Question deleted successfully!');
     } catch (error) {
       console.error('Error deleting question:', error);
       toast.error('Failed to delete question. Please try again.');
@@ -98,22 +96,20 @@ const MyQuestions = () => {
 
   const handleDeleteAnswer = async (answerId, photoUrl) => {
     try {
-      if (window.confirm('Are you sure you want to delete this answer?')) {
-        const dataService = new DataService('answers');
-        
-        // Delete the photo from storage if it exists
-        if (photoUrl) {
-          const fileId = photoUrl.split('/').pop();
-          await dataService.deleteImage(fileId);
-        }
-
-        // Delete the answer document
-        await dataService.deleteDocument(answerId);
-        
-        // Update local state
-        setAnswers(prev => prev.filter(a => a.id !== answerId));
-        toast.success('Answer deleted successfully!');
+      const dataService = new DataService('answers');
+      
+      // Delete the photo from storage if it exists
+      if (photoUrl) {
+        const fileId = photoUrl.split('/').pop();
+        await dataService.deleteImage(fileId);
       }
+
+      // Delete the answer document
+      await dataService.deleteDocument(answerId);
+      
+      // Update local state
+      setAnswers(prev => prev.filter(a => a.id !== answerId));
+      toast.success('Answer deleted successfully!');
     } catch (error) {
       console.error('Error deleting answer:', error);
       toast.error('Failed to delete answer. Please try again.');

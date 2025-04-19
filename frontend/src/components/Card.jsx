@@ -60,37 +60,43 @@ const Card = ({
 
   const handleDeleteConfirm = async () => {
     try {
-      const dataService = new DataService(type === 'answer' ? 'answers' : 'questions');
-      
-      if (type === 'question') {
-        // Delete associated image if exists
-        if (img && !img.includes('placeholder')) {
-          const fileId = img.split('/').pop();
-          await dataService.deleteImage(fileId);
-        }
-
-        // Delete all answers and their images
-        const answersService = new DataService('answers');
-        const answers = await answersService.getAnswersByQuestionId(id);
-        
-        // Delete each answer and its associated image
-        for (const answer of answers) {
-          if (answer.photo && !answer.photo.includes('placeholder')) {
-            const photoId = answer.photo.split('/').pop();
-            await answersService.deleteImage(photoId);
-          }
-          await answersService.deleteDocument(answer.id);
-        }
-
-        // Delete the question document
-        await dataService.deleteDocument(id);
+      if (onDelete) {
+        // If onDelete prop is provided, use it
+        await onDelete(id, img);
       } else {
-        // Handle answer deletion
-        if (img && !img.includes('placeholder')) {
-          const fileId = img.split('/').pop();
-          await dataService.deleteImage(fileId);
+        // Fallback to our own deletion logic
+        const dataService = new DataService(type === 'answer' ? 'answers' : 'questions');
+        
+        if (type === 'question') {
+          // Delete associated image if exists
+          if (img && !img.includes('placeholder')) {
+            const fileId = img.split('/').pop();
+            await dataService.deleteImage(fileId);
+          }
+
+          // Delete all answers and their images
+          const answersService = new DataService('answers');
+          const answers = await answersService.getAnswersByQuestionId(id);
+          
+          // Delete each answer and its associated image
+          for (const answer of answers) {
+            if (answer.photo && !answer.photo.includes('placeholder')) {
+              const photoId = answer.photo.split('/').pop();
+              await answersService.deleteImage(photoId);
+            }
+            await answersService.deleteDocument(answer.id);
+          }
+
+          // Delete the question document
+          await dataService.deleteDocument(id);
+        } else {
+          // Handle answer deletion
+          if (img && !img.includes('placeholder')) {
+            const fileId = img.split('/').pop();
+            await dataService.deleteImage(fileId);
+          }
+          await dataService.deleteDocument(answerId);
         }
-        await dataService.deleteDocument(answerId);
       }
       
       toast.success(`${type === 'answer' ? 'Answer' : 'Question'} deleted successfully!`);
