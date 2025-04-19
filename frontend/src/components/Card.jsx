@@ -5,11 +5,13 @@ import Button from "./Button";
 import { toast } from "sonner";
 import DataService from "../firebase/DataService";
 import ConfirmationDialog from './ConfirmationDialog';
+import placeholder from '../assets/placeholder.png';
 
 const Card = ({
   id, 
   collegeName, 
   img, 
+  imgId,
   branch, 
   topic, 
   noOfAnswers, 
@@ -60,44 +62,35 @@ const Card = ({
 
   const handleDeleteConfirm = async () => {
     try {
-      if (onDelete) {
-        // If onDelete prop is provided, use it
-        await onDelete(id, img);
-      } else {
         // Fallback to our own deletion logic
         const dataService = new DataService(type === 'answer' ? 'answers' : 'questions');
         
         if (type === 'question') {
           // Delete associated image if exists and is not a base64/data URL
-          if (img && !img.startsWith('data:') && !img.includes('placeholder')) {
-            await dataService.deleteImage(img);
+          if (img && imgId) {
+            await dataService.deleteImage(imgId);
           }
 
-          // Delete all answers and their images
           const answersService = new DataService('answers');
           const answers = await answersService.getAnswersByQuestionId(id);
           
-          // Delete each answer and its associated image
           for (const answer of answers) {
-            if (answer.photo && !answer.photo.startsWith('data:') && !answer.photo.includes('placeholder')) {
-              await answersService.deleteImage(answer.photo);
+            if (answer.photo && answer.photoId) {
+              await answersService.deleteImage(answer.photoId);
             }
             await answersService.deleteDocument(answer.id);
           }
 
-          // Delete the question document
           await dataService.deleteDocument(id);
         } else {
-          // Handle answer deletion
-          if (img && !img.startsWith('data:') && !img.includes('placeholder')) {
-            await dataService.deleteImage(img);
+          if (img && imgId) {
+            await dataService.deleteImage(imgId);
           }
           await dataService.deleteDocument(answerId);
         }
-      }
       
       toast.success(`${type === 'answer' ? 'Answer' : 'Question'} deleted successfully!`);
-      window.location.reload(); // Refresh to update the list
+      window.location.reload(); 
     } catch (error) {
       console.error(`Error deleting ${type}:`, error);
       toast.error(`Failed to delete ${type}. Please try again.`);
@@ -114,7 +107,7 @@ const Card = ({
       >
         <div className="relative h-48">
           <img
-            src={img}
+            src={img || placeholder}
             alt={collegeName}
             className="w-full h-full object-cover"
           />

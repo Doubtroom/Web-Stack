@@ -51,26 +51,21 @@ const Question = () => {
     try {
       const dataService = new DataService('questions');
       
-      // Delete associated image if exists
-      if (question.photo) {
-        const oldFileId = question.photo.split('/').pop();
-        await dataService.deleteImage(oldFileId);
+
+      if (question.photo || question.photoId) {
+        await dataService.deleteImage(question.photoId);
       }
 
-      // Delete all answers and update count
       const answersService = new DataService('answers');
       const answers = await answersService.getAnswersByQuestionId(id);
       
-      // Delete each answer
       for (const answer of answers) {
-        if (answer.photo) {
-          const photoId = answer.photo.split('/').pop();
-          await answersService.deleteImage(photoId);
+        if (answer.photo && !answer.photo.startsWith('data:') && !answer.photo.includes('placeholder')) {
+          await answersService.deleteImage(answer.photo);
         }
         await answersService.deleteDocument(answer.id);
       }
 
-      // Delete the question document
       await dataService.deleteDocument(id);
       
       toast.success('Question deleted successfully!');
@@ -144,6 +139,17 @@ const Question = () => {
 
   if (loading) {
     return <LoadingSpinner fullScreen />;
+  }
+
+  if (!question) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 mt-10 lg:mt-28 justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">Question Not Found</h2>
+          <p className="text-gray-600 dark:text-gray-400">The question you're looking for doesn't exist or has been removed.</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {

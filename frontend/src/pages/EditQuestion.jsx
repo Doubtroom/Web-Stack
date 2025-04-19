@@ -222,7 +222,7 @@ const EditQuestion = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 lg:pt-24">
       <div className="max-w-2xl mx-auto px-4">
         <Button
           variant="ghost"
@@ -364,7 +364,7 @@ const EditQuestion = () => {
               <Button
                 variant="outline"
                 onClick={() => navigate('/my-questions')}
-                className="dark:text-black dark:hover:text-white dark:border-gray-600 dark:hover:bg-gray-700"
+                className="text-black dark:text-white dark:hover:text-white dark:border-gray-600 dark:hover:bg-gray-700"
               >
                 Cancel
               </Button>

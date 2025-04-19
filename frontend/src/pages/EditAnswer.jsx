@@ -147,7 +147,7 @@ const EditAnswer = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 lg:pt-24">
       <div className="max-w-2xl mx-auto px-4">
         <Button
           variant="ghost"
@@ -155,7 +155,7 @@ const EditAnswer = () => {
           onClick={() => navigate('/my-questions')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to My Questions
+          Back to My Content
         </Button>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8">

@@ -6,7 +6,6 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { toast } from 'sonner';
-import placeholder from '../assets/placeholder.png';
 
 const MyQuestions = () => {
   const navigate = useNavigate();
@@ -180,8 +179,9 @@ const MyQuestions = () => {
                   answerId={answer.id}
                   type="answer"
                   collegeName={answer.question?.collegeName || 'Unknown College'}
-                  img={answer.photo || answer.question?.photo || placeholder}
-                  branch={answer.question?.branch || 'Unknown Branch'}
+                  img={answer.photo}
+                  imgId={answer.photoId}
+                  branch={formatText(answer.question?.branch) || 'Unknown Branch'}
                   topic={answer.question?.text || 'Question not found'}
                   noOfAnswers={answer.upvotes || 0}
                   postedOn={formatTimeAgo(answer.createdAt)}
@@ -232,7 +232,8 @@ const MyQuestions = () => {
                   key={question.id}
                   id={question.id}
                   collegeName={formatText(question.collegeName) || 'Your College'}
-                  img={question.photo || placeholder}
+                  img={question.photo}
+                  imgId={question.photoId}
                   branch={formatText(question.branch) || 'Your Branch'}
                   collegeYear={question.collegeYear || 'Any Year'}
                   topic={formatText(question.topic) || 'General'}
