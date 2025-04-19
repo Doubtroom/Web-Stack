@@ -67,7 +67,10 @@ class DataService {
     this.checkAuth();
     try {
       if (!fileId) return; // Skip if no fileId provided
-      await storage.deleteFile(config.appwriteBucketId, fileId);
+      
+      // Extract the actual file ID if a URL is provided
+      const actualFileId = this.extractFileId(fileId);
+      await storage.deleteFile(config.appwriteBucketId, actualFileId);
     } catch (error) {
       // If the file doesn't exist, we can consider it as already deleted
       if (error.code === 404) {
@@ -77,6 +80,36 @@ class DataService {
       console.error('Error deleting image: ', error);
       throw error;
     }
+  }
+
+  // Helper method to extract file ID from URL or handle direct file ID
+  extractFileId(fileIdOrUrl) {
+    // If it's already a valid file ID (36 chars or less, only alphanumeric and underscore)
+    if (/^[a-zA-Z0-9_]{1,36}$/.test(fileIdOrUrl)) {
+      return fileIdOrUrl;
+    }
+    
+    // If it's a URL, try to extract the file ID
+    try {
+      const url = new URL(fileIdOrUrl);
+      const pathParts = url.pathname.split('/');
+      // The file ID should be the last part of the path
+      const potentialFileId = pathParts[pathParts.length - 1];
+      
+      // Validate the extracted ID
+      if (/^[a-zA-Z0-9_]{1,36}$/.test(potentialFileId)) {
+        return potentialFileId;
+      }
+    } catch (e) {
+      // If URL parsing fails, try to extract from the string directly
+      const parts = fileIdOrUrl.split('/');
+      const potentialFileId = parts[parts.length - 1];
+      if (/^[a-zA-Z0-9_]{1,36}$/.test(potentialFileId)) {
+        return potentialFileId;
+      }
+    }
+    
+    throw new Error('Invalid file ID format');
   }
 
   async addQuestion(data) {
