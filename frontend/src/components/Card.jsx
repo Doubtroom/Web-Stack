@@ -20,7 +20,9 @@ const Card = ({
   showAnswerButton = true, 
   onDelete,
   type = 'question', // New prop to distinguish between question and answer cards
-  answerId = null // New prop for answer ID when type is 'answer'
+  answerId = null, // New prop for answer ID when type is 'answer'
+  answerQuestionId=null
+
 }) => {
   const navigate = useNavigate();
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -62,8 +64,8 @@ const Card = ({
 
   const handleDeleteConfirm = async () => {
     try {
-        // Fallback to our own deletion logic
         const dataService = new DataService(type === 'answer' ? 'answers' : 'questions');
+        const questionsService = new DataService('questions');
         
         if (type === 'question') {
           // Delete associated image if exists and is not a base64/data URL
@@ -85,6 +87,9 @@ const Card = ({
         } else {
           if (img && imgId) {
             await dataService.deleteImage(imgId);
+          }
+          if(answerQuestionId ){
+            await questionsService.updateAnswerCount(answerQuestionId,false)
           }
           await dataService.deleteDocument(answerId);
         }

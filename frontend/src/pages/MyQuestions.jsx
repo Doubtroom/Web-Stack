@@ -71,49 +71,8 @@ const MyQuestions = () => {
     return `${Math.floor(diffInSeconds / 86400)} days ago`;
   };
 
-  const handleDeleteQuestion = async (questionId, photoUrl) => {
-    try {
-      const dataService = new DataService('questions');
-      
-      // Delete the photo from storage if it exists and is not a base64/data URL
-      if (photoUrl && !photoUrl.startsWith('data:') && !photoUrl.includes('placeholder')) {
-        console.log('Deleting question photo:', photoUrl);
-        await dataService.deleteImage(photoUrl);
-      }
 
-      // Delete the question document
-      await dataService.deleteDocument(questionId);
-      
-      // Update local state
-      setQuestions(prev => prev.filter(q => q.id !== questionId));
-      toast.success('Question deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting question:', error);
-      toast.error('Failed to delete question. Please try again.');
-    }
-  };
 
-  const handleDeleteAnswer = async (answerId, photoUrl) => {
-    try {
-      const dataService = new DataService('answers');
-      
-      // Delete the photo from storage if it exists and is not a base64/data URL
-      if (photoUrl && !photoUrl.startsWith('data:') && !photoUrl.includes('placeholder')) {
-        console.log('Deleting answer photo:', photoUrl);
-        await dataService.deleteImage(photoUrl);
-      }
-
-      // Delete the answer document
-      await dataService.deleteDocument(answerId);
-      
-      // Update local state
-      setAnswers(prev => prev.filter(a => a.id !== answerId));
-      toast.success('Answer deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting answer:', error);
-      toast.error('Failed to delete answer. Please try again.');
-    }
-  };
 
   const handleEditAnswer = (answerId) => {
     navigate(`/answer/${answerId}/edit`);
@@ -187,7 +146,7 @@ const MyQuestions = () => {
                   postedOn={formatTimeAgo(answer.createdAt)}
                   postedBy={answer.userId}
                   showAnswerButton={false}
-                  onDelete={() => handleDeleteAnswer(answer.id, answer.photo)}
+                  answerQuestionId={answer.questionId}
                   className="transform hover:scale-[1.02] transition-all duration-200"
                 />
               ))}
@@ -241,7 +200,6 @@ const MyQuestions = () => {
                   postedOn={formatTimeAgo(question.createdAt)}
                   postedBy={question.postedBy}
                   showAnswerButton={false}
-                  onDelete={handleDeleteQuestion}
                   className="transform hover:scale-[1.02] transition-all duration-200"
                 />
               ))}

@@ -27,15 +27,9 @@ const UserInfoForm = () => {
         month: '',
         year: ''
     });
-
-    useEffect(()=>{
-        console.log(formData)
-    },[formData])
     
-    // Check if user is coming from signup
     const fromSignup = localStorage.getItem("fromSignup") === "true";
     
-    // Prevent navigation away from this page if coming from signup
     useEffect(() => {
         if (fromSignup) {
             // Disable browser back button

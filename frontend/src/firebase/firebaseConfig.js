@@ -23,6 +23,10 @@ const app = initializeApp(firebaseConfig);
 const appCheck = initializeAppCheck(app, {
     provider: new ReCaptchaV3Provider(config.recaptchaSitekey),
     isTokenAutoRefreshEnabled: true,
+    // Add error handler for production
+    onError: (error) => {
+        console.error('App Check error:', error);
+    }
 });
 
 export default app;
