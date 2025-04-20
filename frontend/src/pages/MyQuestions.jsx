@@ -237,7 +237,7 @@ const MyQuestions = () => {
                   branch={formatText(question.branch) || 'Your Branch'}
                   collegeYear={question.collegeYear || 'Any Year'}
                   topic={formatText(question.topic) || 'General'}
-                  noOfAnswers={question.answers || 0}
+                  noOfAnswers={question.noOfAnswers                    || 0}
                   postedOn={formatTimeAgo(question.createdAt)}
                   postedBy={question.postedBy}
                   showAnswerButton={false}
