@@ -110,46 +110,47 @@ const HeroSection = () => {
                 </span>
               </h1>
 
-              <motion.div 
-                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-2 lg:hidden pb-2"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
-              >
-                <Link to="/signup">
-                  <motion.button 
-                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-teal-400 to-teal-500 text-white rounded-xl font-medium font-space hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span className="text-sm sm:text-base">Start Your Journey</span>
-                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
-                  </motion.button>
-                </Link>
-                <Link to="/about">
-                  <motion.button 
-                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl font-medium font-space hover:bg-white/20 transition-all duration-200 cursor-pointer"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span className="text-sm sm:text-base">Learn More</span>
-                  </motion.button>
-                </Link>
-              </motion.div>
+              {/* mobile buttons section  */}
+                <motion.div 
+                  className="flex lg:hidden gap-4 justify-center pt-4 mb-2"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  <Link to="/signup">
+                    <motion.button 
+                      className="px-2 py-4 bg-gradient-to-r from-teal-400 to-teal-500 text-white rounded-xl font-medium font-space hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <span className="text-base">Start Your Journey</span>
+                      <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </motion.button>
+                  </Link>
+                  <Link to="/about">
+                    <motion.button 
+                      className="px-4 py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl font-medium font-space hover:bg-white/20 transition-all duration-200 cursor-pointer"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <span className="text-base">Learn More</span>
+                    </motion.button>
+                  </Link>
+                </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 }}
-                className="relative"
-              >
-                <div className="absolute -left-4 top-0 text-4xl text-teal-400/20">"</div>
-                <p className="text-xl text-white/80 italic pl-4 border-l-2 border-teal-400/30">
-                  The only bad question is the one never asked.
-                </p>
-                <p className="text-right text-white/60 mt-2">— Albert Einstein</p>
-                <div className="absolute -right-4 bottom-0 text-4xl text-teal-400/20">"</div>
-              </motion.div>
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="relative flex flex-col gap-1 py-4"
+                >
+                  <div className="absolute -left-4 top-0 text-4xl text-teal-400/20 ">"</div>
+                  <p className="text-xl text-white/80 italic pl-4 border-l-2 border-teal-400/30">
+                    The only bad question is the one never asked.
+                  </p>
+                  <p className="text-right text-white/60 mt-2">— Albert Einstein</p>
+                  <div className="absolute -right-4 bottom-0 text-4xl text-teal-400/20">"</div>
+                </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -170,6 +171,33 @@ const HeroSection = () => {
                     syllabus, and pace.
                   </p>
                 </div>
+
+                <motion.div 
+                  className="hidden lg:flex gap-4 justify-start pt-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  <Link to="/signup">
+                    <motion.button 
+                      className="px-8 py-4 bg-gradient-to-r from-teal-400 to-teal-500 text-white rounded-xl font-medium font-space hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <span className="text-base">Start Your Journey</span>
+                      <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </motion.button>
+                  </Link>
+                  <Link to="/about">
+                    <motion.button 
+                      className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl font-medium font-space hover:bg-white/20 transition-all duration-200 cursor-pointer"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <span className="text-base">Learn More</span>
+                    </motion.button>
+                  </Link>
+                </motion.div>
               </motion.div>
             </motion.div>
           </motion.div>
