@@ -8,7 +8,8 @@ const config={
     firebaseMeasurementId:String(import.meta.env.VITE_MEASUREMENT_ID),
     appwriteBucketId:String(import.meta.env.VITE_APPWRITE_BUCKET_ID),
     appwriteProjectId:String(import.meta.env.VITE_APPWRITE_PROJECT_ID),
-    appwriteEndpoint:String(import.meta.env.VITE_APPWRITE_ENDPOINT)
+    appwriteEndpoint:String(import.meta.env.VITE_APPWRITE_ENDPOINT),
+    recaptchaSitekey:String(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
 }
 
 export default config
