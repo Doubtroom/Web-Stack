@@ -20,6 +20,17 @@ const Answer = () => {
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
   const commentSectionRef = useRef(null);
 
+  const getUserCollege = async (userId) => {
+    try {
+      const userService = new DataService('users');
+      const userDoc = await userService.getDocumentById(userId);
+      return userDoc?.collegeName || null;
+    } catch (error) {
+      console.error('Error fetching user college:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     if (answerId) {
       fetchAnswerAndQuestion();
@@ -59,7 +70,9 @@ const Answer = () => {
         return;
       }
       
-      setAnswer(answerData);
+      // Fetch college information for the answer
+      const collegeName = await getUserCollege(answerData.userId);
+      setAnswer({ ...answerData, collegeName });
 
       // If questionId is not in URL params, try to get it from answer data
       const qId = questionId || answerData.questionId;
@@ -194,6 +207,15 @@ const Answer = () => {
                 {userData.role === 'faculty' && (
                   <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
                     Faculty
+                  </span>
+                )}
+                {answer?.collegeName && (
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    answer.collegeName === userData.collegeName
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
+                  }`}>
+                    {answer.collegeName === userData.collegeName ? 'My College' : 'Other College'}
                   </span>
                 )}
               </div>
