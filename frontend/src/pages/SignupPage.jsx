@@ -111,14 +111,6 @@ const SignupPage = () => {
           }
         }, 3000); // Check every 3 seconds
         
-        // Stop checking after 5 minutes
-        // setTimeout(() => {
-        //   clearInterval(checkVerification);
-        //   if (isVerifying) {
-        //     setIsVerifying(false);
-        //     toast.error('Email verification timed out. Please try again.');
-        //   }
-        // }, 300000);
         
       } catch (error) {
         let errorMessage = 'Signup failed. Please try again.';

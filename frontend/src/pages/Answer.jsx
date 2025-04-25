@@ -155,8 +155,8 @@ const Answer = () => {
     const diffInSeconds = Math.floor((now - date) / 1000);
 
     if (diffInSeconds < 60) return 'just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} mins ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hrs ago`;
     return `${Math.floor(diffInSeconds / 86400)} days ago`;
   };
 
@@ -202,11 +202,11 @@ const Answer = () => {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-gray-800 dark:text-white">
-                  {userData.role === 'faculty' ? answer?.userName : 'Anonymous'}
+                  {userData.role === 'faculty'||'faculty(Phd)' ? answer?.userName : 'Anonymous'}
                 </h3>
-                {userData.role === 'faculty' && (
+                {userData.role === 'faculty'||'faculty(Phd)' && (
                   <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
-                    Faculty
+                    {userData.role === 'faculty' ? 'Faculty' : 'Faculty (Phd)'}
                   </span>
                 )}
                 {answer?.collegeName && (

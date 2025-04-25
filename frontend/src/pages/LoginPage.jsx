@@ -22,6 +22,7 @@ const LoginPage = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -58,13 +59,62 @@ const LoginPage = () => {
     
     try {
       const user = await authService.login(formData.email, formData.password);      
-      localStorage.setItem("authStatus", "true");
       
       const dataService = new DataService("users");
+      
       const response = await dataService.getUserData(user.uid);
-      if (!response) {
+      
+      
+      if(user && !user.emailVerified && !response){
+
+        await authService.sendEmailVerification(user)
+        
+        setIsVerifying(true);
+        toast.success('Please verify you email, Verification email sent!');
+        const checkVerification = setInterval(async () => {
+          await user.reload();
+          if (user.emailVerified) {
+            clearInterval(checkVerification);
+            setIsVerifying(false);
+            
+            const userData = {
+              uid: user.uid,
+              email: user.email,
+              displayName: formData.name,
+              photoURL: user.photoURL,
+              collegeName: '',
+              role: '',
+              branch: '',
+              studyType: '',
+              phone: '',
+              gender: '',
+              isAdmin:false,
+            };
+            
+            localStorage.setItem("userData", JSON.stringify(userData));
+            localStorage.setItem("authStatus", "true");
+            localStorage.setItem("profileCompleted", "false");
+            localStorage.setItem("fromSignup", "true");
+            
+            dispatch(login({ 
+              userData: { 
+                email: user.email, 
+                name: formData.name, 
+                userID: user.uid 
+              },
+              status: true,
+              profileCompleted: false
+            }));
+            
+            toast.success('Email verified successfully!');
+            navigate('/complete-profile', { replace: true });
+          }
+        }, 3000);
+      }
+      else if (!response) {
         throw new Error('User data not found in Firestore');
       }
+      
 
       const userData = {
         uid: user.uid,
@@ -86,7 +136,7 @@ const LoginPage = () => {
         userData: { 
           email: user.email, 
           name: user.displayName || "", 
-          userID: user.uid 
+          userID: user.uid
         },
         status: true,
         profileCompleted: isProfileCompleted
@@ -99,8 +149,10 @@ const LoginPage = () => {
       navigate('/home', { replace: true });
     } catch (error) {
       console.error(error);
-      const errorMessage = error.code?.split("auth/")[1] || "unknown-error";
-      toast.error(`Login failed: ${errorMessage}`);
+      if (!isVerifying) {
+        const errorMessage = error.code?.split("auth/")[1] || "unknown-error";
+        toast.error(`Login failed: ${errorMessage}`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -121,6 +173,29 @@ const LoginPage = () => {
 
   if (isLoading) {
     return <LoadingSpinner fullScreen />;
+  }
+
+  if (isVerifying) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center p-4 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div className={`w-full max-w-md rounded-lg shadow-md p-8 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className="text-center">
+            <h1 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              Verify your email
+            </h1>
+            <p className={`mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              We've sent a verification link to your email. Please check your inbox and click the link to verify your account.
+            </p>
+            <div className='flex justify-center items-center'>
+              <LoadingSpinner />
+            </div>
+            <p className={`mt-4 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              Don't forget to check your spam folder!
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

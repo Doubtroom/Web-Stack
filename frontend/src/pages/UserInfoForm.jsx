@@ -127,7 +127,6 @@ const UserInfoForm = () => {
         { value: 'mit_b', label: 'Manipal Institute of Technology (MIT) Bangalore' },
         { value: 'srm_chennai', label: 'SRM Institute of Science and Technology Chennai' },
         { value: 'srm_ap', label: 'SRM Institute of Science and Technology Andhra Pradesh' },
-        { value: 'saveetha', label: 'Saveetha University' },
         { value: 'klu_hyderabad', label: 'KL University Hyderabad' },
         { value: 'saveetha', label: 'Saveetha University' },
         { value: 'vishnu', label: 'Vishnu Institute of Technology' },
@@ -175,7 +174,7 @@ const UserInfoForm = () => {
         { value: "d_d_m_c", label: "Dasaratha Deb Memorial College" },
         { value: "g_degree_college_dharmanagar", label: "Government Degree College, Dharmanagar" },
         { value: "g__c_g", label: "Government Degree College, Gandacherra" },
-        { value: "g__c_k", label: "Government Degree College, Kamalpur" },
+        { value: "g__c_ka", label: "Government Degree College, Kamalpur" },
         { value: "g__c_k", label: "Government Degree College, Kanchanpur" },
         { value: "g__c_l_v", label: "Government Degree College, Longtharai Valley" },
         { value: "g__c_s", label: "Government Degree College, Santirbazar" },
@@ -464,6 +463,7 @@ const UserInfoForm = () => {
                                 <option value="">Select your role</option>
                                 <option value="student">Student</option>
                                 <option value="faculty">Faculty</option>
+                                <option value="faculty(Phd)">{"Faculty (Phd)"}</option>
                             </select>
                             {errors.role && (
                                 <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.role}</p>
