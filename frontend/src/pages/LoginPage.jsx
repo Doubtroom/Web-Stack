@@ -127,6 +127,7 @@ const LoginPage = () => {
       };
       
       localStorage.setItem("userData", JSON.stringify(userData));
+      localStorage.setItem("authStatus", "true");
       
       // Check if profile is completed
       const isProfileCompleted = response.college && response.branch && response.role;
