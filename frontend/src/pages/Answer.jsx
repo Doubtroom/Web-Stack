@@ -53,6 +53,7 @@ const Answer = () => {
     }
   }, [searchParams, loading]);
 
+
   const fetchAnswerAndQuestion = async () => {
     try {
       if (!answerId) {
@@ -202,11 +203,11 @@ const Answer = () => {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-gray-800 dark:text-white">
-                  {userData.role === 'faculty'||'faculty(Phd)' ? answer?.userName : 'Anonymous'}
+                  {answer?.role === 'faculty'|| answer?.role === 'faculty(Phd)' ? answer?.userName : 'Anonymous'}
                 </h3>
-                {userData.role === 'faculty'||'faculty(Phd)' && (
+                {answer?.role === 'faculty'|| answer?.role === 'faculty(Phd)' && (
                   <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
-                    {userData.role === 'faculty' ? 'Faculty' : 'Faculty (Phd)'}
+                    {answer?.role === 'faculty' ? 'Faculty' : 'Faculty (Phd)'}
                   </span>
                 )}
                 {answer?.collegeName && (

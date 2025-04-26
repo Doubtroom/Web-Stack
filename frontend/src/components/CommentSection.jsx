@@ -49,7 +49,8 @@ const CommentSection = ({ answerId }) => {
         createdAt: new Date().toISOString(),
         upvotes: 0,
         upvotedBy: [],
-        userName: userData.displayName
+        userName: userData.displayName,
+        role: userData.role
       };
 
       await dataService.addDocument(commentData);
@@ -167,11 +168,11 @@ const CommentSection = ({ answerId }) => {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-semibold text-gray-800 dark:text-white">
-                      {userData.role === 'faculty'||'faculty(Phd)' ? comment.userName : 'Anonymous'}
+                      {comment.role === 'faculty'|| comment.role === 'faculty(Phd)' ? comment.userName : 'Anonymous'}
                     </h3>
-                    {userData.role === 'faculty'||'faculty(Phd)' && (
+                    {comment.role === 'faculty'|| comment.role === 'faculty(Phd)' && (
                       <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
-                        {userData.role === 'faculty' ? 'Faculty' : 'Faculty (Phd)'}
+                        {comment.role === 'faculty' ? 'Faculty' : 'Faculty (Phd)'}
                       </span>
                     )}
                   </div>

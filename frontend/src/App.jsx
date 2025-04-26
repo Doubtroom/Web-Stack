@@ -24,7 +24,7 @@ import EditAnswer from './pages/EditAnswer'
 import ForgotPassword from './pages/ForgotPassword'
 import LearnMorePage from './pages/LearnMorePage'
 import CustomerSupportPage from './pages/CustomerSupportPage'
-
+import NotFoundPage from './pages/NotFoundPage'
 function App() {
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
 
@@ -103,9 +103,7 @@ function App() {
 
           {/* Catch all route - redirect to home or landing based on auth status */}
           <Route path="*" element={
-            <Protected authentication={null}>
-              {({ authStatus }) => authStatus ? <Navigate to="/home" replace /> : <Navigate to="/landing" replace />}
-            </Protected>
+              <NotFoundPage/>
           } />
         </Routes>
       </Router>

@@ -120,7 +120,8 @@ const AnswerForm = () => {
         upvotes: 0,
         upvotedBy: [],
         replies: [],
-        replyCount: 0
+        replyCount: 0,
+        role: userData.role
       };
 
       await dataService.addDocument(answerData);
