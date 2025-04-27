@@ -4,7 +4,7 @@ import { Building2, GraduationCap, Phone, User, Briefcase, Calendar } from 'luci
 import { toast } from 'sonner';
 import userService from '../firebase/UserService';
 import { useDispatch } from 'react-redux';
-import { updateProfileCompletion } from '../redux/profileSlice';
+import { updateProfileCompletion } from '../store/profileSlice.js';
 
 const UserInfoForm = () => {
     const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleDarkMode } from '../redux/features/darkModeSlice';
+import { toggleDarkMode } from '../store/darkModeSlice.js';
 import { Moon, Sun } from 'lucide-react';
 
 const SliderSwitch = ({classNames}) => {
