@@ -29,7 +29,7 @@ class UserService {
             
             // Ensure all fields are properly formatted
             const formattedData = {
-                name: userData?.displayName || userData?.name || '',
+                name: userData?.displayName || '',
                 branch: userData?.branch || '',
                 studyType: userData?.studyType || '',
                 phone: userData?.phone || null,
