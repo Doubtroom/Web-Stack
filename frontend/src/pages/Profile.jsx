@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { User,Calendar , Building2, GraduationCap, Phone, Briefcase, Mail, Edit2, Save, X, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import DataService from '../firebase/DataService';
 import userService from '../firebase/UserService';
+import authService from '../firebase/AuthService';
+import { useNavigate } from 'react-router-dom';
+import { logout } from '../store/authSlice';
+import { motion, AnimatePresence } from 'framer-motion';
+
 
 const Profile = () => {
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
@@ -20,6 +25,10 @@ const Profile = () => {
     collegeName: '',
     dob: ''
   });
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -59,6 +68,26 @@ const Profile = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleLogoutConfirm = async () => {
+    try {
+      await authService.logout();
+      dispatch(logout());
+      localStorage.removeItem('authStatus');
+      localStorage.removeItem('userData');
+      localStorage.setItem('profileCompleted', false);
+      toast.success('Logged out successfully!');
+      navigate('/landing', { state: { fromLogout: true }, replace: true });
+    } catch (error) {
+      toast.error('Logout Failed!');
+    } finally {
+      setShowLogoutConfirm(false);
+    }
+  };
+
+  const handleLogoutCancel = () => {
+    setShowLogoutConfirm(false);
   };
 
   const handleSubmit = async (e) => {
@@ -112,10 +141,58 @@ const Profile = () => {
 
   return (
     <div className={`min-h-screen p-3 sm:p-6 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={handleLogoutCancel}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className={`bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl`}
+            >
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                Confirm Logout
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Are you sure you want to logout?
+              </p>
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={handleLogoutCancel}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLogoutConfirm}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="max-w-4xl mx-auto mt-12 sm:mt-20">
         {/* Profile Header */}
         <div className={`rounded-t-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? 'bg-gradient-to-r from-gray-800 to-gray-700' : 'bg-gradient-to-r from-[#1e6eab] to-[#02254b]'} text-white relative`}>
-          <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
+          <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex items-center gap-2">
+            <button
+              onClick={() => {
+                setShowLogoutConfirm(true);
+              }}
+              className="hidden sm:flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg bg-red-700/60 hover:bg-red-500/60 transition-all text-sm sm:text-base text-white hover:text-white"
+            >
+              <span>Logout</span>
+            </button>
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
@@ -219,9 +296,7 @@ const Profile = () => {
                   <p className="ml-6 sm:ml-8 text-sm sm:text-base">{formatBranchName(userData?.branch) || 'Not available'}</p>
                 )}
               </div>
-            </div>
 
-            <div className="space-y-4 sm:space-y-6">
               <div className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
                 <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
                   <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
@@ -246,7 +321,9 @@ const Profile = () => {
                   <p className="ml-6 sm:ml-8 text-sm sm:text-base">{userData?.role || 'Not available'}</p>
                 )}
               </div>
+            </div>
 
+            <div className="space-y-4 sm:space-y-6">
               <div className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
                 <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
                   <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />

@@ -5,7 +5,7 @@ import DataService from '../firebase/DataService';
 import { toast } from 'sonner';
 import { useSelector } from 'react-redux';
 
-const SearchBar = ({ isMobile = false, onClose, isOpen }) => {
+const SearchBar = ({ isMobile = false, onClose, isOpen, onSearchComplete }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -110,6 +110,9 @@ const SearchBar = ({ isMobile = false, onClose, isOpen }) => {
     if (searchTerm.trim()) {
       navigate(`/search/${encodeURIComponent(searchTerm.trim())}`);
       handleClose();
+      if (onSearchComplete) {
+        onSearchComplete();
+      }
     }
   };
 

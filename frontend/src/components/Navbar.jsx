@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Search,
   User,
@@ -29,7 +29,9 @@ const Navbar = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [navbarVisibility, setNavbarVisibility] = useState(1);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
+  const searchRef = useRef(null);
 
   const handleLogoutClick = () => {
     setShowLogoutConfirm(true);
@@ -90,6 +92,25 @@ const Navbar = () => {
     };
   }, [lastScrollY]);
 
+  // Handle click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSearchDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Handle search completion
+  const handleSearchComplete = () => {
+    setShowSearchDropdown(false);
+  };
+
   return (
     <>
       <nav
@@ -106,7 +127,7 @@ const Navbar = () => {
         }}
       >
         <div className="flex gap-4 sm:gap-5 md:gap-7">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 gap-5">
             <div className="flex gap-2">
               <NavLink to="/" className="flex items-center gap-2">
                 <div className="w-8 h-8 sm:w-8 sm:h-8 rounded-md flex items-center justify-center">
@@ -115,10 +136,44 @@ const Navbar = () => {
                 <span className="text-xl sm:text-xl font-bold text-white">Doubtroom</span>
               </NavLink>
             </div>
+            <div className="relative" ref={searchRef}>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowSearchDropdown(!showSearchDropdown)}
+                  className="hidden lg:block xl:hidden"
+                >
+                  <div className={`flex flex-row items-center gap-3 px-3 py-2 rounded-full cursor-pointer transition-all duration-200 ${
+                    showSearchDropdown 
+                      ? 'bg-white/30 hover:bg-white/40 shadow-lg scale-105' 
+                      : 'bg-white/10 hover:bg-white/20'
+                  }`}>
+                    <Search className={`w-5 h-5 text-white transition-transform duration-200 ${
+                      showSearchDropdown ? 'rotate-90' : ''
+                    }`} />
+                    <span className="text-white text-sm font-medium tracking-wide">Search</span>
+                  </div>
+                </button>
+              </div>
+              
+              {/* Mobile Search Dropdown */}
+              <AnimatePresence>
+                {showSearchDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-12 right-0 w-full shadow-lg rounded-lg z-50 p-4"
+                  >
+                    <SearchBar onSearchComplete={handleSearchComplete} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* SearchBar for Desktop */}
-          <div className="hidden lg:block">
+          <div className="hidden xl:block">
             <SearchBar />
           </div>
         </div>
@@ -131,10 +186,6 @@ const Navbar = () => {
           <NavItem to="/my-college" icon={<School className="w-4 h-4" />} label="My College" />
           <NavItem to="/all-colleges" icon={<Grid className="w-4 h-4" />} label="All Colleges" />
           
-          <div className={`flex items-center text-sm text-white hover:bg-gray-100 lg:hover:bg-transparent lg:hover:text-gray-200 cursor-pointer p-1 group`} onClick={handleLogoutClick}>
-            <span className="mr-1 group-hover:text-red-500"><LogOut className="w-4 h-4" /></span>
-            <span className="group-hover:text-red-500">{"Logout"}</span>
-          </div>
           <NavLink to="/profile">
             <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
               <User className="w-5 h-5 text-black" />
