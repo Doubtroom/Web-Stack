@@ -19,19 +19,45 @@ class UserService {
     async saveUserProfile(userId, userData) {
         this.checkAuth();
         try {
+            // Validate userId
+            if (!userId || typeof userId !== 'string') {
+                console.error('Invalid userId:', userId);
+                throw new Error('Invalid user ID provided');
+            }
+
             const userRef = doc(this.db, 'users', userId);
-            await setDoc(userRef, {
-                name: userData.displayName || '',
-                branch: userData.branch,
-                studyType: userData.studyType,
-                phone: userData.phone,
-                gender: userData.gender,
-                role: userData.role,
-                collegeName: userData.collegeName,
-                dob: userData.dob,
+            
+            // Ensure all fields are properly formatted
+            const formattedData = {
+                name: userData?.displayName || userData?.name || '',
+                branch: userData?.branch || '',
+                studyType: userData?.studyType || '',
+                phone: userData?.phone || null,
+                gender: userData?.gender || '',
+                role: userData?.role || '',
+                collegeName: userData?.collegeName || '',
+                dob: userData?.dob || null,
                 createdAt: new Date().toISOString(),
-                email: userData.email
-            });
+                email: userData?.email || ''
+            };
+
+            // Validate and format the date if it exists
+            if (formattedData.dob) {
+                try {
+                    // Ensure the date is in a valid format
+                    const date = new Date(formattedData.dob);
+                    if (isNaN(date.getTime())) {
+                        formattedData.dob = null;
+                    } else {
+                        formattedData.dob = date.toISOString().split('T')[0];
+                    }
+                } catch (error) {
+                    console.warn('Invalid date format, setting to null:', error);
+                    formattedData.dob = null;
+                }
+            }
+
+            await setDoc(userRef, formattedData);
             return true;
         } catch (error) {
             console.error('Error saving user profile:', error);

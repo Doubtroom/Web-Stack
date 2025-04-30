@@ -112,7 +112,38 @@ const LoginPage = () => {
         }, 3000);
       }
       else if (!response) {
-        throw new Error('User data not found in Firestore');
+        // Set up basic user data in localStorage for new users
+        const userData = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || "",
+          photoURL: user.photoURL || "",
+          collegeName: "",
+          role: "",
+          branch: "",
+          studyType: "",
+          phone: null,
+          gender: "",
+          isAdmin: false
+        };
+        
+        localStorage.setItem("userData", JSON.stringify(userData));
+        localStorage.setItem("profileCompleted", "false");
+        localStorage.setItem("authStatus", "true");
+        localStorage.setItem("fromSignup", "true");
+        
+        dispatch(login({ 
+          userData: { 
+            email: user.email, 
+            name: user.displayName || "", 
+            userID: user.uid 
+          },
+          status: true,
+          profileCompleted: false
+        }));
+        
+        navigate('/complete-profile', { replace: true });
+        return;
       }
       
 

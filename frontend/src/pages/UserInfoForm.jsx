@@ -389,6 +389,13 @@ const UserInfoForm = () => {
         try {
             const existingUserData = JSON.parse(localStorage.getItem("userData") || "{}");
             
+            // Validate userId
+            if (!existingUserData.uid) {
+                console.error('No user ID found in localStorage:', existingUserData);
+                throw new Error('User ID not found');
+            }
+
+            
             const formattedBranch = formData.branch === 'custom' 
                 ? formData.otherBranch.toLowerCase().replace(/\s+/g, '_')
                 : formData.branch;
@@ -402,12 +409,11 @@ const UserInfoForm = () => {
             }
 
             // Format DOB for Firebase - only date part, no time
-            const formattedDob = formData.dob ? formData.dob : '';
+            const formattedDob = formData.dob ? formData.dob : null;
 
+            // Create updated user data while preserving the uid
             const updatedUserData = {
-                uid: existingUserData.uid,
-                email: existingUserData.email,
-                displayName: existingUserData.displayName,
+                ...existingUserData, // Preserve all existing data including uid
                 collegeName: collegeName,
                 role: formData.role,
                 branch: formattedBranch,
