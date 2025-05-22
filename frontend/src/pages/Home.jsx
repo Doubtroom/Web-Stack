@@ -121,7 +121,7 @@ const Home = () => {
                   <HelpCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Have a doubt?</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Have a doubts?</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Get help from the community</p>
                 </div>
               </div>
