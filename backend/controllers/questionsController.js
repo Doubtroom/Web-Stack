@@ -1,0 +1,266 @@
+import Questions from "../models/Questions.js";
+import Answers from "../models/Answers.js";
+import cloudinary from "../utils/cloudinary.js";
+
+export const createQuestion = async (req, res) => {
+    try {
+        const { text, topic, branch, collegeName } = req.body;
+        let photoUrl = '', photoId = '';
+
+        if (req.file) {
+            const uploadPromise = new Promise((resolve, reject) => {
+                const uploadStream = cloudinary.uploader.upload_stream(
+                    { resource_type: 'image' },
+                    (err, result) => {
+                        if (err) reject(err);
+                        else resolve(result);
+                    }
+                );
+                
+                uploadStream.end(req.file.buffer);
+            });
+
+            const result = await uploadPromise;
+            photoUrl = result.secure_url;
+            photoId = result.public_id;
+        }
+        
+        const question = await Questions.create({
+            text,
+            topic,
+            branch,
+            collegeName,
+            photoUrl,
+            photoId,
+            postedBy: req.user.id
+        });
+
+        res.status(201).json({message:"Successfully created Question",question})
+
+    } catch (error) {
+        console.error('Error creating question:', error);
+        res.status(500).json({ message: 'Error creating question', error: error.message });
+    }
+}
+
+export const getQuestion = async (req, res) => {
+    try {
+        const questionId = req.params.id;
+
+        const question = await Questions.findById(questionId)
+            .populate('postedBy', 'displayName collegeName role _id');
+
+        if (!question) {
+            return res.status(404).json({ message: 'Question not found' });
+        }
+
+        res.json({
+            message: "Question fetched successfully",
+            question
+        });
+    } catch (error) {
+        console.error('Error fetching question:', error);
+        res.status(500).json({ 
+            message: 'Error fetching question', 
+            error: error.message 
+        });
+    }
+}
+
+export const getAllQuestions = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const total = await Questions.countDocuments();
+
+        const questions = await Questions.find()
+            .populate('postedBy', 'displayName collegeName role _id')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        const totalPages = Math.ceil(total / limit);
+        const hasNextPage = page < totalPages;
+        const hasPrevPage = page > 1;
+
+        res.json({
+            questions,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems: total,
+                itemsPerPage: limit,
+                hasNextPage,
+                hasPrevPage
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching questions:', error);
+        res.status(500).json({ 
+            message: 'Error fetching questions', 
+            error: error.message 
+        });
+    }
+}
+
+export const getFilteredQuestions = async (req, res) => {
+    try {
+        const { branch, topic, search,collegeName } = req.query;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const filter = {};
+        
+        if (search) {
+            filter.$or = [
+                { text: { $regex: search, $options: 'i' } },
+                { topic: { $regex: search, $options: 'i' } },
+                { branch: { $regex: search, $options: 'i' } },
+                {collegeName:{$regex:search,$options:'i' }}
+            ];
+        } else {
+            if (branch) {
+                filter.branch = branch;
+            }
+            if (topic) {
+                filter.topic = topic;
+            }
+            if(collegeName){
+                filter.collegeName=collegeName     
+            }
+        }
+
+        const total = await Questions.countDocuments(filter);
+
+        const questions = await Questions.find(filter)
+            .populate('postedBy', 'displayName collegeName role _id')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        const totalPages = Math.ceil(total / limit);
+        const hasNextPage = page < totalPages;
+        const hasPrevPage = page > 1;
+
+        res.json({
+            questions,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems: total,
+                itemsPerPage: limit,
+                hasNextPage,
+                hasPrevPage
+            },
+            filters: {
+                branch: branch || 'all',
+                topic: topic || 'all',
+                search: search || '',
+                collegeName:collegeName || 'all'
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching filtered questions:', error);
+        res.status(500).json({ 
+            message: 'Error fetching filtered questions', 
+            error: error.message 
+        });
+    }
+}
+
+export const updateQuestion=async(req,res)=>{
+    try {
+        const questionId = req.params.id;
+        const { text, topic, branch } = req.body;
+        let photoUrl = '', photoId = '';
+
+        if (req.file) {
+            const uploadPromise = new Promise((resolve, reject) => {
+                const uploadStream = cloudinary.uploader.upload_stream(
+                    { resource_type: 'image' },
+                    (err, result) => {
+                        if (err) reject(err);
+                        else resolve(result);
+                    }
+                );
+                
+                uploadStream.end(req.file.buffer);
+            });
+
+            const result = await uploadPromise;
+            photoUrl = result.secure_url;
+            photoId = result.public_id;
+        }
+
+        const updateData = {};
+        
+        if (text) updateData.text = text;
+        if (topic) updateData.topic = topic;
+        if (branch) updateData.branch = branch;
+
+        if (photoUrl && photoId) {
+            updateData.photoUrl = photoUrl;
+            updateData.photoId = photoId;
+        }
+
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ 
+                message: "No fields provided for update" 
+            });
+        }
+
+        const updatedQuestion = await Questions.findByIdAndUpdate(
+            questionId,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        ).populate('postedBy', 'displayName collegeName role _id');
+
+        if (!updatedQuestion) {
+            return res.status(404).json({ message: 'Question not found' });
+        }
+
+        if (photoUrl && updatedQuestion.photoId) {
+            await cloudinary.uploader.destroy(updatedQuestion.photoId);
+        }
+
+        res.json({ 
+            message: "Question updated successfully", 
+            question: updatedQuestion 
+        });
+
+    } catch (error) {
+        console.error('Error updating question:', error);
+        res.status(500).json({ 
+            message: 'Error updating question', 
+            error: error.message 
+        });
+    }
+}
+
+export const deleteQuestion=async(req,res)=>{
+    try {
+        const question=await Questions.findById(req.params.id)
+
+        if(!question)return res.status(404).json({ error: 'Question not found' });
+
+        if(question.photoId)await cloudinary.uploader.destroy(question.photoId)
+        
+        await question.deleteOne()
+        await Answers.deleteMany({questionId:question._id})
+
+        res.json({message:'Question and associated answers are deleted successfully'})
+    } catch (error) {
+        console.error('Error deleting questions:', error);
+        res.status(500).json({ 
+            message: 'Error deleting questions', 
+            error: error.message 
+        });
+    }
+}

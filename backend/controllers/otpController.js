@@ -1,34 +1,35 @@
-import User from '../models/User.js';
-import { sendOtpEmail } from '../utils/email.js';
-import mongoose from 'mongoose';
-
-// Create a temporary OTP schema
-const otpSchema = new mongoose.Schema({
-  email: { type: String, required: true },
-  otp: { type: String, required: true },
-  expiresAt: { type: Date, required: true }
-});
-
-// Create a temporary collection for OTPs
-const TempOTP = mongoose.model('TempOTP', otpSchema);
+import User from '../models/User.js'
+import { sendOtpEmail } from '../utils/email.js'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
 
 export const sendOtp = async (req, res) => {
-  const { email } = req.body;
-  const otp = Math.floor(100000 + Math.random() * 900000);
-  const expiresAt = new Date(Date.now() + 5 * 60000); // OTP expires in 5 minutes
-
   try {
-    // Remove any existing OTP for this email
-    await TempOTP.deleteMany({ email });
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
 
-    // Create new OTP entry
-    await TempOTP.create({
-      email,
-      otp: otp.toString(),
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const user = await User.findById(decoded.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    const expiresAt = new Date(Date.now() + 5 * 60000);
+
+    const hashedOtp = await bcrypt.hash(otp.toString(), 10);
+
+    user.otp = {
+      code: hashedOtp,
       expiresAt
-    });
+    };
+    
+    await user.save();
 
-    await sendOtpEmail(email, otp);
+    await sendOtpEmail(user.email, otp);
 
     res.json({ message: "OTP sent successfully" });
   } catch (error) {
@@ -38,29 +39,63 @@ export const sendOtp = async (req, res) => {
 };
 
 export const verifyOtp = async (req, res) => {
-  const { email, otp } = req.body;
-
   try {
-    const otpRecord = await TempOTP.findOne({ email });
+    const { otp } = req.body;
+    const refreshToken = req.cookies.refreshToken;
 
-    
+    if (!refreshToken) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     if (
-      !otpRecord ||
-      otpRecord.otp !== otp ||
-      new Date() > new Date(otpRecord.expiresAt)
+      !user.otp ||
+      !user.otp.code ||
+      new Date() > new Date(user.otp.expiresAt)
     ) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
-    
-    // Delete the OTP after successful verification
-    await TempOTP.deleteOne({ email });
-    
-    const user=await User.findOne({email})
-    
+
+    const isValidOtp = await bcrypt.compare(otp.toString(), user.otp.code);
+    if (!isValidOtp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    const newRefreshToken = jwt.sign(
+      {id: user._id},
+      process.env.REFRESH_TOKEN_SECRET,
+      {expiresIn: "30d"}
+    )
+
+    const encryptedRefreshToken = await bcrypt.hash(newRefreshToken, 12)
+
+    user.refreshToken = encryptedRefreshToken
+    user.otp = undefined;
     user.isVerified = true;
     await user.save();
-    
-    res.json({ message: "OTP verified successfully" });
+
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000
+    })
+
+    res.json({ 
+      message: "OTP verified successfully",
+      user: {
+        userId: user._id,
+        email: user.email,
+        displayName: user.displayName,
+        isVerified: user.isVerified
+      }
+    });
   } catch (error) {
     console.error("Error verifying OTP:", error);
     res.status(500).json({ message: "Failed to verify OTP" });

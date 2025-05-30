@@ -2,13 +2,25 @@ import express from "express"
 import mongoose from "mongoose"
 import dotenv from "dotenv"
 import cors from "cors"
-import authRoutes from "./routes/auth.js"
+import cookieParser from "cookie-parser"
+import authRoutes from "./routes/authRoutes.js"
+import dataRoutes from "./routes/dataRoutes.js"
 
 dotenv.config()
 const app=express()
-app.use(cors())
+
+// Middleware
+app.use(cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    credentials: true  // This is important for cookies
+}))
+
 app.use(express.json())
+app.use(cookieParser())  // Add cookie-parser middleware
+
+// Routes
 app.use('/api/auth',authRoutes)
+app.use('/api/data',dataRoutes)
 
 mongoose.connect(process.env.MONGO_URI)
 .then(()=>{
