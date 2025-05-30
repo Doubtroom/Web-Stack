@@ -1,5 +1,5 @@
 import express from "express"
-import {signup, login,saveUserProfile, getAllUsers,logout, googleLogin} from "../controllers/authController.js"
+import {signup, login,saveUserProfile, getAllUsers,logout, googleLogin,getUser} from "../controllers/authController.js"
 import { sendOtp, verifyOtp } from '../controllers/otpController.js';
 import {handleLogout, verifyToken} from "../middleware/authMiddleware.js"
 import { requestReset, verifyResetToken, resetPassword } from '../controllers/passwordResetController.js';
