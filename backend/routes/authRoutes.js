@@ -20,6 +20,7 @@ router.post('/request-reset', requestReset);
 router.get('/verify-reset-token/:token', verifyResetToken);
 router.post('/reset-password/:token', resetPassword);
 
+router.get('/user', verifyToken, getUser)
 
 
 export default router

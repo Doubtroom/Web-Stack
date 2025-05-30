@@ -321,3 +321,33 @@ export const googleLogin = async (req, res) => {
         res.status(500).json({ message: "Google login failed" });
     }
 } 
+
+// backend/controllers/authController.js
+export const getUser = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId).select('-password -refreshToken');
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.json({
+            user: {
+                userId: user._id,
+                email: user.email,
+                displayName: user.displayName,
+                collegeName: user.collegeName,
+                branch: user.branch,
+                studyType: user.studyType,
+                phone: user.phone,
+                gender: user.gender,
+                role: user.role,
+                isVerified: user.isVerified
+            }
+        });
+    } catch (error) {
+        console.error("Get user error:", error);
+        res.status(500).json({ message: "Failed to get user data" });
+    }
+};
