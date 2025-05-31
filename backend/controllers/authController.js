@@ -43,7 +43,8 @@ export const signup=async(req,res)=>{
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'none',
             maxAge: 10 * 60 * 1000,
-            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
+            path: '/',
+            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : 'localhost'
         })
 
         res.cookie('refreshToken', refreshToken, {
@@ -51,7 +52,8 @@ export const signup=async(req,res)=>{
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'none',
             maxAge: 24 * 60 * 60 * 1000, // 24 hours
-            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
+            path: '/',
+            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : 'localhost'
         })
 
         res.status(201).json({
@@ -128,14 +130,18 @@ export const login=async(req,res)=>{
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'none',
-            maxAge: 10 * 60 * 1000 
+            maxAge: 10 * 60 * 1000,
+            path: '/',
+            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : 'localhost'
         })
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'none',
-            maxAge: 30 * 24 * 60 * 60 * 1000
+            maxAge: 30 * 24 * 60 * 60 * 1000,
+            path: '/',
+            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : 'localhost'
         })
 
         res.json({
@@ -296,14 +302,18 @@ export const googleLogin = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'none',
-            maxAge: 10 * 60 * 1000
+            maxAge: 10 * 60 * 1000,
+            path: '/',
+            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : 'localhost'
         });
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'none',
-            maxAge: 30 * 24 * 60 * 60 * 1000
+            maxAge: 30 * 24 * 60 * 60 * 1000,
+            path: '/',
+            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : 'localhost'
         });
 
         res.json({

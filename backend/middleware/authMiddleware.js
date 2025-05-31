@@ -86,7 +86,8 @@ export const verifyToken = async (req, res, next) => {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: 'none',
-                    maxAge: 10 * 60 * 1000 // 10 minutes
+                    maxAge: 10 * 60 * 1000,
+                    domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : 'localhost'
                 });
 
                 req.user = {
