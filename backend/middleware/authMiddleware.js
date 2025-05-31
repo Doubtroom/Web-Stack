@@ -85,9 +85,8 @@ export const verifyToken = async (req, res, next) => {
                 res.cookie('accessToken', newAccessToken, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'none',
-                    maxAge: 10 * 60 * 1000,
-                    domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : 'localhost'
+                    sameSite: 'strict',
+                    maxAge: 10 * 60 * 1000 // 10 minutes
                 });
 
                 req.user = {
@@ -134,13 +133,13 @@ export const handleLogout = async (req, res, next) => {
         res.clearCookie('accessToken', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'none'
+            sameSite: 'strict'
         })
         
         res.clearCookie('refreshToken', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'none'
+            sameSite: 'strict'
         })
 
         // Set isAuthenticated to false in response
