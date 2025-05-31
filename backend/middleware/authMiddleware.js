@@ -85,7 +85,7 @@ export const verifyToken = async (req, res, next) => {
                 res.cookie('accessToken', newAccessToken, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'strict',
+                    sameSite: 'none',
                     maxAge: 10 * 60 * 1000 // 10 minutes
                 });
 
@@ -133,13 +133,13 @@ export const handleLogout = async (req, res, next) => {
         res.clearCookie('accessToken', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict'
+            sameSite: 'none'
         })
         
         res.clearCookie('refreshToken', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict'
+            sameSite: 'none'
         })
 
         // Set isAuthenticated to false in response

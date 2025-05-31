@@ -41,15 +41,17 @@ export const signup=async(req,res)=>{
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 10 * 60 * 1000
+            sameSite: 'none',
+            maxAge: 10 * 60 * 1000,
+            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
         })
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+            sameSite: 'none',
+            maxAge: 24 * 60 * 60 * 1000, // 24 hours
+            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
         })
 
         res.status(201).json({
@@ -125,14 +127,14 @@ export const login=async(req,res)=>{
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: 'none',
             maxAge: 10 * 60 * 1000 
         })
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: 'none',
             maxAge: 30 * 24 * 60 * 60 * 1000
         })
 
@@ -293,14 +295,14 @@ export const googleLogin = async (req, res) => {
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: 'none',
             maxAge: 10 * 60 * 1000
         });
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: 'none',
             maxAge: 30 * 24 * 60 * 60 * 1000
         });
 

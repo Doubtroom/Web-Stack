@@ -14,7 +14,8 @@ app.use(cors({
     origin: [process.env.CLIENT_URL, 'http://localhost:3001', 'https://doubtroom.onrender.com'],
     credentials: true,  // This is important for cookies
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposedHeaders: ['Set-Cookie']
 }))
 
 app.use(express.json())
