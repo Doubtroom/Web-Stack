@@ -41,14 +41,14 @@ export const signup=async(req,res)=>{
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: process.env.NODE_ENV === 'production'?'strict':'lax',
             maxAge: 10 * 60 * 1000
         })
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: process.env.NODE_ENV === 'production'?'strict':'lax',
             maxAge: 24 * 60 * 60 * 1000 // 24 hours
         })
 
@@ -125,14 +125,14 @@ export const login=async(req,res)=>{
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: process.env.NODE_ENV === 'production'?'strict':'lax',
             maxAge: 10 * 60 * 1000 
         })
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: process.env.NODE_ENV === 'production'?'strict':'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000
         })
 
@@ -293,14 +293,14 @@ export const googleLogin = async (req, res) => {
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: process.env.NODE_ENV === 'production'?'strict':'lax',
             maxAge: 10 * 60 * 1000
         });
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: process.env.NODE_ENV === 'production'?'strict':'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000
         });
 
