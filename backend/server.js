@@ -11,7 +11,7 @@ const app=express()
 
 // Middleware
 app.use(cors({
-    origin: [process.env.CLIENT_URL, 'http://localhost:3001', 'https://doubtroom.onrender.com'],
+    origin: [process.env.CLIENT_URL, 'https://localhost:3001', 'https://doubtroom.onrender.com'],
     credentials: true,  // This is important for cookies
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
