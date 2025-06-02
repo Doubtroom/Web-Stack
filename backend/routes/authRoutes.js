@@ -1,7 +1,7 @@
 import express from "express"
 import {signup, login,saveUserProfile, getAllUsers,logout, googleLogin,getUser} from "../controllers/authController.js"
 import { sendOtp, verifyOtp } from '../controllers/otpController.js';
-import {handleLogout, verifyToken} from "../middleware/authMiddleware.js"
+import {handleLogout, verifyAuthentication,verifyToken} from "../middleware/authMiddleware.js"
 import { requestReset, verifyResetToken, resetPassword } from '../controllers/passwordResetController.js';
 
 const router=express.Router()
@@ -22,7 +22,7 @@ router.post('/reset-password/:token', resetPassword);
 
 router.get('/user', verifyToken, getUser)
 
-router.get('/verify', verifyToken, (req, res) => {
+router.get('/verify', verifyAuthentication, (req, res) => {
     res.json({ isAuthenticated: true });
 });
 
