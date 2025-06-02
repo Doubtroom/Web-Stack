@@ -141,7 +141,15 @@ export const verifyAuthentication=async (req,res,next)=>{
                 id: decoded.id,
                 email: decoded.email
             };
-            next();
+            // Send response with user details and verification status
+            return res.status(200).json({
+                isAuthenticated: true,
+                user: {
+                    id: user._id,
+                    email: user.email,
+                    isVerified: user.isVerified
+                }
+            });
         } else if (refreshToken) {
             // Access token expired, try to refresh
             try {
