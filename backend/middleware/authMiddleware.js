@@ -114,6 +114,7 @@ export const verifyAuthentication=async (req,res,next)=>{
     const accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
 
+
     if (!accessToken && !refreshToken) {
         return res.status(401).json({ 
             message: "Authentication required. Please log in to continue.",
@@ -186,7 +187,16 @@ export const verifyAuthentication=async (req,res,next)=>{
                     id: user._id,
                     email: user.email
                 };
-                next();
+
+                // Send response with user details and verification status
+                return res.status(200).json({
+                    isAuthenticated: true,
+                    user: {
+                        id: user._id,
+                        email: user.email,
+                        isVerified: user.isVerified
+                    }
+                });
             } catch (refreshError) {
                 return res.status(401).json({ 
                     message: "Your session has expired. Please log in again.",

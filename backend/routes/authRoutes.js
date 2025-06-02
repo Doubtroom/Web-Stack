@@ -22,8 +22,6 @@ router.post('/reset-password/:token', resetPassword);
 
 router.get('/user', verifyToken, getUser)
 
-router.get('/verify', verifyAuthentication, (req, res) => {
-    res.json({ isAuthenticated: true });
-});
+router.get('/verify', verifyAuthentication);
 
 export default router
