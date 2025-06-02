@@ -101,7 +101,6 @@ export const login=async(req,res)=>{
         const user=await User.findOne({email})
         if(!user) return res.status(400).json({message:"User not found"})
         
-        if(!user.isVerified)return res.status(401).json({message:"User not verified"})
         const match=await bcrypt.compare(password,user.password)
         if(!match) return res.status(400).json({message:"Invalid password"})
 
@@ -111,6 +110,44 @@ export const login=async(req,res)=>{
             {expiresIn: "10m"}
         )
 
+        if(!user.isVerified) {
+            const refreshToken = jwt.sign(
+                {id: user._id},
+                process.env.REFRESH_TOKEN_SECRET,
+                {expiresIn: "24h"}
+            )
+
+            const encryptedRefreshToken = await bcrypt.hash(refreshToken, 12)
+            user.refreshToken = encryptedRefreshToken
+            await user.save()
+
+            res.cookie('accessToken', accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production'?'none':'lax',
+                maxAge: 10 * 60 * 1000 
+            })
+
+            res.cookie('refreshToken', refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production'?'none':'lax',
+                maxAge: 24 * 60 * 60 * 1000
+            })
+
+            return res.status(200).json({
+                message: "User not verified",
+                isAuthenticated: true,
+                user: {
+                    userId: user._id,
+                    email: user.email,
+                    displayName: user.displayName,
+                    isVerified: user.isVerified
+                }
+            })
+        }
+
+        // For verified users
         const refreshToken = jwt.sign(
             {id: user._id},
             process.env.REFRESH_TOKEN_SECRET,
@@ -118,7 +155,6 @@ export const login=async(req,res)=>{
         )
 
         const encryptedRefreshToken = await bcrypt.hash(refreshToken, 12)
-
         user.refreshToken = encryptedRefreshToken
         await user.save()
 
