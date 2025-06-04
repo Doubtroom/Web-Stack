@@ -379,7 +379,8 @@ export const getUser = async (req, res) => {
                 phone: user.phone,
                 gender: user.gender,
                 role: user.role,
-                isVerified: user.isVerified
+                isVerified: user.isVerified,
+                dob:user.dob
             }
         });
     } catch (error) {
