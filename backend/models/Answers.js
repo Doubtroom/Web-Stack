@@ -1,12 +1,15 @@
 import mongoose from 'mongoose';
 
 const answerSchema = new mongoose.Schema({
-  text: { type: String, required: true },
+  text: { type: String,default:""},
   questionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Question', required: true },
-  photoUrl: String,
-  photoId: String,
-  postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  createdAt: { type: Date, default: Date.now }
+  photoUrl: { type: String,default:""},
+  photoId: { type: String,default:""},
+  postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true},
+  createdAt: { type: Date, default: Date.now },
+  firebaseId: String,
+  firebaseQuestionId: String,
+  firebasePostedBy: String
 });
 
 export default mongoose.model('Answer', answerSchema);

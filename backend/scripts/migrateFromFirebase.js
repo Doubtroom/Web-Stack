@@ -6,8 +6,14 @@ import Answers from '../models/Answers.js';
 import Comments from '../models/Comments.js';
 import User from '../models/User.js';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables from the correct path
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 // Firebase configuration
 const firebaseConfig = {
@@ -20,13 +26,13 @@ const firebaseConfig = {
     appId: process.env.FIREBASE_APP_ID
 };
 
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // MongoDB connection
-const MONGODB_URI = process.env.MONGO_URI
-mongoose.connect(MONGODB_URI)
+mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
 
@@ -47,6 +53,7 @@ const migrateUsers = async () => {
             // Generate a random password for each user
             
             users.push({
+                firebaseId: doc.id,  // Store Firebase ID in a separate field
                 email: data.email,
                 password: "FIREBASE", // Set a temporary password
                 displayName: data.name,
@@ -91,85 +98,83 @@ const migrateQuestions = async () => {
         for (const doc of questionsSnapshot.docs) {
             const data = doc.data();
             questions.push({
-                _id: doc.id,
+                firebaseId: doc.id,
                 text: data.text,
                 topic: data.topic,
                 branch: data.branch,
                 collegeName: data.collegeName,
-                photoUrl:'',
+                photoUrl:data.photo==null?'':data.photo,
                 photoId:'',
-                postedBy: data.postedBy,
+                firebasePostedBy: data.postedBy,
                 noOfAnswers: data.noOfAnswers || 0,
                 createdAt: transformTimestamp(data.createdAt),
                 updatedAt: transformTimestamp(data.updatedAt)
             });
         }
-        console.log(questions)
+        // console.log(questions)
 
-        // if (questions.length > 0) {
-        //     await Questions.insertMany(questions);
-        //     console.log(`Migrated ${questions.length} questions`);
-        // }
+        if (questions.length > 0) {
+            await Questions.insertMany(questions);
+            console.log(`Migrated ${questions.length} questions`);
+        }
     } catch (error) {
         console.error('Error migrating questions:', error);
     }
 };
 
-// // Migrate Answers
-// const migrateAnswers = async () => {
-//     try {
-//         const answersSnapshot = await getDocs(collection(db, 'answers'));
-//         const answers = [];
+// Migrate Answers
+const migrateAnswers = async () => {
+    try {
+        const answersSnapshot = await getDocs(collection(db, 'answers'));
+        const answers = [];
 
-//         for (const doc of answersSnapshot.docs) {
-//             const data = doc.data();
-//             answers.push({
-//                 _id: doc.id,
-//                 text: data.text,
-//                 questionId: data.questionId,
-//                 photoUrl: data.photoUrl || '',
-//                 photoId: data.photoId || '',
-//                 postedBy: data.postedBy,
-//                 createdAt: transformTimestamp(data.createdAt),
-//                 updatedAt: transformTimestamp(data.updatedAt)
-//             });
-//         }
+        for (const doc of answersSnapshot.docs) {
+            const data = doc.data();
+            answers.push({
+                firebaseId: doc.id,
+                text: data.text==null?'':data.text,
+                firebaseQuestionId: data.questionId,
+                photoUrl: data.photo==null?'':data.photo,
+                photoId: data.photoId || '',
+                firebasePostedBy: data.postedBy,
+                createdAt: transformTimestamp(data.createdAt)
+            });
+        }
 
-//         if (answers.length > 0) {
-//             await Answers.insertMany(answers);
-//             console.log(`Migrated ${answers.length} answers`);
-//         }
-//     } catch (error) {
-//         console.error('Error migrating answers:', error);
-//     }
-// };
+        if (answers.length > 0) {
+            await Answers.insertMany(answers);
+            console.log(`Migrated ${answers.length} answers`);
+        }
+    } catch (error) {
+        console.error('Error migrating answers:', error);
+    }
+};
 
-// // Migrate Comments
-// const migrateComments = async () => {
-//     try {
-//         const commentsSnapshot = await getDocs(collection(db, 'comments'));
-//         const comments = [];
+// Migrate Comments
+const migrateComments = async () => {
+    try {
+        const commentsSnapshot = await getDocs(collection(db, 'comments'));
+        const comments = [];
 
-//         for (const doc of commentsSnapshot.docs) {
-//             const data = doc.data();
-//             comments.push({
-//                 _id: doc.id,
-//                 text: data.text,
-//                 answerId: data.answerId,
-//                 postedBy: data.postedBy,
-//                 createdAt: transformTimestamp(data.createdAt),
-//                 updatedAt: transformTimestamp(data.updatedAt)
-//             });
-//         }
+        for (const doc of commentsSnapshot.docs) {
+            const data = doc.data();
+            comments.push({
+                firebaseId: doc.id,
+                text: data.text,
+                firebaseAnswerId: data.answerId,
+                firebasePostedBy: data.postedBy,
+                createdAt: transformTimestamp(data.createdAt),
+            });
+        }
 
-//         if (comments.length > 0) {
-//             await Comments.insertMany(comments);
-//             console.log(`Migrated ${comments.length} comments`);
-//         }
-//     } catch (error) {
-//         console.error('Error migrating comments:', error);
-//     }
-// };
+        if (comments.length > 0) {
+            await Comments.insertMany(comments);
+            console.log(`Migrated ${comments.length} comments`);
+        }
+    } catch (error) {
+        console.error('Error migrating comments:', error);
+    }
+};
 
 // Main migration function
 const migrateData = async () => {
@@ -177,16 +182,16 @@ const migrateData = async () => {
         console.log('Starting migration...');
         
         // Clear existing data (optional)
-        await Questions.deleteMany({});
+        // await Questions.deleteMany({});
         // await Answers.deleteMany({});
         // await Comments.deleteMany({});
-        await User.deleteMany({});
+        // await User.deleteMany({});
 
         // Run migrations
-        await migrateQuestions();
+        // await migrateQuestions();
         // await migrateAnswers();
-        // await migrateComments();
-        await migrateUsers();
+        await migrateComments();
+        // await migrateUsers();
 
         console.log('Migration completed successfully');
         process.exit(0);
