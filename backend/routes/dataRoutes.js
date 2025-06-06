@@ -11,9 +11,9 @@ import { upload } from '../middleware/multer.js';
 const router=express.Router();
 
 router.post('/questions',verifyToken,upload.single('image'),createQuestion)
+router.get('/questions/filter',verifyToken, getFilteredQuestions)
 router.get('/questions/:id',verifyToken,getQuestion)
 router.get('/questions',verifyToken,getAllQuestions)
-router.get('/questions/filter',verifyToken, getFilteredQuestions)
 router.delete('/questions/:id', verifyToken, deleteQuestion)
 router.patch('/questions/:id', verifyToken, upload.single('image'), updateQuestion)
 
