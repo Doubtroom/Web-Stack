@@ -47,12 +47,12 @@ const CollegeCard = ({ id, collegeName, img, branch, topic, noOfAnswers, postedO
   };
 
   const handleCardClick = () => {
-    navigate(`/question/${id}`);
+    navigate(`/question/${id}`, { state: { fromPage: window.location.search } });
   };
 
   const handleAnswerClick = (e) => {
     e.stopPropagation();
-    navigate(`/question/${id}/answer`);
+    navigate(`/question/${id}/answer`, { state: { fromPage: window.location.search } });
   };
 
   return (

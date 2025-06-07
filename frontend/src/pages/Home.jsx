@@ -1,22 +1,48 @@
 import React, { useEffect, useState } from 'react'
 import CollegeCard from '../components/CollegeCard'
-import { HelpCircle, Loader2 } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
-import DataService from '../firebase/DataService'
+import { HelpCircle, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
+import { questionServices } from '../services/data.services'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { toast } from 'sonner'
 import FilterButton from '../components/FilterButton'
 import MobileFilterButton from '../components/MobileFilterButton'
 import placeholder from '../assets/placeholder.png'
+import { useSelector } from 'react-redux'
+import Pagination from '../components/Pagination'
+import QuestionCardSkeleton from '../components/QuestionCardSkeleton'
+import HomeSkeleton from '../components/HomeSkeleton'
+
+const ITEMS_PER_PAGE = 9;
 
 const Home = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const userData = useSelector((state) => state?.auth?.user);
+  
+  // State management
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterLoading, setFilterLoading] = useState(false);
   const [showMyBranch, setShowMyBranch] = useState(false);
-  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const [page, setPage] = useState(parseInt(searchParams.get('page')) || 1);
+  const [totalPages, setTotalPages] = useState(1);
 
+  // Loading skeleton array
+  const loadingSkeletons = Array(ITEMS_PER_PAGE).fill(null);
+
+  // Handle back navigation
+  useEffect(() => {
+    if (location.state?.fromPage) {
+      const params = new URLSearchParams(location.state.fromPage);
+      const pageNumber = parseInt(params.get('page')) || 1;
+      setPage(pageNumber);
+      fetchQuestions(pageNumber);
+    }
+  }, [location.state]);
+
+  // Format branch name for display
   const formatBranchName = (branch) => {
     if (!branch) return '';
     return branch
@@ -25,38 +51,61 @@ const Home = () => {
       .join(' ');
   };
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
+  // Fetch questions with pagination
+  const fetchQuestions = async (pageNumber) => {
+    try {
+      setFilterLoading(true);
+      const queryParams = {
+        page: pageNumber,
+        limit: ITEMS_PER_PAGE
+      };
 
-    const fetchQuestions = async () => {
-      try {
-        setFilterLoading(true);
-        const dataService = new DataService('questions');
-        let fetchedQuestions;
-        
-        if (showMyBranch && userData.branch) {
-          fetchedQuestions = await dataService.getQuestionsByBranch(userData.branch);
-        } else {
-          fetchedQuestions = await dataService.getAllDocuments();
-        }
-        
-        // Sort questions by createdAt timestamp in descending order (newest first)
-        const sortedQuestions = fetchedQuestions.sort((a, b) => {
-          return new Date(b.createdAt) - new Date(a.createdAt); // For descending order (newest first)
+      let response;
+      if (showMyBranch && userData?.branch) {
+        response = await questionServices.getFilteredQuestions({
+          page: pageNumber,
+          limit: ITEMS_PER_PAGE,
+          branch: userData.branch
         });
-        
-        setQuestions(sortedQuestions);
-      } catch (error) {
-        console.error('Error fetching questions:', error);
-        toast.error('Failed to fetch questions');
-      } finally {
-        setLoading(false);
-        setFilterLoading(false);
+      } else {
+        response = await questionServices.getAllQuestions({
+          page: pageNumber,
+          limit: ITEMS_PER_PAGE
+        });
       }
-    };
 
-    fetchQuestions();
-  }, [showMyBranch, userData.branch]);
+      if (response?.data) {
+        const { questions: fetchedQuestions, pagination } = response.data;
+        setQuestions(fetchedQuestions || []);
+        setTotalPages(pagination.totalPages);
+        setPage(pageNumber);
+        // Update URL with current page
+        setSearchParams({ page: pageNumber.toString() });
+      } else {
+        throw new Error('Invalid response format');
+      }
+    } catch (error) {
+      console.error('Error fetching questions:', error);
+      toast.error(error?.response?.data?.message || 'Failed to fetch questions');
+    } finally {
+      setLoading(false);
+      setFilterLoading(false);
+    }
+  };
+
+  // Initial load and filter change handler
+  useEffect(() => {
+    const currentPage = parseInt(searchParams.get('page')) || 1;
+    fetchQuestions(currentPage);
+  }, [showMyBranch, userData?.branch]);
+
+  // Page change handler
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      window.scrollTo(0, 0);
+      fetchQuestions(newPage);
+    }
+  };
 
   const formatTimeAgo = (dateString) => {
     const date = new Date(dateString);
@@ -77,36 +126,8 @@ const Home = () => {
       .join(' ');
   };
 
-  const QuestionSkeleton = () => (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700">
-      <div className="p-5 border-b border-gray-100 dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-2 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
-          </div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
-        </div>
-      </div>
-
-      <div className="relative">
-        <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
-      </div>
-
-      <div className="p-5">
-        <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-3 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-20 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
-          </div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:200%_100%]"></div>
-        </div>
-      </div>
-    </div>
-  );
-
   if (loading) {
-    return <LoadingSpinner fullScreen />;
+    return <HomeSkeleton />;
   }
 
   return (
@@ -121,7 +142,7 @@ const Home = () => {
                   <HelpCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Have a doubts?</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Have a doubt?</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Get help from the community</p>
                 </div>
               </div>
@@ -142,7 +163,7 @@ const Home = () => {
           <div className="flex items-center justify-between w-full sm:w-auto">
             <h1 className="text-2xl sm:text-4xl font-bold text-blue-900 dark:text-blue-300">Recent Questions</h1>
             {/* Mobile Filter Button */}
-            {userData.branch && (
+            {userData?.branch && (
               <div className="sm:hidden">
                 <MobileFilterButton
                   isActive={showMyBranch}
@@ -154,7 +175,7 @@ const Home = () => {
             )}
           </div>
           {/* Desktop Filter Button */}
-          {userData.branch && (
+          {userData?.branch && (
             <div className="hidden sm:block">
               <FilterButton
                 isActive={showMyBranch}
@@ -165,38 +186,48 @@ const Home = () => {
             </div>
           )}
         </div>
+
+        {/* Questions Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filterLoading ? (
-            <div className="col-span-full flex justify-center py-12">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : (
+            loadingSkeletons.map((_, index) => (
+              <QuestionCardSkeleton key={index} />
+            ))
+          ) : questions.length > 0 ? (
             questions.map((question) => (
               <CollegeCard
-                key={question.id}
-                id={question.id}
+                key={question._id}
+                id={question._id}
                 collegeName={question.collegeName}
-                img={question.photo || placeholder}
+                img={question.photoUrl || placeholder}
                 branch={question.branch}
                 topic={question.topic}
                 noOfAnswers={question.noOfAnswers || 0}
                 postedOn={question.createdAt}
               />
             ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400 text-lg">
+                {showMyBranch 
+                  ? `No questions found for ${formatBranchName(userData?.branch)} branch`
+                  : 'No questions found'}
+              </p>
+            </div>
           )}
         </div>
-        {questions.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400 text-lg">
-              {showMyBranch 
-                ? `No questions found for ${formatBranchName(userData.branch)} branch`
-                : 'No questions found'}
-            </p>
-          </div>
+
+        {/* Pagination */}
+        {questions.length > 0 && (
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

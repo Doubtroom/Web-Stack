@@ -26,23 +26,24 @@ class DataService {
     });
   }
 
-  async checkAuth() {
-    if (!this.currentUser) {
-      await new Promise((resolve) => {
-        const unsubscribe = onAuthStateChanged(this.auth, (user) => {
-          if (user) {
-            this.currentUser = user;
-            unsubscribe(); // Stop listening once authenticated
-            resolve();
-          } else {
-            throw new Error("User not authenticated");
-          }
-        });
-      });
-    }
-  }
+  // async checkAuth() {
+  //   if (!this.currentUser) {
+  //     await new Promise((resolve) => {
+  //       const unsubscribe = onAuthStateChanged(this.auth, (user) => {
+  //         if (user) {
+  //           this.currentUser = user;
+  //           unsubscribe(); // Stop listening once authenticated
+  //           resolve();
+  //         } else {
+  //           throw new Error("User not authenticated");
+  //         }
+  //       });
+  //     });
+  //   }
+  // }
   async uploadImage(file) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const fileId = ID.unique();
       const response = await storage.createFile(
@@ -64,7 +65,8 @@ class DataService {
   }
 
   async deleteImage(fileId) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       if (!fileId) return;
       await storage.deleteFile(config.appwriteBucketId, fileId);
@@ -80,7 +82,8 @@ class DataService {
 
 
   async addQuestion(data) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const questionData = {
         text: data.question,
@@ -103,7 +106,8 @@ class DataService {
   }
 
   async addDocument(data) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const docRef = await addDoc(this.collectionRef, data);
       return docRef.id;
@@ -114,7 +118,8 @@ class DataService {
   }
 
   async updateDocument(docId, data) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const docRef = doc(this.collectionRef, docId);
       await updateDoc(docRef, data);
@@ -126,7 +131,8 @@ class DataService {
   }
 
   async deleteDocument(docId) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const docRef = doc(this.collectionRef, docId);
       await deleteDoc(docRef);
@@ -138,7 +144,8 @@ class DataService {
   }
 
   async getDocumentById(docId) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const docRef = doc(this.collectionRef, docId);
       const docSnap = await getDoc(docRef);
@@ -167,7 +174,8 @@ class DataService {
   }
 
   async getAllDocuments() {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const querySnapshot = await getDocs(this.collectionRef);
       const documents = [];
@@ -197,7 +205,8 @@ class DataService {
   }
 
   async getUserData(uid) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const docRef = doc(this.collectionRef, uid);
       const res = await getDoc(docRef);
@@ -209,7 +218,8 @@ class DataService {
   }
 
   async getAnswersByQuestionId(questionId) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const answersCollection = collection(this.db, 'answers');
       const q = query(answersCollection, where('questionId', '==', questionId));
@@ -243,7 +253,8 @@ class DataService {
   }
 
   async getCommentsByAnswerId(answerId) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const commentsRef = collection(this.db, 'comments');
       const q = query(commentsRef, where('answerId', '==', answerId), orderBy('createdAt', 'desc'));
@@ -265,7 +276,8 @@ class DataService {
   }
 
   async searchQuestions(searchTerm) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const questionsRef = collection(this.db, 'questions');
       const q = query(
@@ -295,7 +307,8 @@ class DataService {
   }
 
   async searchAnswers(searchTerm) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const answersRef = collection(this.db, 'answers');
       const q = query(
@@ -319,7 +332,8 @@ class DataService {
   }
 
   async searchComments(searchTerm) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const commentsRef = collection(this.db, 'comments');
       const q = query(
@@ -343,7 +357,8 @@ class DataService {
   }
 
   async deleteAllFiles(){
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const files = await storage.listFiles(config.appwriteBucketId);
       
@@ -359,7 +374,8 @@ class DataService {
   }
 
   async updateAnswerCount(questionId, shouldIncrement = true) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const questionRef = doc(this.db, 'questions', questionId);
       await updateDoc(questionRef, {
@@ -372,7 +388,8 @@ class DataService {
   }
 
   async getQuestionsByBranch(branch) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const q = query(
         this.collectionRef,
@@ -394,7 +411,8 @@ class DataService {
   }
 
   async getAnswersByUserId(userId) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const answersCollection = collection(this.db, 'answers');
       const q = query(
@@ -435,7 +453,8 @@ class DataService {
     }
   }
   async sendCustomerSupportQuery(data) {
-    this.checkAuth();
+        // this.checkAuth();
+
     try {
       const docRef = await addDoc(this.collectionRef, data);
       return docRef.id; 

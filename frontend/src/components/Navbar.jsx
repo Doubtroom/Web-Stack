@@ -16,7 +16,6 @@ import { NavLink } from "react-router-dom";
 import Logo from "../assets/logoWhite.png";
 import { motion, AnimatePresence } from "framer-motion";
 import SliderSwitch from '../components/SliderSwitch'
-import authService from "../firebase/AuthService";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { useSelector, useDispatch } from 'react-redux';
@@ -39,15 +38,13 @@ const Navbar = () => {
 
   const handleLogoutConfirm = async () => {
     try {
-      await authService.logout();
-      dispatch(logout());
-      localStorage.removeItem('authStatus');
-      localStorage.removeItem('userData');
-      localStorage.setItem('profileCompleted', false);
-      toast.success('Logged out successfully!');
-      navigate('/landing', { state: { fromLogout: true }, replace: true });
+      const result = await dispatch(logout()).unwrap();
+      if (result) {
+        toast.success('Logged out successfully!');
+        navigate('/landing', { state: { fromLogout: true }, replace: true });
+      }
     } catch (error) {
-      toast.error('Logout Failed!');
+      toast.error(error || 'Logout failed. Please try again.');
     } finally {
       setShowLogoutConfirm(false);
     }

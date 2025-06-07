@@ -1,28 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import InputField from '../components/InputField';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
 import Button from '../components/ButtonAuth';
-import GoogleLoginButton from '../components/GoogleLoginButton';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
-import authService from '../firebase/AuthService.js'
-import {toast} from "sonner"
 import { useDispatch, useSelector } from 'react-redux';
-import {login} from '../store/authSlice'
-import DataService from '../firebase/DataService.js'
+import { login, sendOtp, fetchUser, setAuth } from '../store/authSlice';
+import { toast } from 'sonner';
 import LoadingSpinner from '../components/LoadingSpinner';
+import VerificationPrompt from '../components/VerificationPrompt';
 
 const LoginPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
+  const { loading, error } = useSelector((state) => state.auth);
+  const [isVerificationPromptOpen, setIsVerificationPromptOpen] = useState(false);
+  const [loginState, setLoginState] = useState({
+    isProcessing: false,
+    step: 'idle', // idle -> logging -> fetching -> updating -> navigating
+    error: null
+  });
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
+
+  // Monitor auth state changes
+  const authState = useSelector(state => state.auth);
+  useEffect(() => {
+    if (loginState.step === 'updating' && authState.isAuthenticated) {
+      setLoginState(prev => ({ ...prev, step: 'navigating' }));
+    }
+  }, [authState.isAuthenticated]);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -34,7 +46,7 @@ const LoginPage = () => {
   };
 
   const validate = () => {
-    const newErrors= {};
+    const newErrors = {};
     
     if (!formData.email) {
       newErrors.email = 'Email is required';
@@ -50,190 +62,108 @@ const LoginPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleVerify = () => {
+    setIsVerificationPromptOpen(false);
+    dispatch(sendOtp(formData.email));
+    navigate('/verify-otp', { 
+      replace: true,
+      state: { email: formData.email }
+    });
+  };
+
+  const handleNewAccount = () => {
+    setIsVerificationPromptOpen(false);
+    navigate('/signup');
+  };
+
+  const handleClosePrompt = () => {
+    setIsVerificationPromptOpen(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     
-    if (!validate()) return;
+    if (!validate()) {
+      return false;
+    }
+
+    if (loginState.isProcessing) return;
     
-    setIsLoading(true);
+    setLoginState({
+      isProcessing: true,
+      step: 'logging',
+      error: null
+    });
     
     try {
-      const user = await authService.login(formData.email, formData.password);      
+      // Step 1: Login
+      const result = await dispatch(login(formData)).unwrap();
       
-      const dataService = new DataService("users");
-      
-      const response = await dataService.getUserData(user.uid);
-      
-      
-      if(user && !user.emailVerified && !response){
-
-        await authService.sendEmailVerification(user)
-        
-        setIsVerifying(true);
-        toast.success('Please verify you email, Verification email sent!');
-        const checkVerification = setInterval(async () => {
-          await user.reload();
-          if (user.emailVerified) {
-            clearInterval(checkVerification);
-            setIsVerifying(false);
-            
-            const userData = {
-              uid: user.uid,
-              email: user.email,
-              displayName: formData.name,
-              photoURL: user.photoURL,
-              collegeName: '',
-              role: '',
-              branch: '',
-              studyType: '',
-              phone: '',
-              gender: '',
-              isAdmin:false,
-            };
-            
-            localStorage.setItem("userData", JSON.stringify(userData));
-            localStorage.setItem("authStatus", "true");
-            localStorage.setItem("profileCompleted", "false");
-            localStorage.setItem("fromSignup", "true");
-            
-            dispatch(login({ 
-              userData: { 
-                email: user.email, 
-                name: formData.name, 
-                userID: user.uid 
-              },
-              status: true,
-              profileCompleted: false
-            }));
-            
-            toast.success('Email verified successfully!');
-            navigate('/complete-profile', { replace: true });
-          }
-        }, 3000);
-      }
-      else if (!response) {
-        // Set up basic user data in localStorage for new users
-        const userData = {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName || "",
-          photoURL: user.photoURL || "",
-          collegeName: "",
-          role: "",
-          branch: "",
-          studyType: "",
-          phone: null,
-          gender: "",
-          isAdmin: false
-        };
-        
-        localStorage.setItem("userData", JSON.stringify(userData));
-        localStorage.setItem("profileCompleted", "false");
-        localStorage.setItem("authStatus", "true");
-        localStorage.setItem("fromSignup", "true");
-        
-        dispatch(login({ 
-          userData: { 
-            email: user.email, 
-            name: user.displayName || "", 
-            userID: user.uid 
-          },
-          status: true,
-          profileCompleted: false
-        }));
-        
-        navigate('/complete-profile', { replace: true });
+      if (!result.user.isVerified) {
+        setIsVerificationPromptOpen(true);
+        setLoginState({
+          isProcessing: false,
+          step: 'idle',
+          error: null
+        });
         return;
       }
-      
 
-      const userData = {
-        uid: user.uid,
-        email: response.email,
-        displayName: response.name || "",
-        collegeName: response.collegeName || "",
-        photoURL: user.photoURL,
-        branch: response.branch?.toLowerCase().replace(/\s+/g, '_') || "",
-        role: response.role || "",
-      };
+      // Step 2: Fetch fresh user data
+      setLoginState(prev => ({ ...prev, step: 'fetching' }));
+      const userResult = await dispatch(fetchUser()).unwrap();
       
-      localStorage.setItem("userData", JSON.stringify(userData));
-      localStorage.setItem("authStatus", "true");
-      
-      // Check if profile is completed
-      const isProfileCompleted = response.college && response.branch && response.role;
-      localStorage.setItem("profileCompleted", true);
-      
-      dispatch(login({ 
-        userData: { 
-          email: user.email, 
-          name: user.displayName || "", 
-          userID: user.uid
-        },
-        status: true,
-        profileCompleted: isProfileCompleted
+      // Step 3: Update auth state
+      setLoginState(prev => ({ ...prev, step: 'updating' }));
+      dispatch(setAuth({
+        isAuthenticated: true,
+        isVerified: true,
+        user: userResult
       }));
-      
-      toast.success('Logged in successfully!');
-      
 
-      
-      navigate('/home', { replace: true });
-    } catch (error) {
-      console.error(error);
-      if (!isVerifying) {
-        const errorMessage = error.code?.split("auth/")[1] || "unknown-error";
-        toast.error(`Login failed: ${errorMessage}`);
+      // Step 4: Check profile completion
+      const hasCompleteProfile = Boolean(
+        userResult.branch && 
+        userResult.studyType && 
+        userResult.gender && 
+        userResult.role && 
+        userResult.collegeName && 
+        userResult.dob
+      );
+
+      // Step 5: Navigate based on profile completion
+      if (hasCompleteProfile) {
+        navigate('/home', { replace: true });
+      } else {
+        navigate('/complete-profile', { replace: true });
       }
-    } finally {
-      setIsLoading(false);
+
+      toast.success('Logged in successfully!');
+    } catch (error) {
+      toast.error(error || 'Login failed. Please try again.');
+      setLoginState({
+        isProcessing: false,
+        step: 'idle',
+        error: error
+      });
     }
   };
-  
-  // const handleGoogleLogin = async () => {
-    //   try {
-      //     const user = await authService.signInWithGoogle()
-      //       const userString=JSON.stringify(user)
-      //       localStorage.setItem("userData",userString)
-      //       toast.success('Logged in with Google successfully!')
-      //     navigate('/home')
-      //   } catch (error) {
-        //     console.error(error)
-        //     toast.error('Google login failed. Please try again')
-  //   }
-  // };
 
-  if (isLoading) {
+  if (loading || loginState.isProcessing) {
     return <LoadingSpinner fullScreen />;
-  }
-
-  if (isVerifying) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center p-4 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <div className={`w-full max-w-md rounded-lg shadow-md p-8 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-          <div className="text-center">
-            <h1 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              Verify your email
-            </h1>
-            <p className={`mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              We've sent a verification link to your email. Please check your inbox and click the link to verify your account.
-            </p>
-            <div className='flex justify-center items-center'>
-              <LoadingSpinner />
-            </div>
-            <p className={`mt-4 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Don't forget to check your spam folder!
-            </p>
-          </div>
-        </div>
-      </div>
-    );
   }
 
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 ${
       isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
     }`}>
+      <VerificationPrompt
+        isOpen={isVerificationPromptOpen}
+        onClose={handleClosePrompt}
+        onVerify={handleVerify}
+        onNewAccount={handleNewAccount}
+      />
       <div className={`w-full max-w-md rounded-lg shadow-md p-8 ${
         isDarkMode ? 'bg-gray-800' : 'bg-white'
       }`}>
@@ -246,61 +176,59 @@ const LoginPage = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <div className="mb-6">
             <InputField
-              label={"Email"}
               type="email"
-              placeholder="Enter your email"
-              icon={<Mail size={18} />}
-              value={formData.email}
-              onChange={handleChange}
-              disabled={isLoading}
               id="email"
+              label="Email"
+              placeholder="Enter your email"
+              icon={<Mail size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />}
+              value={formData.email}
+              error={errors.email}
+              onChange={handleChange}
             />
           </div>
 
           <div className="mb-6">
             <InputField
-              label={"Password"}
-              id="password"
               type="password"
+              id="password"
+              label="Password"
               placeholder="Enter your password"
-              icon={<Lock size={18} />}
+              icon={<Lock size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />}
               value={formData.password}
+              error={errors.password}
               onChange={handleChange}
-              disabled={isLoading}
             />
-            <div className="flex justify-end mt-2">
-              <Link to={"/forgot-password"}>
-                <h2 className="text-blue-500 text-sm hover:underline">Forgot Password</h2>
-              </Link>
-            </div>
           </div>
 
           <div className="mb-6">
-            <Button text="Login" isLoading={isLoading} loadingText={"Logging in..."} variant="primary" fullWidth disabled={isLoading} />
+            <Button 
+              text="Login" 
+              variant="primary" 
+              fullWidth 
+              isLoading={loading || loginState.isProcessing}
+              loadingText={`${loginState.step === 'logging' ? 'Logging in...' : 
+                          loginState.step === 'fetching' ? 'Loading user data...' :
+                          loginState.step === 'updating' ? 'Updating session...' :
+                          'Please wait...'}`}
+              type="submit"
+            />
+          </div>
+
+          <div className="text-center">
+            <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
+              Don't have an account?{' '}
+              <Link 
+                to="/signup" 
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Sign up
+              </Link>
+            </p>
           </div>
         </form>
-
-        {/* <div className="relative flex items-center justify-center mb-6">
-          <div className="border-t border-gray-300 absolute w-full"></div>
-          <div className="bg-white px-4 relative text-gray-500 text-sm">OR</div>
-        </div>
-
-        <div className="mb-6">
-          <GoogleLoginButton onClick={handleGoogleLogin} disabled={isLoading} />
-        </div> */}
-
-        <div className={`text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          Don't have an account?{' '}
-          <Link 
-            to="/signup" 
-            className="text-blue-500 text-sm inline-flex items-center"
-          >
-            Sign up <ArrowRight size={14} className="ml-1" />
-          </Link>
-        </div>
       </div>
     </div>
   );

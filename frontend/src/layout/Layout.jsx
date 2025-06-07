@@ -50,7 +50,7 @@ const Layout = () => {
           </div>
         )}
       </div>
-      <main className={`flex-1 w-full ${shouldShowSearch ? 'pt-4' : 'pt-10'} pb-24 md:pb-20 min-h-screen`}>
+      <main className={`flex-1 w-full ${shouldShowSearch ? 'pt-4' : 'pt-10'} pb-24 lg:pb-4 min-h-screen`}>
         <Outlet />
       </main>
       <Footer classNames={'lg:block hidden'}/>

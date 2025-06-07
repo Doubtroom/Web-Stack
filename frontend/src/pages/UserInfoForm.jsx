@@ -4,7 +4,7 @@ import { Building2, GraduationCap, Phone, User, Briefcase, Calendar } from 'luci
 import { toast } from 'sonner';
 import userService from '../firebase/UserService';
 import { useDispatch } from 'react-redux';
-import { updateProfileCompletion } from '../store/profileSlice.js';
+import { updateProfile } from '../store/authSlice.js';
 
 const UserInfoForm = () => {
     const navigate = useNavigate();
@@ -30,24 +30,6 @@ const UserInfoForm = () => {
     
     const fromSignup = localStorage.getItem("fromSignup") === "true";
     
-    useEffect(() => {
-        if (fromSignup) {
-            // Disable browser back button
-            window.history.pushState(null, '', window.location.href);
-            
-            // Handle browser back button
-            const handlePopState = (e) => {
-                e.preventDefault();
-                window.history.pushState(null, '', window.location.href);
-            };
-            
-            window.addEventListener('popstate', handlePopState);
-            
-            return () => {
-                window.removeEventListener('popstate', handlePopState);
-            };
-        }
-    }, [fromSignup]);
 
     const studyTypes = [
         { value: 'btech', label: "Bachelor's Degree (B.Tech)" },
@@ -59,8 +41,7 @@ const UserInfoForm = () => {
       ];
 
       
-
-      const branches = [
+    const branches = [
         { value: 'biotechnology_biochemical_engineering', label: 'Biotechnology & Biochemical Engineering' },
         { value: 'chemical_engineering', label: 'Chemical Engineering' },
         { value: 'civil_engineering', label: 'Civil Engineering' },
@@ -387,14 +368,7 @@ const UserInfoForm = () => {
         
         setIsLoading(true);
         try {
-            const existingUserData = JSON.parse(localStorage.getItem("userData") || "{}");
             
-            // Validate userId
-            if (!existingUserData.uid) {
-                console.error('No user ID found in localStorage:', existingUserData);
-                throw new Error('User ID not found');
-            }
-
             
             const formattedBranch = formData.branch === 'custom' 
                 ? formData.otherBranch.toLowerCase().replace(/\s+/g, '_')
@@ -413,7 +387,6 @@ const UserInfoForm = () => {
 
             // Create updated user data while preserving the uid
             const updatedUserData = {
-                ...existingUserData, // Preserve all existing data including uid
                 collegeName: collegeName,
                 role: formData.role,
                 branch: formattedBranch,
@@ -422,18 +395,12 @@ const UserInfoForm = () => {
                 gender: formData.gender,
                 dob: formattedDob
             };
+                        
+            await dispatch(updateProfile(updatedUserData))
             
-            localStorage.setItem("userData", JSON.stringify(updatedUserData));
-            localStorage.setItem("profileCompleted", "true");
-            localStorage.removeItem("fromSignup");
-            
-            await userService.saveUserProfile(existingUserData.uid, updatedUserData);
-            
-            dispatch(updateProfileCompletion(true));
             
             toast.success('Profile information saved successfully!');
             
-            // Always navigate to home after profile completion
             navigate('/home', { replace: true });
         } catch (error) {
             console.error('Error saving profile:', error);

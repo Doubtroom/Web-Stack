@@ -1,3 +1,4 @@
+
 const config={
     firebaseApiKey:String(import.meta.env.VITE_FIREBASE_API_KEY),
     firebaseAuthDomain:String(import.meta.env.VITE_AUTH_DOMIAN),
@@ -10,6 +11,7 @@ const config={
     appwriteProjectId:String(import.meta.env.VITE_APPWRITE_PROJECT_ID),
     appwriteEndpoint:String(import.meta.env.VITE_APPWRITE_ENDPOINT),
     recaptchaSitekey:String(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
+    apiBaseUrl:String(import.meta.env.VITE_API_BASE_URL)
 }
 
 export default config
