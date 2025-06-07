@@ -27,6 +27,7 @@ const userSchema=new mongoose.Schema({
     resetToken:{type:String},
     resetExpires:{type:Date},
     provider:{type:String,default:"email"},
+    passwordRecoveryDone: {type: Boolean, default: false}
 })
 
 export default mongoose.model('User',userSchema)

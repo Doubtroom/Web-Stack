@@ -101,6 +101,25 @@ export const login=async(req,res)=>{
         const user=await User.findOne({email})
         if(!user) return res.status(400).json({message:"User not found"})
         
+        // Check if this is a Firebase user with temporary password
+        const isFirebaseUser = user.firebaseId && !user.passwordRecoveryDone;
+        const isTemporaryPassword = password === "FIREBASE";
+        
+        if (isFirebaseUser && isTemporaryPassword) {
+            // This is a Firebase user logging in with temporary password
+            // We'll return a special response to trigger password recovery
+            return res.status(200).json({
+                message: "Firebase password recovery required",
+                isFirebaseRecovery: true,
+                user: {
+                    userId: user._id,
+                    email: user.email,
+                    displayName: user.displayName,
+                    isVerified: user.isVerified
+                }
+            });
+        }
+        
         const match=await bcrypt.compare(password,user.password)
         if(!match) return res.status(400).json({message:"Invalid password"})
 
@@ -386,5 +405,41 @@ export const getUser = async (req, res) => {
     } catch (error) {
         console.error("Get user error:", error);
         res.status(500).json({ message: "Failed to get user data" });
+    }
+};
+
+export const recoverFirebasePassword = async (req, res) => {
+    const { userId, newPassword } = req.body;
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (!user.firebaseId || user.passwordRecoveryDone) {
+            return res.status(400).json({ message: "Invalid password recovery request" });
+        }
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+        // Update user's password and mark recovery as done
+        user.password = hashedPassword;
+        user.passwordRecoveryDone = true;
+        await user.save();
+
+        res.json({
+            message: "Password recovered successfully",
+            user: {
+                userId: user._id,
+                email: user.email,
+                displayName: user.displayName,
+                isVerified: user.isVerified
+            }
+        });
+    } catch (error) {
+        console.error("Password recovery error:", error);
+        res.status(500).json({ message: "Password recovery failed" });
     }
 };
