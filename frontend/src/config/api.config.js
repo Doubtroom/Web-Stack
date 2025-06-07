@@ -1,6 +1,6 @@
 import config from "./config";
 
-export const API_BASE_URL = config.apiBaseUrl;
+export const API_BASE_URL = config.apiBaseUrl || 'http://localhost:5000/api';
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -8,13 +8,14 @@ export const API_ENDPOINTS = {
     LOGIN: '/auth/login',
     GOOGLE_LOGIN: '/auth/google-login',
     LOGOUT: '/auth/logout',
+    GET_USER: '/auth/user',
     SAVE_PROFILE: '/auth/saveUserProfile',
     SEND_OTP: '/auth/send-otp',
     VERIFY_OTP: '/auth/verify-otp',
     REQUEST_RESET: '/auth/request-reset',
-    VERIFY_RESET: '/auth/verify-reset-token',
+    VERIFY_RESET: '/auth/verify-reset',
     RESET_PASSWORD: '/auth/reset-password',
-    GET_USER: '/auth/user',
+    RECOVER_FIREBASE_PASSWORD: '/auth/recover-firebase-password'
   },
 
   QUESTIONS: {
