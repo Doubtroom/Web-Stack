@@ -6,6 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { toast } from 'sonner';
+import { useSelector } from 'react-redux';
 
 const MyQuestions = () => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const MyQuestions = () => {
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const userData = useSelector((state)=>state?.auth?.user)
 
   useEffect(() => {
     const fetchUserContent = async () => {
@@ -27,7 +28,8 @@ const MyQuestions = () => {
         setQuestions(userQuestions);
 
         // Fetch answers using the new query function
-        const userAnswers = await answersService.getAnswersByUserId(userData.uid);
+        console.log(userData)
+        const userAnswers = await answersService.getAnswersByUserId(userData?.uid);
         
         // Fetch question details for each answer
         const answersWithQuestions = await Promise.all(
@@ -70,8 +72,6 @@ const MyQuestions = () => {
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
     return `${Math.floor(diffInSeconds / 86400)} days ago`;
   };
-
-
 
 
   const handleEditAnswer = (answerId) => {

@@ -40,5 +40,8 @@ export const authService = {
     apiClient.get(`${API_ENDPOINTS.AUTH.VERIFY_RESET}/${token}`),
   
   resetPassword: (token, newPassword) => 
-    apiClient.post(`${API_ENDPOINTS.AUTH.RESET_PASSWORD}/${token}`, { newPassword })
+    apiClient.post(`${API_ENDPOINTS.AUTH.RESET_PASSWORD}/${token}`, { newPassword }),
+
+  recoverFirebasePassword: (userId, newPassword) =>
+    apiClient.post(API_ENDPOINTS.AUTH.RECOVER_FIREBASE_PASSWORD, { userId, newPassword })
 };
