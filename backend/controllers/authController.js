@@ -103,21 +103,77 @@ export const login=async(req,res)=>{
         
         // Check if this is a Firebase user with temporary password
         const isFirebaseUser = user.firebaseId && !user.passwordRecoveryDone;
-        const isTemporaryPassword = password === "FIREBASE";
         
-        if (isFirebaseUser && isTemporaryPassword) {
-            // This is a Firebase user logging in with temporary password
-            // We'll return a special response to trigger password recovery
-            return res.status(200).json({
-                message: "Firebase password recovery required",
-                isFirebaseRecovery: true,
-                user: {
-                    userId: user._id,
-                    email: user.email,
-                    displayName: user.displayName,
-                    isVerified: user.isVerified
-                }
-            });
+        if (isFirebaseUser) {
+            // For Firebase users, first check if they're using the temporary password
+            if (password === "FIREBASE") {
+                // This is a Firebase user logging in with temporary password
+                return res.status(200).json({
+                    message: "Firebase password recovery required",
+                    isFirebaseRecovery: true,
+                    user: {
+                        userId: user._id,
+                        email: user.email,
+                        displayName: user.displayName,
+                        isVerified: user.isVerified
+                    }
+                });
+            } else {
+                // User is trying to login with a new password
+                // Hash the new password and update user
+                const hashedPassword = await bcrypt.hash(password, 12);
+                user.password = hashedPassword;
+                user.passwordRecoveryDone = true;
+                await user.save();
+                
+                // Generate tokens for successful login
+                const accessToken = jwt.sign(
+                    {id: user._id, email: user.email},
+                    process.env.JWT_SECRET,
+                    {expiresIn: "10m"}
+                );
+
+                const refreshToken = jwt.sign(
+                    {id: user._id},
+                    process.env.REFRESH_TOKEN_SECRET,
+                    {expiresIn: "30d"}
+                );
+
+                const encryptedRefreshToken = await bcrypt.hash(refreshToken, 12);
+                user.refreshToken = encryptedRefreshToken;
+                await user.save();
+
+                res.cookie('accessToken', accessToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: process.env.NODE_ENV === 'production'?'none':'lax',
+                    maxAge: 10 * 60 * 1000 
+                });
+
+                res.cookie('refreshToken', refreshToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: process.env.NODE_ENV === 'production'?'none':'lax',
+                    maxAge: 30 * 24 * 60 * 60 * 1000
+                });
+
+                return res.json({
+                    message: "Login successful",
+                    isAuthenticated: true,
+                    user: {
+                        userId: user._id,
+                        email: user.email,
+                        displayName: user.displayName,
+                        isVerified: user.isVerified
+                    }
+                });
+            }
+        }
+        
+        // For non-Firebase users or users who have already recovered their password
+        // First check if the password is "FIREBASE" (unhashed)
+        if (password === "FIREBASE") {
+            return res.status(400).json({message:"Invalid password"});
         }
         
         const match=await bcrypt.compare(password,user.password)
