@@ -4,13 +4,13 @@ import { User,Calendar , Building2, GraduationCap, Phone, Briefcase, Mail, Edit2
 import { toast } from 'sonner';
 import DataService from '../firebase/DataService';
 import userService from '../firebase/UserService';
-import authService from '../firebase/AuthService';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../store/authSlice';
 import { motion, AnimatePresence } from 'framer-motion';
 
 
 const Profile = () => {
+  const userProfile = useSelector((state) => state?.auth?.user);
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
   const [userData, setUserData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -25,32 +25,34 @@ const Profile = () => {
     collegeName: '',
     dob: ''
   });
+
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  
 
 
   useEffect(() => {
     const fetchUserData = async () => {
+      setLoading(true);
       try {
-        const storedUserData = JSON.parse(localStorage.getItem("userData") || "{}");
-        const dataService = new DataService("users");
-        const userProfile = await dataService.getUserData(storedUserData.uid);
-        
-        if (userProfile) {
-          setUserData(userProfile);
-          setFormData({
-            name: userProfile.name || '',
-            branch: userProfile.branch || '',
-            studyType: userProfile.studyType || '',
-            phone: userProfile.phone || '',
-            gender: userProfile.gender || '',
-            role: userProfile.role || '',
-            collegeName: userProfile.collegeName || '',
-            email: userProfile.email || '',
-            dob: userProfile.dob || ''
-          });
+        if (!userProfile) {
+          toast.error('User profile not found');
+          return;
         }
+
+        setUserData(userProfile);
+        setFormData({
+          name: userProfile.displayName || '',
+          branch: userProfile.branch || '',
+          studyType: userProfile.studyType || '',
+          phone: userProfile.phone || '',
+          gender: userProfile.gender || '',
+          role: userProfile.role || '',
+          collegeName: userProfile.collegeName || '',
+          email: userProfile.email || '',
+          dob: userProfile.dob || ''
+        });
       } catch (error) {
         console.error('Error fetching user data:', error);
         toast.error('Failed to load profile data');
@@ -60,7 +62,7 @@ const Profile = () => {
     };
 
     fetchUserData();
-  }, []);
+  }, [userProfile]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -71,16 +73,15 @@ const Profile = () => {
   };
 
   const handleLogoutConfirm = async () => {
+    setLoading(true)
     try {
-      await authService.logout();
-      dispatch(logout());
-      localStorage.removeItem('authStatus');
-      localStorage.removeItem('userData');
-      localStorage.setItem('profileCompleted', false);
-      toast.success('Logged out successfully!');
-      navigate('/landing', { state: { fromLogout: true }, replace: true });
+      const result = await dispatch(logout()).unwrap();
+      if (result) {
+        toast.success('Logged out successfully!');
+        navigate('/landing', { state: { fromLogout: true }, replace: true });
+      }
     } catch (error) {
-      toast.error('Logout Failed!');
+      toast.error(error || 'Logout failed. Please try again.');
     } finally {
       setShowLogoutConfirm(false);
     }
@@ -92,25 +93,24 @@ const Profile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      const storedUserData = JSON.parse(localStorage.getItem("userData") || "{}");
-      await userService.saveUserProfile(storedUserData.uid, formData);
+      if (!userProfile?.uid) {
+        toast.error('User ID not found');
+        return;
+      }
+
+      await userService.saveUserProfile(userProfile.uid, formData);
       
-      // Update local storage with new data
-      const updatedUserData = {
-        ...storedUserData,
-        displayName: formData.name,
-        collegeName: formData.collegeName,
-        branch: formData.branch
-      };
-      localStorage.setItem("userData", JSON.stringify(updatedUserData));
-      
+      // Update Redux state instead of localStorage
       setUserData(prev => ({ ...prev, ...formData }));
       setIsEditing(false);
       toast.success('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Failed to update profile');
+    } finally {
+      setLoading(false);
     }
   };
   const formatBranchName = (branch) => {
@@ -235,7 +235,7 @@ const Profile = () => {
               )}
             </div>
             <div className="text-center sm:text-left">
-              <h1 className="text-2xl sm:text-3xl font-bold">{userData?.name || 'Your Name'}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">{userData?.displayName || 'Your Name'}</h1>
               <p className="text-white/80 text-sm sm:text-base">{userData?.role || 'Role'}</p>
             </div>
           </div>

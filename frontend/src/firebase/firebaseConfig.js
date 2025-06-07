@@ -1,11 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import config from "../config/config.js";
-
-// for local testing
-if (import.meta.env.DEV) {
-  self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-}
 
 const firebaseConfig = {
     apiKey: config.firebaseApiKey,
@@ -18,15 +12,5 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
-// Initialize App Check
-const appCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(config.recaptchaSitekey),
-    isTokenAutoRefreshEnabled: true,
-    // Add error handler for production
-    onError: (error) => {
-        console.error('App Check error:', error);
-    }
-});
 
 export default app;

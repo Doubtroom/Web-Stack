@@ -25,6 +25,9 @@ import ForgotPassword from './pages/ForgotPassword'
 import LearnMorePage from './pages/LearnMorePage'
 import CustomerSupportPage from './pages/CustomerSupportPage'
 import NotFoundPage from './pages/NotFoundPage'
+import OtpVerificationPage from './pages/OtpVerificationPage'
+import VerificationPage from './pages/VerificationPage';
+
 function App() {
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
 
@@ -45,11 +48,12 @@ function App() {
           {/* Root path - redirects based on auth status */}
           <Route path="/" element={
             <Protected authentication={null}>
-              {({ authStatus }) => authStatus ? <Navigate to="/home" replace /> : <Navigate to="/landing" replace />}
+              {({ isAuthenticated }) => (
+                <Navigate to={isAuthenticated ? "/home" : "/landing"} replace />
+              )}
             </Protected>
           } />
 
-          {/* Public Routes - Protected from authenticated users */}
           <Route path="/landing" element={
             <Protected authentication={false}>
               <LandingPage />
@@ -68,6 +72,16 @@ function App() {
           <Route path="/signup" element={
             <Protected authentication={false}>
               <SignupPage />
+            </Protected>
+          } />
+          <Route path="/verificationDialogue" element={
+            <Protected authentication={true}>
+              <VerificationPage />
+            </Protected>
+          } />
+          <Route path="/verify-otp" element={
+            <Protected authentication={true}>
+              <OtpVerificationPage />
             </Protected>
           } />
           <Route path="/forgot-password" element={

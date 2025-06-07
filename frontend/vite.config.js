@@ -1,11 +1,19 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import fs from 'fs';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3001
+    https: {
+      key: fs.readFileSync('./cert/localhost-key.pem'),
+      cert: fs.readFileSync('./cert/localhost.pem'),
+    },
+    port: 3001,
+  },
+  build: {
+    sourcemap: false, // Disable source maps in production
   },
   optimizeDeps: {
     include: [
@@ -15,6 +23,7 @@ export default defineConfig({
       'firebase/firestore',
       'firebase/storage'
     ],
-    exclude: ['firebase']
+    exclude: ['firebase', 'axios', 'react-zoom-pan-pinch', 'appwrite']
   }
 })
+
