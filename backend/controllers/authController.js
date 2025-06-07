@@ -101,12 +101,12 @@ export const login=async(req,res)=>{
         const user=await User.findOne({email})
         if(!user) return res.status(400).json({message:"User not found"})
         
-        // Check if this is a Firebase user with temporary password
-        const isFirebaseUser = user.firebaseId && !user.passwordRecoveryDone;
+        // Check if this is a Firebase user
+        const isFirebaseUser = user.firebaseId;
         
         if (isFirebaseUser) {
             // For Firebase users, first check if they're using the temporary password
-            if (password === "FIREBASE") {
+            if (password === "FIREBASE" && !user.passwordRecoveryDone) {
                 // This is a Firebase user logging in with temporary password
                 return res.status(200).json({
                     message: "Firebase password recovery required",
@@ -118,7 +118,7 @@ export const login=async(req,res)=>{
                         isVerified: user.isVerified
                     }
                 });
-            } else {
+            } else if (!user.passwordRecoveryDone) {
                 // User is trying to login with a new password
                 // Hash the new password and update user
                 const hashedPassword = await bcrypt.hash(password, 12);

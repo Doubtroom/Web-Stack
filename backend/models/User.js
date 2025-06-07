@@ -30,4 +30,12 @@ const userSchema=new mongoose.Schema({
     passwordRecoveryDone: {type: Boolean, default: false}
 })
 
+// Add a pre-save middleware to ensure passwordRecoveryDone exists
+userSchema.pre('save', function(next) {
+    if (this.isModified('password') && this.firebaseId && !this.passwordRecoveryDone) {
+        this.passwordRecoveryDone = true;
+    }
+    next();
+});
+
 export default mongoose.model('User',userSchema)
