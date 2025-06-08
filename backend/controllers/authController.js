@@ -18,7 +18,8 @@ export const signup=async(req,res)=>{
             email,
             password: hashed,
             displayName,    
-            isVerified: false
+            isVerified: false,
+            passwordRecoveryDone: true // Explicitly set this field
         })
 
         const refreshToken = jwt.sign(
@@ -64,7 +65,11 @@ export const signup=async(req,res)=>{
 
     } catch (error) {
         console.error("Signup error:", error)
-        res.status(500).json({message: "Signup failed"})
+        // Send more detailed error message
+        res.status(500).json({
+            message: "Signup failed",
+            error: error.message || "Unknown error occurred"
+        })
     }
 }
 
@@ -461,41 +466,5 @@ export const getUser = async (req, res) => {
     } catch (error) {
         console.error("Get user error:", error);
         res.status(500).json({ message: "Failed to get user data" });
-    }
-};
-
-export const recoverFirebasePassword = async (req, res) => {
-    const { userId, newPassword } = req.body;
-
-    try {
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        if (!user.firebaseId || user.passwordRecoveryDone) {
-            return res.status(400).json({ message: "Invalid password recovery request" });
-        }
-
-        // Hash the new password
-        const hashedPassword = await bcrypt.hash(newPassword, 12);
-
-        // Update user's password and mark recovery as done
-        user.password = hashedPassword;
-        user.passwordRecoveryDone = true;
-        await user.save();
-
-        res.json({
-            message: "Password recovered successfully",
-            user: {
-                userId: user._id,
-                email: user.email,
-                displayName: user.displayName,
-                isVerified: user.isVerified
-            }
-        });
-    } catch (error) {
-        console.error("Password recovery error:", error);
-        res.status(500).json({ message: "Password recovery failed" });
     }
 };

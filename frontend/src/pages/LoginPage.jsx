@@ -18,7 +18,6 @@ const LoginPage = () => {
   const { loading, error } = useSelector((state) => state.auth);
   const [isVerificationPromptOpen, setIsVerificationPromptOpen] = useState(false);
   const [isPasswordRecoveryOpen, setIsPasswordRecoveryOpen] = useState(false);
-  const [recoveryUser, setRecoveryUser] = useState(null);
   const [loginState, setLoginState] = useState({
     isProcessing: false,
     step: 'idle', // idle -> logging -> fetching -> updating -> navigating
@@ -83,20 +82,7 @@ const LoginPage = () => {
     setIsVerificationPromptOpen(false);
   };
 
-  const handlePasswordRecovery = async (newPassword) => {
-    try {
-      const response = await authService.recoverFirebasePassword(recoveryUser.userId, newPassword);
-      
-      if (response.data) {
-        toast.success('Password recovered successfully! Please login with your new password.');
-        setIsPasswordRecoveryOpen(false);
-        setRecoveryUser(null);
-        setFormData(prev => ({ ...prev, password: '' }));
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Password recovery failed');
-    }
-  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -117,19 +103,7 @@ const LoginPage = () => {
     try {
       // Step 1: Login
       const result = await dispatch(login(formData)).unwrap();
-      
-      // Check if this is a Firebase password recovery case
-      if (result.isFirebaseRecovery) {
-        setRecoveryUser(result.user);
-        setIsPasswordRecoveryOpen(true);
-        setLoginState({
-          isProcessing: false,
-          step: 'idle',
-          error: null
-        });
-        return;
-      }
-      
+            
       if (!result.user.isVerified) {
         setIsVerificationPromptOpen(true);
         setLoginState({
@@ -194,45 +168,6 @@ const LoginPage = () => {
         onVerify={handleVerify}
         onNewAccount={handleNewAccount}
       />
-      {isPasswordRecoveryOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className={`w-full max-w-md rounded-lg shadow-md p-8 ${
-            isDarkMode ? 'bg-gray-800' : 'bg-white'
-          }`}>
-            <h2 className={`text-2xl font-bold mb-4 ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>Set New Password</h2>
-            <p className={`mb-4 ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-600'
-            }`}>
-              Please set a new password for your account
-            </p>
-            <InputField
-              type="password"
-              id="newPassword"
-              label="New Password"
-              placeholder="Enter new password"
-              icon={<Lock size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />}
-              onChange={(e) => setFormData(prev => ({ ...prev, newPassword: e.target.value }))}
-            />
-            <div className="mt-4 flex justify-end space-x-2">
-              <Button
-                text="Cancel"
-                variant="secondary"
-                onClick={() => {
-                  setIsPasswordRecoveryOpen(false);
-                  setRecoveryUser(null);
-                }}
-              />
-              <Button
-                text="Set Password"
-                variant="primary"
-                onClick={() => handlePasswordRecovery(formData.newPassword)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
       <div className={`w-full max-w-md rounded-lg shadow-md p-8 ${
         isDarkMode ? 'bg-gray-800' : 'bg-white'
       }`}>
