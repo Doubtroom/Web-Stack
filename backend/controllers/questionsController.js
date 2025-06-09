@@ -264,3 +264,63 @@ export const deleteQuestion=async(req,res)=>{
         });
     }
 }
+
+export const getUserQuestions = async (req, res) => {
+    try {
+        const mongoUserId = req.user?.id;
+        const firebaseId = req.body?.firebaseId;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+        
+        if (!mongoUserId && !firebaseId) {
+            return res.status(400).json({ 
+                message: 'No user ID provided' 
+            });
+        }
+
+        const query = {
+            $or: []
+        };
+
+        if (mongoUserId) {
+            query.$or.push({ postedBy: mongoUserId });
+        }
+        if (firebaseId) {
+            query.$or.push({ firebasePostedBy: firebaseId });
+        }
+        
+        const total = await Questions.countDocuments(query);
+        
+        const questions = await Questions.find(query)
+            .populate('postedBy', 'displayName collegeName role _id')
+            .populate('firebasePostedBy', 'displayName collegeName role _id')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        const totalPages = Math.ceil(total / limit);
+        const hasNextPage = page < totalPages;
+        const hasPrevPage = page > 1;
+
+        res.json({
+            message: "User questions fetched successfully",
+            questions,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems: total,
+                itemsPerPage: limit,
+                hasNextPage,
+                hasPrevPage
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching user questions:', error);
+        res.status(500).json({ 
+            message: 'Error fetching user questions', 
+            error: error.message 
+        });
+    }
+};
