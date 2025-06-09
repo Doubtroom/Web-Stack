@@ -1,7 +1,7 @@
 import express from 'express'
 import { verifyToken } from '../middleware/authMiddleware.js'
-import {createQuestion,updateQuestion, getAllQuestions, getFilteredQuestions, deleteQuestion,getQuestion} from '../controllers/questionsController.js'
-import {createAnswer, getAnswersByQuestion, updateAnswer, deleteAnswer,getAnswer} from '../controllers/answersController.js'
+import {createQuestion,updateQuestion, getAllQuestions, getFilteredQuestions, deleteQuestion,getQuestion, getUserQuestions} from '../controllers/questionsController.js'
+import {createAnswer, getAnswersByQuestion, updateAnswer, deleteAnswer,getAnswer, getUserAnswers} from '../controllers/answersController.js'
 import {createComment, getCommentsByAnswer, deleteComment,updateComment} from '../controllers/commentsController.js'
 import {reportQuestion, getReportedQuestions, removeReport} from '../controllers/reportedQuestionsController.js'
 import {createCustomerCare, getCustomerCareRequests, getUserCustomerCareRequests} from '../controllers/customerCareController.js'
@@ -12,13 +12,15 @@ const router=express.Router();
 
 router.post('/questions',verifyToken,upload.single('image'),createQuestion)
 router.get('/questions/filter',verifyToken, getFilteredQuestions)
-router.get('/questions/:id',verifyToken,getQuestion)
+router.get('/questions/user', verifyToken, getUserQuestions)
 router.get('/questions',verifyToken,getAllQuestions)
+router.get('/questions/:id',verifyToken,getQuestion)
 router.delete('/questions/:id', verifyToken, deleteQuestion)
 router.patch('/questions/:id', verifyToken, upload.single('image'), updateQuestion)
 
-router.post('/answers', verifyToken,upload.single('image'), createAnswer);
+router.post('/questions/:id/answers', verifyToken, upload.single('image'), createAnswer);
 router.get('/questions/:id/answers', verifyToken, getAnswersByQuestion);
+router.post('/answers/user', verifyToken, getUserAnswers);
 router.get('/answers/:id', verifyToken, getAnswer);
 router.put('/answers/:id', verifyToken, updateAnswer);
 router.delete('/answers/:id', verifyToken, deleteAnswer);

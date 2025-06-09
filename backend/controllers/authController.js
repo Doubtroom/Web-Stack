@@ -515,10 +515,12 @@ export const authStatus=async (req,res)=>{
             try {
                 // Verify refresh token
                 const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+                console.log('Decoded token:', decoded);
                 
                 // Find user and check if refresh token matches
                 const user = await User.findById(decoded.id);
-                console.log(user)
+                console.log('User lookup result:', user);
+
 
                 if (!user || !user.refreshToken) {
                     return res.status(401).json({ 
