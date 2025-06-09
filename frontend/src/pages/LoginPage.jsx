@@ -103,7 +103,6 @@ const LoginPage = () => {
     try {
       // Step 1: Login
       const result = await dispatch(login(formData)).unwrap();
-            
       if (!result.user.isVerified) {
         setIsVerificationPromptOpen(true);
         setLoginState({

@@ -9,6 +9,7 @@ export const questionServices = {
   getFilteredQuestions: (filters) => apiClient.get(API_ENDPOINTS.QUESTIONS.FILTER, { params: filters }),
   deleteQuestion: (id) => apiClient.delete(API_ENDPOINTS.QUESTIONS.DELETE(id)),
   updateQuestion: (id, formData) => apiClient.patch(API_ENDPOINTS.QUESTIONS.UPDATE(id), formData),
+  getUserQuestions: (firebaseUserId) => apiClient.post(API_ENDPOINTS.QUESTIONS.GET_USER_QUESTIONS, { firebaseUserId }),
 };
 
 // Answers Services
@@ -18,6 +19,7 @@ export const answerServices = {
   getAnswer: (id) => apiClient.get(API_ENDPOINTS.ANSWERS.GET_ONE(id)),
   updateAnswer: (id, data) => apiClient.put(API_ENDPOINTS.ANSWERS.UPDATE(id), data),
   deleteAnswer: (id) => apiClient.delete(API_ENDPOINTS.ANSWERS.DELETE(id)),
+  getUserAnswers: (firebaseUserId) => apiClient.post(API_ENDPOINTS.ANSWERS.GET_USER_ANSWERS, { firebaseUserId }),
 };
 
 // Comments Services

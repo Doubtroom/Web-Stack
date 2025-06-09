@@ -27,9 +27,17 @@ import CustomerSupportPage from './pages/CustomerSupportPage'
 import NotFoundPage from './pages/NotFoundPage'
 import OtpVerificationPage from './pages/OtpVerificationPage'
 import VerificationPage from './pages/VerificationPage';
+import ProfileCompletionDialog from './components/ProfileCompletionDialog';
+
+// Root path redirect component
+function RootRedirect() {
+    const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+    return <Navigate to={isAuthenticated ? "/home" : "/landing"} replace />;
+}
 
 function App() {
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   useEffect(() => {
     const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
@@ -45,14 +53,8 @@ function App() {
         v7_relativeSplatPath: true 
       }}>
         <Routes>
-          {/* Root path - redirects based on auth status */}
-          <Route path="/" element={
-            <Protected authentication={null}>
-              {({ isAuthenticated }) => (
-                <Navigate to={isAuthenticated ? "/home" : "/landing"} replace />
-              )}
-            </Protected>
-          } />
+          {/* Root path */}
+          <Route path="/" element={<RootRedirect />} />
 
           <Route path="/landing" element={
             <Protected authentication={false}>
@@ -97,28 +99,40 @@ function App() {
             </Protected>
           } />
 
-          {/* Protected Routes with Layout */}
-          <Route element={<Protected authentication={true}><Layout /></Protected>}>
-            <Route path="/home" element={<Home />} />
-            <Route path="/question/:id" element={<Question />} />
-            <Route path="/question/:id/edit" element={<EditQuestion />} />
-            <Route path="/question/:id/answer" element={<AnswerForm />} />
-            <Route path="/question/:id/answer/:answerId" element={<Answer />} />
-            <Route path="/answer/:id/edit" element={<EditAnswer />} />
-            <Route path="/ask-question" element={<AskQuestion />} />
-            <Route path="/my-questions" element={<MyQuestions />} />
-            <Route path="/my-college" element={<MyCollege />} />
-            <Route path="/all-colleges" element={<AllColleges />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/search/:query" element={<SearchResults />} />
-            <Route path="/customer-support" element={<CustomerSupportPage />} />
-            <Route path="/contact" element={<ContactUs />} />
+          {/* Protected Routes */}
+          <Route element={<Protected authentication={true} />}>
+            <Route element={<Layout />}>
+              <Route path="home" element={<Home />} />
+              <Route path="question">
+                <Route path=":id" element={<Question />} />
+                <Route path=":id/edit" element={<EditQuestion />} />
+                <Route path=":id/answer" element={<AnswerForm />} />
+                <Route path=":id/answer/:answerId" element={<Answer />} />
+              </Route>
+              <Route path="answer/:id/edit" element={<EditAnswer />} />
+              <Route path="ask-question" element={<AskQuestion />} />
+              <Route path="my-questions" element={<MyQuestions />} />
+              <Route path="my-college" element={<MyCollege />} />
+              <Route path="all-colleges" element={<AllColleges />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="search/:query" element={<SearchResults />} />
+              <Route path="customer-support" element={<CustomerSupportPage />} />
+              <Route path="contact" element={<ContactUs />} />
+            </Route>
           </Route>
 
-          {/* Catch all route - redirect to home or landing based on auth status */}
-          <Route path="*" element={
-              <NotFoundPage/>
-          } />
+          {/* Public Routes */}
+          <Route element={<Protected authentication={false} />}>
+            <Route path="landing" element={<LandingPage />} />
+            <Route path="login" element={<LoginPage />} />
+            <Route path="signup" element={<SignupPage />} />
+            <Route path="verificationDialogue" element={<VerificationPage />} />
+            <Route path="verify-otp" element={<OtpVerificationPage />} />
+            <Route path="complete-profile" element={<UserInfoForm />} />
+          </Route>
+
+          {/* Catch all route */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
       <Toaster 

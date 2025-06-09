@@ -32,7 +32,7 @@ export const signup = createAsyncThunk(
 );
 
 export const googleLogin = createAsyncThunk(
-  'auth/googleLogin',
+  'auth/google-login',
   async (token, { rejectWithValue }) => {
     try {
       const response = await authService.googleLogin(token);
@@ -47,8 +47,8 @@ export const logout = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
     try {
-      await authService.logout();
-      return null;
+      const response=await authService.logout();
+      return response;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Logout failed');
     }
@@ -56,7 +56,7 @@ export const logout = createAsyncThunk(
 );
 
 export const fetchUser = createAsyncThunk(
-  'auth/fetchUser',
+  'auth/user',
   async (_, { rejectWithValue }) => {
     try {
       const response = await authService.getUser();
@@ -68,7 +68,7 @@ export const fetchUser = createAsyncThunk(
 );
 
 export const updateProfile = createAsyncThunk(
-  'auth/updateProfile',
+  'auth/saveUserProfile',
   async (profileData, { rejectWithValue }) => {
     try {
       const response = await authService.saveProfile(profileData);
@@ -80,7 +80,7 @@ export const updateProfile = createAsyncThunk(
 );
 
 export const sendOtp = createAsyncThunk(
-  'auth/sendOtp',
+  'auth/send-otp',
   async (email, { rejectWithValue }) => {
     try {
       const response = await authService.sendOtp(email);
@@ -92,7 +92,7 @@ export const sendOtp = createAsyncThunk(
 );
 
 export const verifyOtp = createAsyncThunk(
-  'auth/verifyOtp',
+  'auth/verify-otp',
   async (otpData, { rejectWithValue }) => {
     try {
       const response = await authService.verifyOtp(otpData);
@@ -104,7 +104,7 @@ export const verifyOtp = createAsyncThunk(
 );
 
 export const requestPasswordReset = createAsyncThunk(
-  'auth/requestPasswordReset',
+  '/auth/request-reset',
   async (email, { rejectWithValue }) => {
     try {
       const response = await authService.requestReset(email);
@@ -128,7 +128,7 @@ export const verifyResetToken = createAsyncThunk(
 );
 
 export const resetPassword = createAsyncThunk(
-  'auth/resetPassword',
+  'auth/reset-password',
   async ({ token, newPassword }, { rejectWithValue }) => {
     try {
       const response = await authService.resetPassword(token, newPassword);
