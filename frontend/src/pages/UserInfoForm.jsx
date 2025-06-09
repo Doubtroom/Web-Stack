@@ -400,7 +400,6 @@ const UserInfoForm = () => {
             
             
             toast.success('Profile information saved successfully!');
-            
             navigate('/home', { replace: true });
         } catch (error) {
             console.error('Error saving profile:', error);

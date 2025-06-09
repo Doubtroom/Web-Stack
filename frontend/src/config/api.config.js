@@ -27,16 +27,18 @@ export const API_ENDPOINTS = {
     UPDATE: (id) => `/data/questions/${id}`,
     DELETE: (id) => `/data/questions/${id}`,
     REPORT: (id) => `/data/questions/${id}/report`,
-    REMOVE_REPORT: (id, reportId) => `/data/questions/${id}/reports/${reportId}`
+    REMOVE_REPORT: (id, reportId) => `/data/questions/${id}/reports/${reportId}`,
+    GET_USER_QUESTIONS: '/data/questions/user'
   },
 
   ANSWERS: {
     BASE: '/data/answers',
     GET_ONE: (id) => `/data/answers/${id}`,
     GET_BY_QUESTION: (questionId) => `/data/questions/${questionId}/answers`,
-    CREATE: '/data/answers',
+    CREATE:(questionId)=> `/data/questions/${questionId}/answers`,
     UPDATE: (id) => `/data/answers/${id}`,
-    DELETE: (id) => `/data/answers/${id}`
+    DELETE: (id) => `/data/answers/${id}`,
+    GET_USER_ANSWERS: '/data/answers/user'
   },
 
   COMMENTS: {

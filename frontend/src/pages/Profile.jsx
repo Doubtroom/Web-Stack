@@ -76,7 +76,7 @@ const Profile = () => {
     setLoading(true)
     try {
       const result = await dispatch(logout()).unwrap();
-      if (result) {
+      if (result){
         toast.success('Logged out successfully!');
         navigate('/landing', { state: { fromLogout: true }, replace: true });
       }

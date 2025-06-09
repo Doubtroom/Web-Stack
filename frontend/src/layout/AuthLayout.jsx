@@ -1,43 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { fetchUser, setAuth } from '../store/authSlice.js';
 import axios from 'axios';
-import LoadingSpinner from '../components/LoadingSpinner.jsx'
+import LoadingSpinner from '../components/LoadingSpinner.jsx';
+import ProfileCompletionDialog from '../components/ProfileCompletionDialog.jsx';
+import config from '../config/config.js';
 
 axios.defaults.withCredentials = true;
 
-function Protected({ children, authentication = false}) {
+function Protected({ children, authentication = false }) {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch();
-    const [authState, setAuthState] = useState({
-        isLoading: true,
-        isUserDataLoading: true,
-        hasUserDetails: false,
-        isCheckingProfile: true,
-        step: 'initializing' // initializing -> checking -> fetching -> updating -> ready
-    });
     
-    // Get auth state from Redux
     const isAuthenticated = useSelector((state) => state?.auth?.isAuthenticated);
     const isVerified = useSelector((state) => state?.auth?.isVerified);
-    const otpSent = useSelector((state) => state?.auth?.otpSent);
     const user = useSelector((state) => state?.auth?.user);
+    const [hasAllDetails, setHasAllDetails] = useState(false);
+    const [isAuthChecked, setIsAuthChecked] = useState(false);
+    const [isUserDetailsChecked, setIsUserDetailsChecked] = useState(false);
+    const [isNavigating, setIsNavigating] = useState(false);
+    const [lastPath, setLastPath] = useState('');
+    const [navigationAttempts, setNavigationAttempts] = useState(0);
 
-    // Check user details whenever user data changes
+    // Check user details completeness
     useEffect(() => {
-        if (!user) {
-            setAuthState(prev => ({
-                ...prev,
-                hasUserDetails: false,
-                isCheckingProfile: false,
-                step: 'ready'
-            }));
-            return;
-        }
-        
-        const hasAllDetails = Boolean(
+        if (!user) return;
+        const tempHasAllDetails = Boolean(
             user.branch && 
             user.studyType && 
             user.gender && 
@@ -45,114 +35,134 @@ function Protected({ children, authentication = false}) {
             user.collegeName && 
             user.dob
         );
-        
-        setAuthState(prev => ({
-            ...prev,
-            hasUserDetails: hasAllDetails,
-            isCheckingProfile: false,
-            step: 'ready'
-        }));
+        setHasAllDetails(tempHasAllDetails);
+        setIsUserDetailsChecked(true);
     }, [user]);
 
-    // Handle authentication and user data fetching
+    // Auth check effect
     useEffect(() => {
         const checkAuth = async () => {
+            if (isAuthChecked) return;
             try {
-                setAuthState(prev => ({ ...prev, step: 'checking' }));
-                const response = await axios.get('https://doubtroom.onrender.com/api/auth/verify', {
+                const response = await axios.get(config.apiBaseUrl + '/auth/verify', {
                     withCredentials: true,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Content-Type': 'application/json' }
                 });
                 
                 if (response.data.isAuthenticated) {
-                    setAuthState(prev => ({ ...prev, step: 'fetching' }));
+                    dispatch(setAuth({
+                        isAuthenticated: true,
+                        isVerified: response.data.user?.isVerified,
+                        user: null
+                    }));
+
                     const userResult = await dispatch(fetchUser()).unwrap();
-                    
-                    setAuthState(prev => ({ ...prev, step: 'updating' }));
-                    await dispatch(setAuth({
+                    dispatch(setAuth({
                         isAuthenticated: true,
                         isVerified: response.data.user?.isVerified,
                         user: userResult
                     }));
                 } else {
-                    await dispatch(setAuth({
+                    dispatch(setAuth({
                         isAuthenticated: false,
-                        isVerified: false
+                        isVerified: false,
+                        user: null
                     }));
+                    setHasAllDetails(false);
+                    setIsUserDetailsChecked(true);
                 }
             } catch (error) {
                 console.error("Auth check error:", error);
-                await dispatch(setAuth({
+                dispatch(setAuth({
                     isAuthenticated: false,
-                    isVerified: false
+                    isVerified: false,
+                    user: null
                 }));
+                setHasAllDetails(false);
+                setIsUserDetailsChecked(true);
             } finally {
-                setAuthState(prev => ({
-                    ...prev,
-                    isLoading: false,
-                    isUserDataLoading: false,
-                    step: 'ready'
-                }));
+                setIsAuthChecked(true);
             }
         };
 
         checkAuth();
     }, [dispatch]);
 
-    // Handle navigation
+    // Navigation guard effect
     useEffect(() => {
-        if (authState.step !== 'ready') return;
+        const handleNavigation = async () => {
+            // Skip navigation if still checking auth
+            if (!isAuthChecked) return;
 
-        const currentPath = location.pathname;
+            // Prevent multiple navigations and unnecessary effect runs
+            if (!isUserDetailsChecked || isNavigating || lastPath === location.pathname) return;
 
-        // Handle public routes
-        if (!authentication) {
-            if (isAuthenticated) {
-                navigate('/home', { replace: true });
+            // Reset navigation attempts if path changes
+            if (lastPath !== location.pathname) {
+                setNavigationAttempts(0);
             }
-            return;
-        }
 
-        // Handle protected routes
-        if (authentication && !isAuthenticated) {
-            navigate('/login', { replace: true });
-            return;
-        }
-
-        // Handle verification flow
-        if (authentication && isAuthenticated && !isVerified) {
-            const verificationRoutes = ['/verificationDialogue', '/verify-otp'];
-            if (!verificationRoutes.includes(currentPath)) {
-                navigate('/verificationDialogue', { replace: true });
+            // Prevent infinite navigation loops
+            if (navigationAttempts >= 2) {
+                console.warn('Navigation loop detected, stopping navigation');
+                return;
             }
-            if (currentPath === '/verify-otp' && !otpSent) {
-                navigate('/verificationDialogue', { replace: true });
-            }
-            return;
-        }
 
-        // Handle profile completion flow
-        if (authentication && isAuthenticated && isVerified) {
-            if (!authState.hasUserDetails && currentPath !== '/complete-profile') {
-                navigate('/complete-profile', { replace: true });
-            } else if (authState.hasUserDetails && currentPath === '/complete-profile') {
-                navigate('/home', { replace: true });
-            }
-        }
-    }, [isAuthenticated, isVerified, authentication, location.pathname, navigate, authState]);
+            setIsNavigating(true);
+            setLastPath(location.pathname);
+            setNavigationAttempts(prev => prev + 1);
+            const currentPath = location.pathname;
 
-    // Show loading state while any loading is in progress
-    if (authState.step !== 'ready') {
+            try {
+                // Protected route access
+                if (authentication) {          
+                    if (!isAuthenticated) {
+                        navigate('/login', { replace: true });
+                        return;
+                    }
+
+                    if (!isVerified) {
+                        const verificationRoutes = ['/verificationDialogue', '/verify-otp'];
+                        if (!verificationRoutes.includes(currentPath)) {
+                            navigate('/verificationDialogue', { replace: true });
+                            return;
+                        }
+                    }
+
+                    // Prevent access to complete-profile if user has already completed their profile
+                    if (hasAllDetails && currentPath === '/complete-profile') {
+                        navigate('/home', { replace: true });
+                        return;
+                    }
+                } 
+                // Public route access
+                else {
+                    // Redirect to home if authenticated and trying to access auth pages
+                    const publicRoutes = ['/login', '/signup', '/landing'];
+                    if (isAuthenticated && publicRoutes.includes(currentPath)) {
+                        navigate('/home', { replace: true });
+                        return;
+                    }
+                }
+            } finally {
+                setIsNavigating(false);
+            }
+        };
+
+        handleNavigation();
+    }, [isAuthenticated, isVerified, hasAllDetails, isAuthChecked, isUserDetailsChecked, location.pathname, authentication, navigate, lastPath, navigationAttempts]);
+
+    // Show loading spinner only when checking auth
+    if (!isAuthChecked) {
         return <LoadingSpinner fullScreen />;
     }
 
-    if (authentication === null) {
-        return typeof children === 'function' ? children({ isAuthenticated }) : children;
+    // Show profile completion dialog if user is authenticated and verified but hasn't completed profile
+    if (authentication && isAuthenticated && isVerified && !hasAllDetails && location.pathname !== '/complete-profile') {
+        return <ProfileCompletionDialog />;
     }
 
-    return children;
+    return children || <Outlet />;
 }
 
 export default Protected;

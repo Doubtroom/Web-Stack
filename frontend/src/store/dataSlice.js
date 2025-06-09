@@ -36,6 +36,18 @@ export const createQuestion = createAsyncThunk(
   }
 );
 
+export const fetchUserQuestions = createAsyncThunk(
+  'data/fetchUserQuestions',
+  async (firebaseUserId, { rejectWithValue }) => {
+    try {
+      const response = await questionServices.getUserQuestions(firebaseUserId);
+      return response.data.questions;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch user questions');
+    }
+  }
+);
+
 // Async thunks for Answers
 export const fetchAnswers = createAsyncThunk(
   'data/fetchAnswers',
@@ -57,6 +69,18 @@ export const createAnswer = createAsyncThunk(
       return response.data.answer;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to create answer');
+    }
+  }
+);
+
+export const fetchUserAnswers = createAsyncThunk(
+  'data/fetchUserAnswers',
+  async (firebaseUserId, { rejectWithValue }) => {
+    try {
+      const response = await answerServices.getUserAnswers(firebaseUserId);
+      return response.data.answers;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch user answers');
     }
   }
 );
@@ -90,6 +114,8 @@ export const createComment = createAsyncThunk(
 const initialState = {
   questions: [],
   answers: [],
+  userQuestions: [],
+  userAnswers: [],
   comments: [],
   reportedQuestions: [],
   customerCareRequests: [],
@@ -163,6 +189,19 @@ const dataSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      .addCase(fetchUserQuestions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserQuestions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userQuestions = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchUserQuestions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
       
       // Answers
       .addCase(fetchAnswers.pending, (state) => {
@@ -188,6 +227,19 @@ const dataSlice = createSlice({
         state.error = null;
       })
       .addCase(createAnswer.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchUserAnswers.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserAnswers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userAnswers = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchUserAnswers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

@@ -183,10 +183,16 @@ const Navbar = () => {
           <NavItem to="/my-college" icon={<School className="w-4 h-4" />} label="My College" />
           <NavItem to="/all-colleges" icon={<Grid className="w-4 h-4" />} label="All Colleges" />
           
-          <NavLink to="/profile">
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer">
-              <User className="w-5 h-5 text-black" />
-            </div>
+          <NavLink to="/profile" className={({ isActive }) => 
+            `group w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
+              isActive 
+                ? 'ring-2 dark:ring-blue-400 ring-gray-600 bg-amber-100 dark:bg-gray-700' 
+                : 'bg-gray-200 dark:bg-gray-700 hover:ring-2 hover:ring-gray-600 dark:hover:ring-blue-300'
+            }`
+          }>
+            {({ isActive }) => (
+              <User className={`w-5 h-5 group-hover:dark:text-blue-400 ${isActive ? 'dark:text-blue-400 text-gray-600' : 'text-gray-600 dark:text-gray-300'}`} />
+            )}
           </NavLink>
         </div>
 
