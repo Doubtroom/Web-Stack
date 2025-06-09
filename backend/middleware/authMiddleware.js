@@ -114,7 +114,6 @@ export const verifyAuthentication=async (req,res,next)=>{
     const accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
 
-
     if (!accessToken && !refreshToken) {
         return res.status(401).json({ 
             message: "Authentication required. Please log in to continue.",
@@ -136,20 +135,11 @@ export const verifyAuthentication=async (req,res,next)=>{
                 });
             }
 
-
             req.user = {
                 id: decoded.id,
                 email: decoded.email
             };
-            // Send response with user details and verification status
-            return res.status(200).json({
-                isAuthenticated: true,
-                user: {
-                    id: user._id,
-                    email: user.email,
-                    isVerified: user.isVerified
-                }
-            });
+            next();
         } else if (refreshToken) {
             // Access token expired, try to refresh
             try {
@@ -158,6 +148,7 @@ export const verifyAuthentication=async (req,res,next)=>{
                 
                 // Find user and check if refresh token matches
                 const user = await User.findById(decoded.id);
+                console.log(user)
 
                 if (!user || !user.refreshToken) {
                     return res.status(401).json({ 
@@ -165,7 +156,6 @@ export const verifyAuthentication=async (req,res,next)=>{
                         isAuthenticated: false,
                     });
                 }
-
 
                 // Compare the refresh token with the stored encrypted token
                 const isRefreshTokenValid = await bcrypt.compare(refreshToken, user.refreshToken);
@@ -195,16 +185,7 @@ export const verifyAuthentication=async (req,res,next)=>{
                     id: user._id,
                     email: user.email
                 };
-
-                // Send response with user details and verification status
-                return res.status(200).json({
-                    isAuthenticated: true,
-                    user: {
-                        id: user._id,
-                        email: user.email,
-                        isVerified: user.isVerified
-                    }
-                });
+                next();
             } catch (refreshError) {
                 return res.status(401).json({ 
                     message: "Your session has expired. Please log in again.",

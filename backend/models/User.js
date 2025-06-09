@@ -1,7 +1,6 @@
 import mongoose from "mongoose"
 
 const userSchema=new mongoose.Schema({
-    firebaseId: { type: String, default: null },
     email:{type:String,required:true,unique:true},
     password:{type:String,required:true},
     displayName:{type:String,required:true},
@@ -32,10 +31,13 @@ const userSchema=new mongoose.Schema({
 
 // Add a pre-save middleware to ensure passwordRecoveryDone exists
 userSchema.pre('save', function(next) {
-    if (this.isModified('password') && this.firebaseId && !this.passwordRecoveryDone) {
+    if (this.isModified('password') && !this.passwordRecoveryDone) {
         this.passwordRecoveryDone = true;
     }
     next();
 });
+
+// Create a sparse unique index on firebaseId
+userSchema.index({ firebaseId: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model('User',userSchema)
