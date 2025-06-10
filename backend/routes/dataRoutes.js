@@ -15,8 +15,8 @@ router.get('/questions/filter',verifyToken, getFilteredQuestions)
 router.get('/questions/user', verifyToken, getUserQuestions)
 router.get('/questions',verifyToken,getAllQuestions)
 router.get('/questions/:id',verifyToken,getQuestion)
-router.delete('/questions/:id', verifyToken, deleteQuestion)
-router.patch('/questions/:id', verifyToken, upload.single('image'), updateQuestion)
+router.patch('/questions/:id',verifyToken,upload.single('image'),updateQuestion)
+router.delete('/questions/:id',verifyToken,deleteQuestion)
 
 router.get('/questions/:id/answers', verifyToken, getAnswersByQuestion);
 router.post('/questions/:id/answers', verifyToken, upload.single('image'), createAnswer);

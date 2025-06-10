@@ -268,7 +268,7 @@ export const deleteQuestion=async(req,res)=>{
 export const getUserQuestions = async (req, res) => {
     try {
         const mongoUserId = req.user?.id;
-        const firebaseId = req.query?.firebaseId;
+        const firebaseId = req.body?.firebaseId;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
@@ -278,6 +278,8 @@ export const getUserQuestions = async (req, res) => {
                 message: 'No user ID provided' 
             });
         }
+
+        console.log(firebaseId)
 
         const query = {
             $or: []
