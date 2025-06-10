@@ -15,6 +15,7 @@ const userSchema=new mongoose.Schema({
     collegeName: {type:String, default: null},
     dob: {type:String, default: null},
     refreshToken: {type: String, default: null},
+    firebaseId: {type: String, default: null},
     createdAt: {
       type: Date,
       default: Date.now

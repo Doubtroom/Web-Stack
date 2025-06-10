@@ -447,6 +447,7 @@ export const getUser = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
+        console.log('User from database:', user); // Debug log
 
         res.json({
             user: {
@@ -460,7 +461,8 @@ export const getUser = async (req, res) => {
                 gender: user.gender,
                 role: user.role,
                 isVerified: user.isVerified,
-                dob:user.dob
+                dob: user.dob,
+                firebaseId: user.firebaseId || null 
             }
         });
     } catch (error) {
