@@ -37,7 +37,8 @@ export const verifyToken = async (req, res, next) => {
 
             req.user = {
                 id: decoded.id,
-                email: decoded.email
+                email: decoded.email,
+                firebaseId: user.firebaseId
             };
             next();
         } else if (refreshToken) {
@@ -91,7 +92,8 @@ export const verifyToken = async (req, res, next) => {
 
                 req.user = {
                     id: user._id,
-                    email: user.email
+                    email: user.email,
+                    firebaseId: user.firebaseId
                 };
                 next();
             } catch (refreshError) {
@@ -183,7 +185,8 @@ export const verifyAuthentication=async (req,res,next)=>{
 
                 req.user = {
                     id: user._id,
-                    email: user.email
+                    email: user.email,
+                    firebaseId: user.firebaseId
                 };
                 next();
             } catch (refreshError) {
