@@ -449,6 +449,9 @@ export const getUser = async (req, res) => {
         }
         console.log('User from database:', user); // Debug log
 
+        // If user has firebaseId, it's a Firebase account, otherwise it's a MongoDB account
+        const isFirebaseUser = !!user.firebaseId;
+
         res.json({
             user: {
                 userId: user._id,
@@ -462,7 +465,8 @@ export const getUser = async (req, res) => {
                 role: user.role,
                 isVerified: user.isVerified,
                 dob: user.dob,
-                firebaseId: user.firebaseId || null 
+                firebaseId: isFirebaseUser ? user.firebaseId : null,
+                authType: isFirebaseUser ? 'firebase' : 'mongodb'
             }
         });
     } catch (error) {
