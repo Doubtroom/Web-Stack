@@ -210,7 +210,7 @@ export const deleteAnswer = async (req, res) => {
 export const getUserAnswers = async (req, res) => {
     try {
         const mongoUserId = req.user?.id;
-        const firebaseId = req.body?.firebaseId;
+        const firebaseId = req.query?.firebaseId;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
