@@ -18,17 +18,17 @@ router.get('/questions/:id',verifyToken,getQuestion)
 router.delete('/questions/:id', verifyToken, deleteQuestion)
 router.patch('/questions/:id', verifyToken, upload.single('image'), updateQuestion)
 
-router.post('/questions/:id/answers', verifyToken, upload.single('image'), createAnswer);
 router.get('/questions/:id/answers', verifyToken, getAnswersByQuestion);
-router.post('/answers/user', verifyToken, getUserAnswers);
+router.post('/questions/:id/answers', verifyToken, upload.single('image'), createAnswer);
+router.get('/answers/user', verifyToken, getUserAnswers);
 router.get('/answers/:id', verifyToken, getAnswer);
-router.put('/answers/:id', verifyToken, updateAnswer);
+router.put('/answers/:id', verifyToken, upload.single('image'), updateAnswer);
 router.delete('/answers/:id', verifyToken, deleteAnswer);
 
-router.post('/comments/:id',verifyToken,createComment)
-router.get('/answers/:id/comments',verifyToken,getCommentsByAnswer)
-router.delete('/comments/:id',verifyToken,deleteComment)
-router.patch('/comments/:id',verifyToken,updateComment)
+router.post('/answers/:id/comments', verifyToken, createComment);
+router.get('/answers/:id/comments', verifyToken, getCommentsByAnswer);
+router.patch('/comments/:id', verifyToken, updateComment);
+router.delete('/comments/:id', verifyToken, deleteComment);
 
 router.post('/questions/:id/report', verifyToken, reportQuestion);
 router.get('/reported-questions', verifyToken, getReportedQuestions);
