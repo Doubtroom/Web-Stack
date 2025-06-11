@@ -269,14 +269,16 @@ export const getUserQuestions = async (req, res) => {
     try {
         const mongoUserId = req.user?.id;
         const firebaseId = req.query?.firebaseId;
-        const cursor = req.query?.cursor;
-        const limit = parseInt(req.query?.limit) || 10;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
         
         if (!mongoUserId && !firebaseId) {
             return res.status(400).json({ 
                 message: 'No user ID provided' 
             });
         }
+
 
         const query = {
             $or: []
@@ -288,31 +290,32 @@ export const getUserQuestions = async (req, res) => {
         if (firebaseId) {
             query.$or.push({ firebasePostedBy: firebaseId });
         }
-
-        // Add cursor condition if it exists
-        if (cursor) {
-            query.createdAt = { $lt: new Date(cursor) };
-        }
         
-        // Fetch one extra to check if there are more
+        const total = await Questions.countDocuments(query);
+        
         const questions = await Questions.find(query)
-            .select('text topic branch collegeName photo photoId noOfAnswers createdAt postedBy')
             .populate('postedBy', 'displayName collegeName role _id')
+            .populate('firebasePostedBy', 'displayName collegeName role _id')
             .sort({ createdAt: -1 })
-            .limit(limit + 1)
+            .skip(skip)
+            .limit(limit)
             .lean();
 
-        // Check if there are more results
-        const hasMore = questions.length > limit;
-        if (hasMore) {
-            questions.pop(); // Remove the extra item
-        }
+        const totalPages = Math.ceil(total / limit);
+        const hasNextPage = page < totalPages;
+        const hasPrevPage = page > 1;
 
         res.json({
             message: "User questions fetched successfully",
             questions,
-            nextCursor: hasMore ? questions[questions.length - 1].createdAt : null,
-            hasMore
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems: total,
+                itemsPerPage: limit,
+                hasNextPage,
+                hasPrevPage
+            }
         });
     } catch (error) {
         console.error('Error fetching user questions:', error);
