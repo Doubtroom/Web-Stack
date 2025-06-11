@@ -211,9 +211,8 @@ export const getUserAnswers = async (req, res) => {
     try {
         const mongoUserId = req.user?.id;
         const firebaseId = req.query?.firebaseId;
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
+        const cursor = req.query?.cursor;
+        const limit = parseInt(req.query?.limit) || 10;
         
         if (!mongoUserId && !firebaseId) {
             return res.status(400).json({ 
@@ -231,33 +230,31 @@ export const getUserAnswers = async (req, res) => {
         if (firebaseId) {
             query.$or.push({ firebasePostedBy: firebaseId });
         }
+
+        // Add cursor condition if it exists
+        if (cursor) {
+            query.createdAt = { $lt: new Date(cursor) };
+        }
         
-        const total = await Answers.countDocuments(query);
-        
+        // Fetch one extra to check if there are more
         const answers = await Answers.find(query)
-            .populate('postedBy', 'displayName collegeName role _id')
-            .populate('firebasePostedBy', 'displayName collegeName role _id')
+            .select('photo photoId upvotes createdAt userId questionId')
             .populate('questionId', 'text topic branch collegeName')
             .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
+            .limit(limit + 1)
             .lean();
 
-        const totalPages = Math.ceil(total / limit);
-        const hasNextPage = page < totalPages;
-        const hasPrevPage = page > 1;
+        // Check if there are more results
+        const hasMore = answers.length > limit;
+        if (hasMore) {
+            answers.pop(); // Remove the extra item
+        }
 
         res.json({
             message: "User answers fetched successfully",
             answers,
-            pagination: {
-                currentPage: page,
-                totalPages,
-                totalItems: total,
-                itemsPerPage: limit,
-                hasNextPage,
-                hasPrevPage
-            }
+            nextCursor: hasMore ? answers[answers.length - 1].createdAt : null,
+            hasMore
         });
     } catch (error) {
         console.error('Error fetching user answers:', error);
