@@ -269,6 +269,7 @@ export const getUserAnswers = async (req, res) => {
 };
 
 export const getAnswersByFirebaseQuestionId = async (req, res) => {
+    console.log("HI1")
     try {
         const firebaseQuestionId = req.params.firebaseQuestionId;
 
@@ -291,6 +292,45 @@ export const getAnswersByFirebaseQuestionId = async (req, res) => {
         });
     } catch (error) {
         console.log("Error fetching answers by firebase question ID:", error);
+        res.status(500).json({
+            message: 'Error fetching answers',
+            error: error.message
+        });
+    }
+}
+
+export const getAnswersByQuestionId = async (req, res) => {
+    try {        
+        const { questionId } = req.params;
+        const isFirebase = req.query.isFirebase === 'true';
+
+
+        let answers;
+        if (isFirebase) {
+            // First find the question by firebaseId
+            const question = await Questions.findOne({ firebaseId: questionId });
+            
+            if (!question) {
+                return res.status(404).json({
+                    message: "Question not found with the provided firebase ID"
+                });
+            }
+
+            // Then find all answers for this question using string comparison
+            answers = await Answers.find({ firebaseQuestionId: question.firebaseId })
+                .populate('postedBy', 'displayName collegeName role _id');
+        } else {
+            // Handle regular MongoDB question ID
+            answers = await Answers.find({ questionId })
+                .populate('postedBy', 'displayName collegeName role _id');
+        }
+
+        res.json({
+            message: "Answers fetched successfully",
+            answers
+        });
+    } catch (error) {
+        console.log("Error fetching answers:", error);
         res.status(500).json({
             message: 'Error fetching answers',
             error: error.message
