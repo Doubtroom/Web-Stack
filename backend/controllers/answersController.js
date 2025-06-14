@@ -300,29 +300,19 @@ export const getAnswersByFirebaseQuestionId = async (req, res) => {
 }
 
 export const getAnswersByQuestionId = async (req, res) => {
-    try {        
+    try {
         const { questionId } = req.params;
         const isFirebase = req.query.isFirebase === 'true';
 
-
         let answers;
         if (isFirebase) {
-            // First find the question by firebaseId
-            const question = await Questions.findOne({ firebaseId: questionId });
-            
-            if (!question) {
-                return res.status(404).json({
-                    message: "Question not found with the provided firebase ID"
-                });
-            }
-
-            // Then find all answers for this question using string comparison
-            answers = await Answers.find({ firebaseQuestionId: question.firebaseId })
+            // For Firebase questions, find answers using firebaseQuestionId
+            answers = await Answers.find({ firebaseQuestionId: questionId })
                 .populate('postedBy', 'displayName collegeName role _id');
         } else {
-            // Handle regular MongoDB question ID
+            // For MongoDB questions, find answers using questionId
             answers = await Answers.find({ questionId })
-                .populate('postedBy', 'displayName collegeName role _id');
+                .populate('postedBy', 'displayName collegeName role _id firebaseId');
         }
 
         res.json({
