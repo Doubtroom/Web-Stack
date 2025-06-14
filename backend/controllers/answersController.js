@@ -268,56 +268,45 @@ export const getUserAnswers = async (req, res) => {
     }
 };
 
-export const getAnswersByFirebaseQuestionId = async (req, res) => {
-    console.log("HI1")
-    try {
-        const firebaseQuestionId = req.params.firebaseQuestionId;
-
-        // First find the question by firebaseId
-        const question = await Questions.findOne({ firebaseId: firebaseQuestionId });
-        
-        if (!question) {
-            return res.status(404).json({
-                message: "Question not found with the provided firebase ID"
-            });
-        }
-
-        // Then find all answers for this question using string comparison
-        const answers = await Answers.find({ firebaseQuestionId: question.firebaseId })
-            .populate('postedBy', 'displayName collegeName role _id');
-
-        res.json({
-            message: "Answers fetched successfully by firebase question ID",
-            answers
-        });
-    } catch (error) {
-        console.log("Error fetching answers by firebase question ID:", error);
-        res.status(500).json({
-            message: 'Error fetching answers',
-            error: error.message
-        });
-    }
-}
-
 export const getAnswersByQuestionId = async (req, res) => {
     try {
         const { questionId } = req.params;
         const isFirebase = req.query.isFirebase === 'true';
+        const cursor = req.query.cursor;
+        const limit = 5; // Constant limit of 5 items per page
 
-        let answers;
+        let query;
         if (isFirebase) {
-            // For Firebase questions, find answers using firebaseQuestionId
-            answers = await Answers.find({ firebaseQuestionId: questionId })
-                .populate('postedBy', 'displayName collegeName role _id');
+            query = { firebaseQuestionId: questionId };
         } else {
-            // For MongoDB questions, find answers using questionId
-            answers = await Answers.find({ questionId })
-                .populate('postedBy', 'displayName collegeName role _id firebaseId');
+            query = { questionId };
         }
+
+        // Add cursor condition if cursor exists
+        if (cursor) {
+            query.createdAt = { $lt: new Date(cursor) };
+        }
+
+        // Get one extra item to check if there are more results
+        const answers = await Answers.find(query)
+            .populate('postedBy', 'displayName collegeName role _id firebaseId')
+            .sort({ createdAt: -1 })
+            .limit(limit + 1);
+
+        // Check if there are more results
+        const hasMore = answers.length > limit;
+        
+        // Remove the extra item if it exists
+        const results = hasMore ? answers.slice(0, -1) : answers;
+
+        // Get the cursor for the next page
+        const nextCursor = results.length > 0 ? results[results.length - 1].createdAt : null;
 
         res.json({
             message: "Answers fetched successfully",
-            answers
+            answers: results,
+            hasMore,
+            nextCursor: nextCursor ? nextCursor.toISOString() : null
         });
     } catch (error) {
         console.log("Error fetching answers:", error);
