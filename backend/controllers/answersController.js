@@ -1,8 +1,10 @@
-import Answers from "../models/Answers.js";
-import Questions from "../models/Questions.js";
-import cloudinary from "../utils/cloudinary.js";
+import { doc, getDoc, collection, query, getDocs, where, orderBy } from 'firebase/firestore';
+import { db } from '../firebase/firebaseConfig.js';
+import Answers from '../models/Answers.js';
+import Questions from '../models/Questions.js';
+import cloudinary from '../utils/cloudinary.js';
 
-export const createAnswer=async(req,res)=>{
+export const createAnswer = async (req, res) => {
     try {
         const questionId = req.params.id;
         const {text} = req.body;
@@ -69,7 +71,7 @@ export const createAnswer=async(req,res)=>{
     }
 }
 
-export const getAnswersByQuestion=async(req,res)=>{
+export const getAnswersByQuestion = async(req,res)=>{
     try {
         const questionId = req.params.id;
 
@@ -85,18 +87,23 @@ export const getAnswersByQuestion=async(req,res)=>{
     }
 }
 
-export const getAnswer=async(req,res)=>{
+export const getAnswer = async (req, res) => {
     try {
-        const answerId=req.params.id
+        const answerId = req.params.id;
+        // const isFirebase = req.query.isFirebase === 'true';
 
-        const answer=await Answers.findById(answerId)
+        let answer;
+        // if (isFirebase) {
+        //     answer=await Answers.findOne({ firebaseId: answerId })
+        // } else {
+        // }
+        answer=await Answers.findById(answerId)
 
-        if(!answer)return res.status(404).json({message:"Answer not Found"})
-        
         res.json({
             message: "Answer fetched successfully",
-            answer
-        })
+            answer,
+        });
+
     } catch (error) {
         console.log("Error fetching the answer:", error);
         res.status(500).json({
@@ -104,9 +111,9 @@ export const getAnswer=async(req,res)=>{
             error: error.message
         });
     }
-}
+};
 
-export const updateAnswer=async(req,res)=>{
+export const updateAnswer = async (req, res) => {
     try {
         const answerId = req.params.id;
         const {text} = req.body;
@@ -273,7 +280,7 @@ export const getAnswersByQuestionId = async (req, res) => {
         const { questionId } = req.params;
         const isFirebase = req.query.isFirebase === 'true';
         const cursor = req.query.cursor;
-        const limit = 5; // Constant limit of 5 items per page
+        const limit = 5;
 
         let query;
         if (isFirebase) {
