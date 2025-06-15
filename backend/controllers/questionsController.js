@@ -325,3 +325,24 @@ export const getUserQuestions = async (req, res) => {
         });
     }
 };
+
+export const getIdByFirebaseId = async (req, res) => {
+    try {
+        const { firebaseId } = req.params;
+        
+        if (!firebaseId) {
+            return res.status(400).json({ message: "Firebase ID is required" });
+        }
+
+        const question = await Questions.findOne({ firebaseId }, { _id: 1 });
+        
+        if (!question) {
+            return res.status(404).json({ message: "Question not found" });
+        }
+
+        return res.status(200).json({ id: question._id });
+    } catch (error) {
+        console.error("Error in getIdByFirebaseId:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}

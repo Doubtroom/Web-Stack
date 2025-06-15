@@ -1,6 +1,6 @@
 import express from 'express'
 import { verifyToken } from '../middleware/authMiddleware.js'
-import {createQuestion,updateQuestion, getAllQuestions, getFilteredQuestions, deleteQuestion,getQuestion, getUserQuestions} from '../controllers/questionsController.js'
+import {createQuestion,updateQuestion, getAllQuestions, getFilteredQuestions, deleteQuestion,getQuestion, getUserQuestions,getIdByFirebaseId} from '../controllers/questionsController.js'
 import {createAnswer, getAnswersByQuestionId, updateAnswer, deleteAnswer,getAnswer, getUserAnswers} from '../controllers/answersController.js'
 import {createComment, getCommentsByAnswer, deleteComment,updateComment} from '../controllers/commentsController.js'
 import {reportQuestion, getReportedQuestions, removeReport} from '../controllers/reportedQuestionsController.js'
@@ -17,6 +17,7 @@ router.get('/questions',verifyToken,getAllQuestions)
 router.get('/questions/:id',verifyToken,getQuestion)
 router.patch('/questions/:id',verifyToken,upload.single('image'),updateQuestion)
 router.delete('/questions/:id',verifyToken,deleteQuestion)
+router.get('/questions/firebase/:firebaseId',verifyToken,getIdByFirebaseId)
 
 router.get('/questions/:questionId/answers', verifyToken, getAnswersByQuestionId);
 
