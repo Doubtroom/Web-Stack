@@ -182,15 +182,15 @@ const migrateData = async () => {
         console.log('Starting migration...');
         
         // Clear existing data (optional)
-        // await Questions.deleteMany({});
-        // await Answers.deleteMany({});
-        // await Comments.deleteMany({});
-        // await User.deleteMany({});
+        await Questions.deleteMany({});
+        await Answers.deleteMany({});
+        await Comments.deleteMany({});
+        await User.deleteMany({});
 
         // Run migrations
         // await migrateQuestions();
         // await migrateAnswers();
-        await migrateComments();
+        // await migrateComments();
         // await migrateUsers();
 
         console.log('Migration completed successfully');
