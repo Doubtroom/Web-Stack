@@ -10,6 +10,7 @@ const questionSchema = new mongoose.Schema({
   noOfAnswers: { type: Number, default: 0 },
   postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   createdAt: { type: Date, default: Date.now },
+  isMigrated:{type:Boolean,default:false}
 });
 
 export default mongoose.model('Question', questionSchema);
