@@ -5,6 +5,7 @@ const commentSchema = new mongoose.Schema({
   answerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Answer', required: true },
   postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   createdAt: { type: Date, default: Date.now },
+  isMigrated:{type:Boolean,default:false}
 });
 
 export default mongoose.model('Comment', commentSchema);

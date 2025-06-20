@@ -26,7 +26,8 @@ const userSchema = new mongoose.Schema({
     resetToken: { type: String, default: null },
     resetExpires: { type: Date, default: null },
     provider: { type: String, default: "email" },
-    passwordRecoveryDone: { type: Boolean, default: false }
+    passwordRecoveryDone: { type: Boolean, default: false },
+    isMigrated:{type:Boolean,default:false}
 })
 
 // Add a pre-save middleware to ensure passwordRecoveryDone exists
