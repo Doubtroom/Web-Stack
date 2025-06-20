@@ -267,35 +267,23 @@ export const deleteQuestion=async(req,res)=>{
 
 export const getUserQuestions = async (req, res) => {
     try {
-        const mongoUserId = req.user?.id;
-        const firebaseId = req.query?.firebaseId;
+        const userId = req.user?.id;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
         
-        if (!mongoUserId && !firebaseId) {
+        if (!userId) {
             return res.status(400).json({ 
                 message: 'No user ID provided' 
             });
         }
 
-
-        const query = {
-            $or: []
-        };
-
-        if (mongoUserId) {
-            query.$or.push({ postedBy: mongoUserId });
-        }
-        if (firebaseId) {
-            query.$or.push({ firebasePostedBy: firebaseId });
-        }
+        const query = { postedBy: userId };
         
         const total = await Questions.countDocuments(query);
         
         const questions = await Questions.find(query)
             .populate('postedBy', 'displayName collegeName role _id')
-            .populate('firebasePostedBy', 'displayName collegeName role _id')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
@@ -325,24 +313,3 @@ export const getUserQuestions = async (req, res) => {
         });
     }
 };
-
-export const getIdByFirebaseId = async (req, res) => {
-    try {
-        const { firebaseId } = req.params;
-        
-        if (!firebaseId) {
-            return res.status(400).json({ message: "Firebase ID is required" });
-        }
-
-        const question = await Questions.findOne({ firebaseId }, { _id: 1 });
-        
-        if (!question) {
-            return res.status(404).json({ message: "Question not found" });
-        }
-
-        return res.status(200).json({ id: question._id });
-    } catch (error) {
-        console.error("Error in getIdByFirebaseId:", error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-}
