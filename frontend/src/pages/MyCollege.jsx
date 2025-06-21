@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Building2 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchQuestions } from '../store/dataSlice';
 import CollegeCard from '../components/CollegeCard';
 import { toast } from 'sonner';
-import LoadingSpinner from '../components/LoadingSpinner';
 import FilterButton from '../components/FilterButton';
 import MobileFilterButton from '../components/MobileFilterButton';
 import Pagination from '../components/Pagination';
@@ -17,7 +16,8 @@ const MyCollege = () => {
   const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showMyBranch, setShowMyBranch] = useState(false);
-  const [filterLoading, setFilterLoading] = useState(false);
+  const isMounted = useRef(true);
+  const isFetching = useRef(false);
   
   // Get data from Redux store
   const { questions = [], loading, error, pagination } = useSelector((state) => state.data);
@@ -31,10 +31,12 @@ const MyCollege = () => {
       .join(' ');
   };
 
-  const handlePageChange = async (page) => {
-    window.scrollTo(0, 0);
+  const fetchCollegeQuestions = useCallback(async (page) => {
+    // Prevent multiple simultaneous fetches
+    if (isFetching.current) return;
+    
     try {
-      setFilterLoading(true);
+      isFetching.current = true;
       const filters = {
         collegeName: user?.collegeName,
         ...(showMyBranch && user?.branch ? { branch: user.branch } : {}),
@@ -42,51 +44,41 @@ const MyCollege = () => {
         limit: 9
       };
       
-      const result = await dispatch(fetchQuestions(filters)).unwrap();
-      // Update URL with new page number
-      setSearchParams({ page: page.toString() });
+      await dispatch(fetchQuestions(filters)).unwrap();
+      // Only update URL if component is still mounted
+      if (isMounted.current) {
+        setSearchParams({ page: page.toString() });
+      }
     } catch (error) {
       console.error('Error fetching questions:', error);
-      toast.error(error || 'Failed to fetch questions');
+      if (isMounted.current) {
+        toast.error(error || 'Failed to fetch questions');
+      }
     } finally {
-      setFilterLoading(false);
+      isFetching.current = false;
     }
+  }, [dispatch, user?.collegeName, user?.branch, showMyBranch, setSearchParams]);
+
+  const handlePageChange = async (page) => {
+    window.scrollTo(0, 0);
+    await fetchCollegeQuestions(page);
   };
 
   useEffect(() => {
-    const fetchCollegeQuestions = async () => {
-      try {
-        setFilterLoading(true);
-        // Get page from URL params or default to 1
-        const page = parseInt(searchParams.get('page')) || 1;
-        const filters = {
-          collegeName: user?.collegeName,
-          ...(showMyBranch && user?.branch ? { branch: user.branch } : {}),
-          page,
-          limit: 9
-        };
-        
-        const result = await dispatch(fetchQuestions(filters)).unwrap();
-        // Update URL with current page if not already set
-        if (!searchParams.get('page')) {
-          setSearchParams({ page: page.toString() });
-        }
-      } catch (error) {
-        console.error('Error fetching questions:', error);
-        toast.error(error || 'Failed to fetch questions');
-      } finally {
-        setFilterLoading(false);
-      }
-    };
-
     if (user?.collegeName) {
-      fetchCollegeQuestions();
+      const page = parseInt(searchParams.get('page')) || 1;
+      fetchCollegeQuestions(page);
     }
-  }, [dispatch, showMyBranch, user?.branch, user?.collegeName, searchParams]);
+
+    // Cleanup function
+    return () => {
+      isMounted.current = false;
+    };
+  }, [user?.collegeName, user?.branch, showMyBranch, fetchCollegeQuestions]);
 
   // Show error toast if there's an error
   useEffect(() => {
-    if (error) {
+    if (error && isMounted.current) {
       toast.error(error);
     }
   }, [error]);
@@ -99,6 +91,7 @@ const MyCollege = () => {
       .join(' ');
   };
 
+  // Show skeleton when loading
   if (loading) {
     return <MyCollegeSkeleton />;
   }
@@ -143,11 +136,7 @@ const MyCollege = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filterLoading ? (
-            <div className="col-span-full flex justify-center py-12">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : Array.isArray(questions) && questions.length > 0 ? (
+          {Array.isArray(questions) && questions.length > 0 ? (
             questions.map((question) => (
               <CollegeCard
                 key={question._id || question.id}

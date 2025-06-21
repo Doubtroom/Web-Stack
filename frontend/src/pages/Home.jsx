@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import CollegeCard from '../components/CollegeCard'
-import { HelpCircle, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { HelpCircle } from 'lucide-react'
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
-import { questionServices } from '../services/data.services'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchHomeQuestions } from '../store/dataSlice'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { toast } from 'sonner'
 import FilterButton from '../components/FilterButton'
 import MobileFilterButton from '../components/MobileFilterButton'
 import placeholder from '../assets/placeholder.png'
-import { useSelector } from 'react-redux'
 import Pagination from '../components/Pagination'
 import QuestionCardSkeleton from '../components/QuestionCardSkeleton'
 import HomeSkeleton from '../components/HomeSkeleton'
@@ -18,29 +18,71 @@ const ITEMS_PER_PAGE = 9;
 const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
   const userData = useSelector((state) => state?.auth?.user);
+  const { homeQuestions, homePagination, loading } = useSelector((state) => state.data);
+  const isMounted = useRef(true);
   
   // State management
-  const [questions, setQuestions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filterLoading, setFilterLoading] = useState(false);
   const [showMyBranch, setShowMyBranch] = useState(false);
   const [page, setPage] = useState(parseInt(searchParams.get('page')) || 1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Loading skeleton array
   const loadingSkeletons = Array(ITEMS_PER_PAGE).fill(null);
 
-  // Handle back navigation
+  // Fetch questions with pagination
+  const fetchQuestions = useCallback(async (pageNumber) => {
+    if (!isMounted.current) return;
+    
+    try {
+      await dispatch(fetchHomeQuestions({
+        page: pageNumber,
+        limit: ITEMS_PER_PAGE,
+        branch: showMyBranch ? userData?.branch : null
+      })).unwrap();
+
+      if (isMounted.current) {
+        setPage(pageNumber);
+        setSearchParams({ page: pageNumber.toString() });
+        setIsInitialLoad(false);
+      }
+    } catch (error) {
+      console.error('Error fetching questions:', error);
+      if (isMounted.current) {
+        toast.error(error?.message || 'Failed to fetch questions');
+      }
+    }
+  }, [dispatch, showMyBranch, userData?.branch, setSearchParams]);
+
+  // Set mounted state and handle initial load
   useEffect(() => {
+    isMounted.current = true;
+    
+    // Handle back navigation
     if (location.state?.fromPage) {
       const params = new URLSearchParams(location.state.fromPage);
       const pageNumber = parseInt(params.get('page')) || 1;
       setPage(pageNumber);
       fetchQuestions(pageNumber);
+    } else {
+      // Initial load
+      const currentPage = parseInt(searchParams.get('page')) || 1;
+      fetchQuestions(currentPage);
     }
-  }, [location.state]);
+
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  // Handle filter changes
+  useEffect(() => {
+    if (!isInitialLoad) {
+      fetchQuestions(1); // Reset to first page when filter changes
+    }
+  }, [showMyBranch, userData?.branch]);
 
   // Format branch name for display
   const formatBranchName = (branch) => {
@@ -51,57 +93,9 @@ const Home = () => {
       .join(' ');
   };
 
-  // Fetch questions with pagination
-  const fetchQuestions = async (pageNumber) => {
-    try {
-      setFilterLoading(true);
-      const queryParams = {
-        page: pageNumber,
-        limit: ITEMS_PER_PAGE
-      };
-
-      let response;
-      if (showMyBranch && userData?.branch) {
-        response = await questionServices.getFilteredQuestions({
-          page: pageNumber,
-          limit: ITEMS_PER_PAGE,
-          branch: userData.branch
-        });
-      } else {
-        response = await questionServices.getAllQuestions({
-          page: pageNumber,
-          limit: ITEMS_PER_PAGE
-        });
-      }
-
-      if (response?.data) {
-        const { questions: fetchedQuestions, pagination } = response.data;
-        setQuestions(fetchedQuestions || []);
-        setTotalPages(pagination.totalPages);
-        setPage(pageNumber);
-        // Update URL with current page
-        setSearchParams({ page: pageNumber.toString() });
-      } else {
-        throw new Error('Invalid response format');
-      }
-    } catch (error) {
-      console.error('Error fetching questions:', error);
-      toast.error(error?.response?.data?.message || 'Failed to fetch questions');
-    } finally {
-      setLoading(false);
-      setFilterLoading(false);
-    }
-  };
-
-  // Initial load and filter change handler
-  useEffect(() => {
-    const currentPage = parseInt(searchParams.get('page')) || 1;
-    fetchQuestions(currentPage);
-  }, [showMyBranch, userData?.branch]);
-
   // Page change handler
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
+    if (newPage >= 1 && newPage <= homePagination.totalPages) {
       window.scrollTo(0, 0);
       fetchQuestions(newPage);
     }
@@ -118,15 +112,7 @@ const Home = () => {
     return `${Math.floor(diffInSeconds / 86400)} days ago`;
   };
 
-  const formatText = (text) => {
-    if (!text) return 'Question';
-    return text
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  };
-
-  if (loading) {
+  if (loading && isInitialLoad) {
     return <HomeSkeleton />;
   }
 
@@ -189,12 +175,12 @@ const Home = () => {
 
         {/* Questions Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filterLoading ? (
+          {loading ? (
             loadingSkeletons.map((_, index) => (
               <QuestionCardSkeleton key={index} />
             ))
-          ) : questions.length > 0 ? (
-            questions.map((question) => (
+          ) : homeQuestions && homeQuestions.length > 0 ? (
+            homeQuestions.map((question) => (
               <CollegeCard
                 key={question._id}
                 id={question._id}
@@ -204,6 +190,7 @@ const Home = () => {
                 topic={question.topic}
                 noOfAnswers={question.noOfAnswers || 0}
                 postedOn={question.createdAt}
+                text={question.text}
               />
             ))
           ) : (
@@ -218,10 +205,10 @@ const Home = () => {
         </div>
 
         {/* Pagination */}
-        {questions.length > 0 && (
+        {homeQuestions && homeQuestions.length > 0 && (
           <Pagination
             currentPage={page}
-            totalPages={totalPages}
+            totalPages={homePagination.totalPages}
             onPageChange={handlePageChange}
           />
         )}

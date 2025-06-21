@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { User,Calendar , Building2, GraduationCap, Phone, Briefcase, Mail, Edit2, Save, X, Camera } from 'lucide-react';
 import { toast } from 'sonner';
-import DataService from '../firebase/DataService';
-import userService from '../firebase/UserService';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../store/authSlice';
+import { logout, updateProfile } from '../store/authSlice';
 import { motion, AnimatePresence } from 'framer-motion';
 
 
@@ -95,20 +93,12 @@ const Profile = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      if (!userProfile?.uid) {
-        toast.error('User ID not found');
-        return;
-      }
-
-      await userService.saveUserProfile(userProfile.uid, formData);
-      
-      // Update Redux state instead of localStorage
-      setUserData(prev => ({ ...prev, ...formData }));
+      await dispatch(updateProfile(formData)).unwrap();
       setIsEditing(false);
       toast.success('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      toast.error(error.message || 'Failed to update profile');
     } finally {
       setLoading(false);
     }

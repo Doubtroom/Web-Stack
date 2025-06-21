@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, GraduationCap, Phone, User, Briefcase, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
-import userService from '../firebase/UserService';
 import { useDispatch } from 'react-redux';
 import { updateProfile } from '../store/authSlice.js';
 
@@ -382,7 +381,6 @@ const UserInfoForm = () => {
                 collegeName = formData.collegeName.trim();
             }
 
-            // Format DOB for Firebase - only date part, no time
             const formattedDob = formData.dob ? formData.dob : null;
 
             // Create updated user data while preserving the uid

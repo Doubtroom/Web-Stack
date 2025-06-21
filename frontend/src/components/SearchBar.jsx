@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, HelpCircle, Clock, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import DataService from '../firebase/DataService';
+import { questionServices } from '../services/data.services';
 import { toast } from 'sonner';
 import { useSelector } from 'react-redux';
 
@@ -58,27 +58,10 @@ const SearchBar = ({ isMobile = false, onClose, isOpen, onSearchComplete }) => {
 
       setIsLoading(true);
       try {
-        const questionsService = new DataService('questions');
-        const questions = await questionsService.getAllDocuments();
-
-        // Filter questions based on search term
-        const searchResults = questions.filter(question => {
-          const searchLower = searchTerm.toLowerCase();
-          return (
-            (question.text?.toLowerCase().includes(searchLower) || // Search in question text
-            question.topic?.toLowerCase().includes(searchLower) || // Search in topic
-            question.branch?.toLowerCase().includes(searchLower))   // Search in branch
-          );
-        });
-
-        // Format results with all fields
-        const formattedResults = searchResults.map(q => ({
-          id: q.id,
-          text: q.text || '',
-          topic: q.topic || '',
-          branch: q.branch || '',
-          college: q.collegeName || '',
-          createdAt: q.createdAt
+        const response = await questionServices.getFilteredQuestions({ search: searchTerm });
+        const formattedResults = response.data.questions.map(q => ({
+          ...q,
+          id: q._id
         }));
 
         setResults(formattedResults);

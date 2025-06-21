@@ -9,17 +9,24 @@ export const questionServices = {
   getFilteredQuestions: (filters) => apiClient.get(API_ENDPOINTS.QUESTIONS.FILTER, { params: filters }),
   deleteQuestion: (id) => apiClient.delete(API_ENDPOINTS.QUESTIONS.DELETE(id)),
   updateQuestion: (id, formData) => apiClient.patch(API_ENDPOINTS.QUESTIONS.UPDATE(id), formData),
-  getUserQuestions: (firebaseUserId) => apiClient.post(API_ENDPOINTS.QUESTIONS.GET_USER_QUESTIONS, { firebaseUserId }),
+  getUserQuestions: () => apiClient.get(API_ENDPOINTS.QUESTIONS.GET_USER_QUESTIONS),
 };
 
 // Answers Services
 export const answerServices = {
-  createAnswer: (formData) => apiClient.post(API_ENDPOINTS.ANSWERS.CREATE, formData),
-  getAnswersByQuestion: (questionId) => apiClient.get(API_ENDPOINTS.ANSWERS.GET_BY_QUESTION(questionId)),
+  createAnswer: (questionId,formData) => apiClient.post(API_ENDPOINTS.ANSWERS.CREATE(questionId), formData),
+  getAnswersByQuestion: (questionId, { cursor = null } = {}) => {
+    return apiClient.get(API_ENDPOINTS.ANSWERS.GET_BY_QUESTION(questionId), {
+      params: {
+        cursor
+      }
+    });
+  },
   getAnswer: (id) => apiClient.get(API_ENDPOINTS.ANSWERS.GET_ONE(id)),
   updateAnswer: (id, data) => apiClient.put(API_ENDPOINTS.ANSWERS.UPDATE(id), data),
+  upvoteAnswer: (id) => apiClient.patch(API_ENDPOINTS.ANSWERS.UPVOTE(id)),
   deleteAnswer: (id) => apiClient.delete(API_ENDPOINTS.ANSWERS.DELETE(id)),
-  getUserAnswers: (firebaseUserId) => apiClient.post(API_ENDPOINTS.ANSWERS.GET_USER_ANSWERS, { firebaseUserId }),
+  getUserAnswers: () => apiClient.get(API_ENDPOINTS.ANSWERS.GET_USER_ANSWERS),
 };
 
 // Comments Services
@@ -28,6 +35,7 @@ export const commentServices = {
   getCommentsByAnswer: (answerId) => apiClient.get(API_ENDPOINTS.COMMENTS.GET_BY_ANSWER(answerId)),
   deleteComment: (id) => apiClient.delete(API_ENDPOINTS.COMMENTS.DELETE(id)),
   updateComment: (id, data) => apiClient.patch(API_ENDPOINTS.COMMENTS.UPDATE(id), data),
+  upvoteComment: (id) => apiClient.patch(API_ENDPOINTS.COMMENTS.UPVOTE(id)),
 };
 
 // Report Services
