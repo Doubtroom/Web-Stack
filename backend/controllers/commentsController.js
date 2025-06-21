@@ -126,3 +126,54 @@ export const deleteComment=async(req,res)=>{
         });
     }
 }
+
+export const upvoteComment = async (req, res) => {
+    try {
+        const { id: commentId } = req.params;
+        const userId = req.user.id;
+
+        const comment = await Comments.findById(commentId);
+
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found' });
+        }
+
+        const upvotedIndex = comment.upvotedBy.findIndex(upvoterId => upvoterId.equals(userId));
+
+        let updatedComment;
+
+        if (upvotedIndex === -1) {
+            // User has not upvoted yet, so upvote
+            updatedComment = await Comments.findByIdAndUpdate(
+                commentId,
+                { 
+                    $inc: { upvotes: 1 }, 
+                    $addToSet: { upvotedBy: userId } 
+                },
+                { new: true }
+            ).populate('postedBy', 'displayName collegeName role _id');
+        } else {
+            // User has already upvoted, so remove upvote
+            updatedComment = await Comments.findByIdAndUpdate(
+                commentId,
+                { 
+                    $inc: { upvotes: -1 }, 
+                    $pull: { upvotedBy: userId } 
+                },
+                { new: true }
+            ).populate('postedBy', 'displayName collegeName role _id');
+        }
+
+        res.json({
+            message: 'Upvote status updated successfully',
+            comment: updatedComment
+        });
+
+    } catch (error) {
+        console.error('Error upvoting comment:', error);
+        res.status(500).json({
+            message: 'Error upvoting comment',
+            error: error.message
+        });
+    }
+};
