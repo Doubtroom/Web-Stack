@@ -13,7 +13,7 @@ const app=express()
 app.use(cors({
     origin: [process.env.CLIENT_URL, 'https://localhost:3001', 'https://doubtroom.onrender.com','https://doubtroom-git-feat-mongodb-lols-projects-664137cb.vercel.app'],
     credentials: true,  // This is important for cookies
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
     exposedHeaders: ['Set-Cookie']
 }))
