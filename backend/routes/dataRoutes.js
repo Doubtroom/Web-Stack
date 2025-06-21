@@ -6,6 +6,7 @@ import {createComment, getCommentsByAnswer, deleteComment,updateComment} from '.
 import {reportQuestion, getReportedQuestions, removeReport} from '../controllers/reportedQuestionsController.js'
 import {createCustomerCare, getCustomerCareRequests, getUserCustomerCareRequests} from '../controllers/customerCareController.js'
 import { upload } from '../middleware/multer.js';
+import { upvoteAnswer } from '../controllers/answersController.js'
 
 
 const router=express.Router();
@@ -25,6 +26,7 @@ router.get('/answers/user', verifyToken, getUserAnswers);
 router.get('/answers/:id', verifyToken, getAnswer);
 router.put('/answers/:id', verifyToken, upload.single('image'), updateAnswer);
 router.delete('/answers/:id', verifyToken, deleteAnswer);
+router.patch('/answers/:id/upvote', verifyToken, upvoteAnswer);
 
 router.post('/answers/:id/comments', verifyToken, createComment);
 router.get('/answers/:id/comments', verifyToken, getCommentsByAnswer);

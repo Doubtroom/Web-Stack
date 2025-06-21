@@ -6,7 +6,7 @@ import cloudinary from '../utils/cloudinary.js';
 
 export const createAnswer = async (req, res) => {
     try {
-        const { id: questionId } = req.params;
+        const questionId = req.params.id;
         const {text} = req.body;
 
         let photoUrl='',photoId=''
@@ -323,3 +323,54 @@ export const getAnswersByQuestionId = async (req, res) => {
         });
     }
 }
+
+export const upvoteAnswer = async (req, res) => {
+    try {
+        const { id: answerId } = req.params;
+        const userId = req.user.id;
+
+        const answer = await Answers.findById(answerId);
+
+        if (!answer) {
+            return res.status(404).json({ message: 'Answer not found' });
+        }
+
+        const upvotedIndex = answer.upvotedBy.findIndex(upvoterId => upvoterId.equals(userId));
+
+        let updatedAnswer;
+
+        if (upvotedIndex === -1) {
+            // User has not upvoted yet, so upvote
+            updatedAnswer = await Answers.findByIdAndUpdate(
+                answerId,
+                { 
+                    $inc: { upvotes: 1 }, 
+                    $addToSet: { upvotedBy: userId } 
+                },
+                { new: true }
+            ).populate('postedBy', 'displayName collegeName role _id');
+        } else {
+            // User has already upvoted, so remove upvote
+            updatedAnswer = await Answers.findByIdAndUpdate(
+                answerId,
+                { 
+                    $inc: { upvotes: -1 }, 
+                    $pull: { upvotedBy: userId } 
+                },
+                { new: true }
+            ).populate('postedBy', 'displayName collegeName role _id');
+        }
+
+        res.json({
+            message: 'Upvote status updated successfully',
+            answer: updatedAnswer
+        });
+
+    } catch (error) {
+        console.error('Error upvoting answer:', error);
+        res.status(500).json({
+            message: 'Error upvoting answer',
+            error: error.message
+        });
+    }
+};
