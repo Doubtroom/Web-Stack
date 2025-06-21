@@ -110,56 +110,48 @@ export const getAnswer = async (req, res) => {
 export const updateAnswer = async (req, res) => {
     try {
         const answerId = req.params.id;
-        const {text} = req.body;
-        let photoUrl = '', photoId = '';
-
-        if (req.file) {
-            const uploadPromise = new Promise((resolve, reject) => {
-                const uploadStream = cloudinary.uploader.upload_stream(
-                    { resource_type: 'image' },
-                    (err, result) => {
-                        if (err) reject(err);
-                        else resolve(result);
-                    }
-                );
-                
-                uploadStream.end(req.file.buffer);
-            });
-
-            const result = await uploadPromise;
-            photoUrl = result.secure_url;
-            photoId = result.public_id;
-        }
-
-        const updateData = {};
+        const { text, removePhoto } = req.body;
         
-        if (text) updateData.text = text;
-
-        if (photoUrl && photoId) {
-            updateData.photoUrl = photoUrl;
-            updateData.photoId = photoId;
-        }
-
-        if (Object.keys(updateData).length === 0) {
-            return res.status(400).json({ 
-                message: "No fields provided for update" 
-            });
-        }
-
-        const updatedAnswer = await Answers.findByIdAndUpdate(
-            answerId,
-            { $set: updateData },
-            { new: true, runValidators: true }
-        ).populate('postedBy', 'displayName collegeName role _id');
-
-        if (!updatedAnswer) {
+        const answer = await Answers.findById(answerId);
+        if (!answer) {
             return res.status(404).json({ message: 'Answer not found' });
         }
 
-        if (photoUrl && updatedAnswer.photoId) {
-            await cloudinary.uploader.destroy(updatedAnswer.photoId);
+        let { photoUrl, photoId } = answer;
+        const oldPhotoId = photoId;
+
+        // If a new file is uploaded, replace the old one
+        if (req.file) {
+            if (oldPhotoId) {
+                await cloudinary.uploader.destroy(oldPhotoId);
+            }
+            const result = await new Promise((resolve, reject) => {
+                const uploadStream = cloudinary.uploader.upload_stream({ resource_type: 'image' }, (err, result) => {
+                    if (err) reject(err);
+                    else resolve(result);
+                });
+                uploadStream.end(req.file.buffer);
+            });
+            photoUrl = result.secure_url;
+            photoId = result.public_id;
+        } 
+        // If removePhoto is flagged, remove the existing photo
+        else if (removePhoto === 'true' && oldPhotoId) {
+            await cloudinary.uploader.destroy(oldPhotoId);
+            photoUrl = '';
+            photoId = '';
         }
 
+        // Update answer fields
+        answer.text = text || answer.text;
+        answer.photoUrl = photoUrl;
+        answer.photoId = photoId;
+        
+        const updatedAnswer = await answer.save();
+
+        // Populate postedBy for the response
+        await updatedAnswer.populate('postedBy', 'displayName collegeName role _id');
+        
         res.json({ 
             message: "Answer updated successfully", 
             answer: updatedAnswer 
