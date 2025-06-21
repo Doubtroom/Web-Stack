@@ -6,7 +6,7 @@ import cloudinary from '../utils/cloudinary.js';
 
 export const createAnswer = async (req, res) => {
     try {
-        const questionId = req.params.id;
+        const { id: questionId } = req.params;
         const {text} = req.body;
 
         let photoUrl='',photoId=''
