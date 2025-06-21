@@ -7,6 +7,7 @@ import {reportQuestion, getReportedQuestions, removeReport} from '../controllers
 import {createCustomerCare, getCustomerCareRequests, getUserCustomerCareRequests} from '../controllers/customerCareController.js'
 import { upload } from '../middleware/multer.js';
 import { upvoteAnswer } from '../controllers/answersController.js'
+import { upvoteComment } from '../controllers/commentsController.js'
 
 
 const router=express.Router();
@@ -32,6 +33,7 @@ router.post('/answers/:id/comments', verifyToken, createComment);
 router.get('/answers/:id/comments', verifyToken, getCommentsByAnswer);
 router.patch('/comments/:id', verifyToken, updateComment);
 router.delete('/comments/:id', verifyToken, deleteComment);
+router.patch('/comments/:id/upvote', verifyToken, upvoteComment);
 
 router.post('/questions/:id/report', verifyToken, reportQuestion);
 router.get('/reported-questions', verifyToken, getReportedQuestions);
