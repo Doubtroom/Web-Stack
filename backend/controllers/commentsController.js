@@ -77,26 +77,31 @@ export const updateComment = async (req, res) => {
     try {
         const commentId = req.params.id;
         const { text } = req.body;
+        const userId = req.user.id;
 
         if (!text) {
-            return res.status(400).json({ message: 'Updated text is required' });
+            return res.status(400).json({ message: 'Text is required' });
+        }
+
+        const comment = await Comments.findById(commentId);
+
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found' });
+        }
+        
+        if (comment.postedBy.toString() !== userId) {
+            return res.status(403).json({ message: 'User not authorized to update this comment' });
         }
 
         const updatedComment = await Comments.findByIdAndUpdate(
             commentId,
-            {
-                text
-            },
-            { new: true, runValidators: true }
-        ).populate("postedBy", "displayName collegeName role _id");
-
-        if (!updatedComment) {
-            return res.status(404).json({ message: 'Comment not found' });
-        }
-
+            { $set: { text } },
+            { new: true }
+        ).populate('postedBy', 'displayName collegeName role _id');
+        
         res.json({
-            message: "Comment updated successfully", 
-            comment: updatedComment 
+            message: 'Comment updated successfully',
+            comment: updatedComment
         });
     } catch (error) {
         console.error('Error updating comment:', error);
@@ -107,17 +112,26 @@ export const updateComment = async (req, res) => {
     }
 }
 
-export const deleteComment=async(req,res)=>{
+export const deleteComment = async (req, res) => {
     try {
-        const commentId=req.params.id
+        const commentId = req.params.id;
+        const userId = req.user.id;
+        
+        const comment = await Comments.findById(commentId);
 
-        const comment=await Comments.findById(commentId)
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found' });
+        }
+        
+        if (comment.postedBy.toString() !== userId) {
+            return res.status(403).json({ message: 'User not authorized to delete this comment' });
+        }
 
-        if(!comment)return res.status(404).json({ error: 'Comment not found' });
+        await Comments.findByIdAndDelete(commentId);
 
-        await comment.deleteOne()
-
-        res.json({message:"Comment deleted successfully"})
+        res.json({
+            message: 'Comment deleted successfully'
+        });
     } catch (error) {
         console.error('Error deleting comment:', error);
         res.status(500).json({ 
