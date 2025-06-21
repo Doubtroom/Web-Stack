@@ -220,7 +220,7 @@ export const updateQuestion=async(req,res)=>{
         const updatedQuestion = await question.save();
         
         // Populate postedBy for the response
-        await updatedQuestion.populate('postedBy', 'displayName collegeName role _id');
+        await updatedQuestion.populate({ path: 'postedBy', select: 'displayName collegeName role _id' });
         
         res.json({ 
             message: "Question updated successfully", 
