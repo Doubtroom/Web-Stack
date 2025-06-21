@@ -246,22 +246,41 @@ export const updateQuestion=async(req,res)=>{
 
 export const deleteQuestion=async(req,res)=>{
     try {
-        const question=await Questions.findById(req.params.id)
+        const questionId = req.params.id;
+        const question = await Questions.findById(questionId);
 
-        if(!question)return res.status(404).json({ error: 'Question not found' });
+        if (!question) {
+            return res.status(404).json({ message: 'Question not found' });
+        }
 
-        if(question.photoId)await cloudinary.uploader.destroy(question.photoId)
-        
-        await question.deleteOne()
-        await Answers.deleteMany({questionId:question._id})
+        // Delete question's photo from Cloudinary
+        if (question.photoId) {
+            await cloudinary.uploader.destroy(question.photoId);
+        }
 
-        res.json({message:'Question and associated answers are deleted successfully'})
-    } catch (error) {
-        console.error('Error deleting questions:', error);
-        res.status(500).json({ 
-            message: 'Error deleting questions', 
-            error: error.message 
+        // Find all answers associated with the question
+        const answers = await Answers.find({ questionId: questionId });
+
+        // Delete photos for each answer from Cloudinary
+        for (const answer of answers) {
+            if (answer.photoId) {
+                await cloudinary.uploader.destroy(answer.photoId);
+            }
+        }
+
+        // Delete all answers associated with the question
+        await Answers.deleteMany({ questionId: questionId });
+
+        // Delete the question itself
+        await question.deleteOne();
+
+        res.json({
+            message: "Question and associated answers deleted successfully"
         });
+
+    } catch (error) {
+        console.error('Error deleting question:', error);
+        res.status(500).json({ message: 'Error deleting question', error: error.message });
     }
 }
 

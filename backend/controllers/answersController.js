@@ -1,5 +1,3 @@
-import { doc, getDoc, collection, query, getDocs, where, orderBy } from 'firebase/firestore';
-import { db } from '../firebase/firebaseConfig.js';
 import Answers from '../models/Answers.js';
 import Questions from '../models/Questions.js';
 import cloudinary from '../utils/cloudinary.js';
@@ -90,13 +88,9 @@ export const getAnswersByQuestion = async(req,res)=>{
 export const getAnswer = async (req, res) => {
     try {
         const answerId = req.params.id;
-        // const isFirebase = req.query.isFirebase === 'true';
 
         let answer;
-        // if (isFirebase) {
-        //     answer=await Answers.findOne({ firebaseId: answerId })
-        // } else {
-        // }
+
         answer=await Answers.findById(answerId)
 
         res.json({
@@ -217,33 +211,22 @@ export const deleteAnswer = async (req, res) => {
 export const getUserAnswers = async (req, res) => {
     try {
         const mongoUserId = req.user?.id;
-        const firebaseId = req.query?.firebaseId;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
         
-        if (!mongoUserId && !firebaseId) {
+        if (!mongoUserId) {
             return res.status(400).json({ 
                 message: 'No user ID provided' 
             });
         }
 
-        const query = {
-            $or: []
-        };
-
-        if (mongoUserId) {
-            query.$or.push({ postedBy: mongoUserId });
-        }
-        if (firebaseId) {
-            query.$or.push({ firebasePostedBy: firebaseId });
-        }
+        const query = { postedBy: mongoUserId };
         
         const total = await Answers.countDocuments(query);
         
         const answers = await Answers.find(query)
             .populate('postedBy', 'displayName collegeName role _id')
-            .populate('firebasePostedBy', 'displayName collegeName role _id')
             .populate('questionId', 'text topic branch collegeName')
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -278,16 +261,10 @@ export const getUserAnswers = async (req, res) => {
 export const getAnswersByQuestionId = async (req, res) => {
     try {
         const { questionId } = req.params;
-        const isFirebase = req.query.isFirebase === 'true';
         const cursor = req.query.cursor;
         const limit = 5;
 
-        let query;
-        if (isFirebase) {
-            query = { firebaseQuestionId: questionId };
-        } else {
-            query = { questionId };
-        }
+        const query = { questionId };
 
         // Add cursor condition if cursor exists
         if (cursor) {
@@ -296,7 +273,7 @@ export const getAnswersByQuestionId = async (req, res) => {
 
         // Get one extra item to check if there are more results
         const answers = await Answers.find(query)
-            .populate('postedBy', 'displayName collegeName role _id firebaseId')
+            .populate('postedBy', 'displayName collegeName role _id')
             .sort({ createdAt: -1 })
             .limit(limit + 1);
 
