@@ -24,7 +24,6 @@ function Protected({ children, authentication = false }) {
     const [lastPath, setLastPath] = useState('');
     const [navigationAttempts, setNavigationAttempts] = useState(0);
 
-    // Check user details completeness
     useEffect(() => {
         if (!user) return;
         const tempHasAllDetails = Boolean(
@@ -39,7 +38,6 @@ function Protected({ children, authentication = false }) {
         setIsUserDetailsChecked(true);
     }, [user]);
 
-    // Auth check effect
     useEffect(() => {
         const checkAuth = async () => {
             if (isAuthChecked) return;
@@ -94,28 +92,15 @@ function Protected({ children, authentication = false }) {
             // Skip navigation if still checking auth
             if (!isAuthChecked) return;
 
-            // Prevent multiple navigations and unnecessary effect runs
-            if (!isUserDetailsChecked || isNavigating || lastPath === location.pathname) return;
+            // Skip if we're already navigating or if the path hasn't changed
+            if (isNavigating || lastPath === location.pathname) return;
 
-            // Reset navigation attempts if path changes
-            if (lastPath !== location.pathname) {
-                setNavigationAttempts(0);
-            }
-
-            // Prevent infinite navigation loops
-            if (navigationAttempts >= 2) {
-                console.warn('Navigation loop detected, stopping navigation');
-                return;
-            }
-
+            // Set navigating state to prevent multiple navigations
             setIsNavigating(true);
-            setLastPath(location.pathname);
-            setNavigationAttempts(prev => prev + 1);
-            const currentPath = location.pathname;
 
             try {
-                // Protected route access
-                if (authentication) {          
+                // Only check auth for protected routes
+                if (authentication) {
                     if (!isAuthenticated) {
                         navigate('/login', { replace: true });
                         return;
@@ -123,34 +108,41 @@ function Protected({ children, authentication = false }) {
 
                     if (!isVerified) {
                         const verificationRoutes = ['/verificationDialogue', '/verify-otp'];
-                        if (!verificationRoutes.includes(currentPath)) {
+                        if (!verificationRoutes.includes(location.pathname)) {
                             navigate('/verificationDialogue', { replace: true });
                             return;
                         }
                     }
 
-                    // Prevent access to complete-profile if user has already completed their profile
-                    if (hasAllDetails && currentPath === '/complete-profile') {
+                    // Only redirect from complete-profile if user has completed profile
+                    if (hasAllDetails && location.pathname === '/complete-profile') {
+                        console.log("hi1")
                         navigate('/home', { replace: true });
                         return;
                     }
                 } 
-                // Public route access
+                // Handle public routes
                 else {
-                    // Redirect to home if authenticated and trying to access auth pages
                     const publicRoutes = ['/login', '/signup', '/landing'];
-                    if (isAuthenticated && publicRoutes.includes(currentPath)) {
+                    if (isAuthenticated && hasAllDetails && publicRoutes.includes(location.pathname)) {
+                        console.log("hi2")
                         navigate('/home', { replace: true });
                         return;
                     }
                 }
+
+                // Update last path after successful navigation
+                setLastPath(location.pathname);
             } finally {
-                setIsNavigating(false);
+                // Reset navigating state after a short delay to allow route transition
+                setTimeout(() => {
+                    setIsNavigating(false);
+                }, 100);
             }
         };
 
         handleNavigation();
-    }, [isAuthenticated, isVerified, hasAllDetails, isAuthChecked, isUserDetailsChecked, location.pathname, authentication, navigate, lastPath, navigationAttempts]);
+    }, [isAuthenticated, isVerified, hasAllDetails, isAuthChecked, location.pathname, authentication, navigate]);
 
     // Show loading spinner only when checking auth
     if (!isAuthChecked) {

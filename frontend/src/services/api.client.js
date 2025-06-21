@@ -11,6 +11,22 @@ const apiClient = axios.create({
   },
 });
 
+// Add request interceptor to handle FormData and Content-Type
+apiClient.interceptors.request.use(
+  (config) => {
+    if (config.data instanceof FormData) {
+      // Let the browser set the Content-Type for FormData
+      delete config.headers['Content-Type'];
+    } else {
+      // Set Content-Type for other requests
+      config.headers['Content-Type'] = 'application/json';
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 apiClient.interceptors.response.use(
   (response) => response,

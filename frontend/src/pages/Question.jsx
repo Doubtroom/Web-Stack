@@ -1,63 +1,89 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MessageSquare, ThumbsUp, Clock, Maximize2, Edit2, Trash2, MoreVertical } from 'lucide-react';
-import DataService from '../firebase/DataService';
+import { MessageSquare, ThumbsUp, Clock, Maximize2, Edit2, Trash2, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAnswers, fetchQuestionById, upvoteAnswer } from '../store/dataSlice';
 import LoadingSpinner from '../components/LoadingSpinner';
+import QuestionSkeleton from '../components/QuestionSkeleton';
 import Button from '../components/Button';
 import { toast } from 'sonner';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import ImageModal from '../components/ImageModal';
+import AnswerSkeleton from '../components/AnswerSkeleton';
 
 const Question = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [question, setQuestion] = useState(null);
-  const [answers, setAnswers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
   const [showOptions, setShowOptions] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const [page, setPage] = useState(1);
+  const [isFetching, setIsFetching] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const userData = useSelector((state) => state?.auth?.user);
+  const { currentQuestion, answers, loading, error, answersPagination } = useSelector((state) => state.data);
 
-  const getUserCollege = async (userId) => {
+  const fetchData = useCallback(async (cursor = null) => {
+    if (!id) return;
+
     try {
-      const userService = new DataService('users');
-      const userDoc = await userService.getDocumentById(userId);
-      return userDoc?.collegeName || null;
+      setIsFetching(true);
+      
+      if (!cursor) {
+        dispatch({ type: 'data/clearCurrentQuestion' });
+        dispatch({ type: 'data/clearAnswers' });
+        const questionResult = await dispatch(fetchQuestionById(id)).unwrap();
+        const useFirebaseId = Boolean(questionResult?.firebaseId);
+
+        await dispatch(fetchAnswers({
+          questionId: useFirebaseId ? questionResult.firebaseId : id,
+          useFirebaseId,
+          cursor: null
+        })).unwrap();
+        setIsInitialLoad(false);
+      } else {
+        const useFirebaseId = Boolean(currentQuestion?.firebaseId);
+        await dispatch(fetchAnswers({
+          questionId: useFirebaseId ? currentQuestion.firebaseId : id,
+          useFirebaseId,
+          cursor
+        })).unwrap();
+      }
     } catch (error) {
-      console.error('Error fetching user college:', error);
-      return null;
+      console.error('Error fetching data:', error);
+      toast.error('Failed to load question data');
+    } finally {
+      setIsFetching(false);
     }
-  };
+  }, [dispatch, id, currentQuestion]);
 
   useEffect(() => {
-    const fetchQuestionAndAnswers = async () => {
-      try {
-        const dataService = new DataService('questions');
-        const questionData = await dataService.getDocumentById(id);
-        setQuestion(questionData);
-        const answersData = await dataService.getAnswersByQuestionId(id);
-        
-        // Fetch college information for each answer
-        const answersWithColleges = await Promise.all(
-          answersData.map(async (answer) => {
-            const collegeName = await getUserCollege(answer.userId);
-            return { ...answer, collegeName };
-          })
-        );
-        
-        setAnswers(answersWithColleges);
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to fetch question details. Please try again later.');
-        console.error('Error:', err);
-        setLoading(false);
-      }
+    fetchData();
+    return () => {
+      dispatch({ type: 'data/clearCurrentQuestion' });
+      dispatch({ type: 'data/clearAnswers' });
     };
+  }, [dispatch, id]);
 
-    fetchQuestionAndAnswers();
-  }, [id]);
+  const handleScroll = useCallback(() => {
+    const scrollPosition = window.innerHeight + window.scrollY;
+    const documentHeight = document.documentElement.scrollHeight;
+    const scrollThreshold = 500; // increased to 500px from bottom to trigger load earlier
+
+    if (
+      documentHeight - scrollPosition <= scrollThreshold &&
+      answersPagination.hasMore &&
+      !isFetching
+    ) {
+      fetchData(answersPagination.nextCursor);
+    }
+  }, [answersPagination.hasMore, answersPagination.nextCursor, isFetching, fetchData]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
 
   const formatBranchName = (branch) => {
     if (!branch) return '';
@@ -69,25 +95,7 @@ const Question = () => {
 
   const handleDelete = async () => {
     try {
-      const dataService = new DataService('questions');
-      
-
-      if (question.photo || question.photoId) {
-        await dataService.deleteImage(question.photoId);
-      }
-
-      const answersService = new DataService('answers');
-      const answers = await answersService.getAnswersByQuestionId(id);
-      
-      for (const answer of answers) {
-        if (answer.photo && !answer.photo.startsWith('data:') && !answer.photo.includes('placeholder')) {
-          await answersService.deleteImage(answer.photo);
-        }
-        await answersService.deleteDocument(answer.id);
-      }
-
-      await dataService.deleteDocument(id);
-      
+      // TODO: Implement delete question action in dataSlice
       toast.success('Question deleted successfully!');
       navigate('/my-questions');
     } catch (error) {
@@ -100,45 +108,19 @@ const Question = () => {
     navigate(`/question/${id}/edit`);
   };
 
-  const handleUpvote = async (answerId, currentUpvotes, upvotedBy) => {
+  const handleUpvote = async (answerId) => {
     try {
-      const dataService = new DataService('answers');
-      const userId = userData.uid;
+      const userId = userData?.userId;
       
       if (!userId) {
         toast.error('Please login to upvote');
         return;
       }
-
-      // Ensure upvotedBy is an array
-      const currentUpvotedBy = Array.isArray(upvotedBy) ? upvotedBy : [];
-      const hasUpvoted = currentUpvotedBy.includes(userId);
-      const newUpvotes = hasUpvoted ? currentUpvotes - 1 : currentUpvotes + 1;
       
-      // Update the upvotedBy array
-      const newUpvotedBy = hasUpvoted 
-        ? currentUpvotedBy.filter(id => id !== userId)
-        : [...currentUpvotedBy, userId];
-
-      // Update the document in Firestore
-      await dataService.updateDocument(answerId, {
-        upvotes: newUpvotes,
-        upvotedBy: newUpvotedBy
-      });
-
-      // Update local state
-      setAnswers(prevAnswers => 
-        prevAnswers.map(answer => 
-          answer.id === answerId 
-            ? { ...answer, upvotes: newUpvotes, upvotedBy: newUpvotedBy }
-            : answer
-        )
-      );
-
-      toast.success(hasUpvoted ? 'Upvote removed' : 'Answer upvoted!');
+      await dispatch(upvoteAnswer({ answerId, userId })).unwrap();
     } catch (error) {
       console.error('Error updating upvote:', error);
-      toast.error('Failed to update upvote. Please try again.');
+      toast.error(error || 'Failed to update upvote. Please try again.');
     }
   };
 
@@ -157,21 +139,31 @@ const Question = () => {
     return `${Math.floor(diffInSeconds / 86400)} days ago`;
   };
 
-  if (loading) {
-    return <LoadingSpinner fullScreen />;
-  }
-
-  if (!question) {
+  // Show skeleton while loading initial data
+  if (isInitialLoad || (loading && !currentQuestion)) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 mt-10 lg:mt-28 justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">Question Not Found</h2>
-          <p className="text-gray-600 dark:text-gray-400">The question you're looking for doesn't exist or has been removed.</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="w-full max-w-4xl mx-auto pt-2 lg:pt-24 pb-8 sm:pb-12 px-4 sm:px-6">
+          <QuestionSkeleton />
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-8 mt-8">
+            <div className="flex items-center justify-between mb-8">
+              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-2 animate-pulse" />
+              <div className="h-10 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            </div>
+            <div className="space-y-8 flex flex-col gap-10">
+              {[1,2,3].map((_, idx) => (
+                <div key={idx}>
+                  <AnswerSkeleton />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Show error message if there's an error
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -182,7 +174,19 @@ const Question = () => {
     );
   }
 
-  const isQuestionOwner = question?.postedBy === userData.uid;
+  // Only show not found message if we're not loading, there's no error, and we've actually tried to fetch the data
+  if (!loading && !error && !currentQuestion && id) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 mt-10 lg:mt-28 justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">Question Not Found</h2>
+          <p className="text-gray-600 dark:text-gray-400">The question you're looking for doesn't exist or has been removed.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isQuestionOwner = currentQuestion?.postedBy === userData.userId;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -191,17 +195,18 @@ const Question = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-8 mb-8 sm:mb-12">
           <div>
             <div className="flex items-center justify-between mb-6">
-              <div>
+              <div className='w-full'>
                 <div className="flex items-center gap-2 mb-2">
-                  <h2 className="text-[#173f67] dark:text-blue-400 font-bold text-xl">{question?.collegeName}</h2>
+                  <h2 className="text-[#173f67] dark:text-blue-400 font-bold text-xl">{currentQuestion?.collegeName}</h2>
                   <span className="text-gray-400 dark:text-gray-500">•</span>
-                  <span className="text-gray-600 dark:text-gray-300">{formatBranchName(question?.branch)}</span>
+                  <span className="text-gray-600 dark:text-gray-300">{formatBranchName(currentQuestion?.branch)}</span>
                 </div>
-                <div className="mt-6">
-                  <h1 className="text-3xl font-light text-gray-800 dark:text-white tracking-wide leading-relaxed">{question?.text}</h1>
-                  <div className="w-24 h-0.5 bg-[#173f67] dark:bg-blue-400 mt-4 opacity-50"></div>
+                <div className="mt-6 w-full">
+                  <h1 className="text-3xl w-full font-light text-gray-800 dark:text-white tracking-wide leading-relaxed">{currentQuestion?.text}</h1>
                 </div>
+                <div className="w-full h-0.5 bg-[#173f67] dark:bg-blue-400 mt-4 opacity-50"/>
               </div>
+              
               {isQuestionOwner && (
                 <div className="relative">
                   <button
@@ -240,17 +245,17 @@ const Question = () => {
             <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-6">
               <span className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
-                {formatTimeAgo(question?.createdAt)}
+                {formatTimeAgo(currentQuestion?.createdAt)}
               </span>
               <span className="flex items-center gap-1">
                 <MessageSquare className="w-4 h-4" />
-                {question?.noOfAnswers || 0} answers
+                {answers?.length || 0} answers
               </span>
             </div>
-            {question?.photo && (
-              <div className="mt-6 rounded-lg overflow-hidden cursor-pointer group relative" onClick={() => setSelectedImage(question.photo)}>
+            {currentQuestion?.photoUrl && (
+              <div className="mt-6 rounded-lg overflow-hidden cursor-pointer group relative" onClick={() => setSelectedImage(currentQuestion.photoUrl)}>
                 <img
-                  src={question.photo}
+                  src={currentQuestion.photoUrl}
                   alt="Question"
                   className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                 />
@@ -265,22 +270,22 @@ const Question = () => {
         {/* Answers Section */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-8">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Answers ({answers.length})</h2>
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+              Answers
+            </h2>
             <Button 
-              onClick={() => {
-                if (!id) {
-                  toast.error('Invalid question ID');
-                  return;
-                }
-                navigate(`/question/${id}/answer`);
-              }}
+              onClick={() => navigate(`/question/${id}/answer`)}
               variant="primary"
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              <span>Answer</span>
-            </Button>
+              children={
+                <>
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  <span>Answer</span>
+                </>
+              }
+            />
           </div>
-          {answers.length === 0 ? (
+
+          {!answers || answers.length === 0 ? (
             <div className="text-center py-16">
               <MessageSquare className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-6" />
               <p className="text-gray-500 dark:text-gray-400 text-lg">No answers yet</p>
@@ -290,9 +295,9 @@ const Question = () => {
             <div className="space-y-8 flex flex-col gap-10">
               {answers.map((answer, index) => (
                 <div 
-                  key={answer.id} 
+                  key={answer._id || `answer-${index}`} 
                   className="group bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer border border-gray-100 dark:border-gray-600 flex flex-col relative"
-                  onClick={() => navigate(`/question/${id}/answer/${answer.id}`)}
+                  onClick={() => navigate(`/question/${id}/answer/${answer._id}`)}
                 >
                   {/* Answer Number */}
                   <div className="absolute -left-3 -top-3 w-6 h-6 bg-blue-800 dark:bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-medium">
@@ -325,16 +330,16 @@ const Question = () => {
                       </div>
                     </div>
                     <p className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-2">{answer.text}</p>
-                    {answer.photo && (
+                    {answer.photoUrl && (
                       <div 
                         className="mt-4 rounded-lg overflow-hidden w-full h-32 relative group cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelectedImage(answer.photo);
+                          setSelectedImage(answer.photoUrl);
                         }}
                       >
                         <img
-                          src={answer.photo}
+                          src={answer.photoUrl}
                           alt="Answer"
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                         />
@@ -349,15 +354,18 @@ const Question = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={`px-3 ${answer.upvotedBy?.includes(userData.uid) ? 'text-[#173f67] dark:text-blue-400' : ''}`}
+                        className={`px-3 inline-flex items-center ${answer.upvotedBy?.includes(userData.userId) ? 'text-[#173f67] dark:text-blue-400' : ''}`}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleUpvote(answer.id, answer.upvotes || 0, answer.upvotedBy || []);
+                          handleUpvote(answer._id);
                         }}
-                      >
-                        <ThumbsUp className={`w-4 h-4 mr-1 ${answer.upvotedBy?.includes(userData.uid) ? 'fill-current' : ''} dark:text-[#3f7cc6]`} />
-                        <span className='dark:text-[#3f7cc6]'>Upvote</span>
-                      </Button>
+                        children={
+                          <>
+                            <ThumbsUp className={`w-4 h-4 mr-1 ${answer.upvotedBy?.includes(userData.userId) ? 'fill-current' : ''} dark:text-[#3f7cc6]`} />
+                            <span className='dark:text-[#3f7cc6]'>Upvote</span>
+                          </>
+                        }
+                      />
                       <span className="text-base font-semibold text-[#173f67] dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full">
                         {answer.upvotes || 0}
                       </span>
@@ -368,14 +376,20 @@ const Question = () => {
                       className="px-3 dark:text-[#3f7cc6]"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleReply(answer.id);
+                        handleReply(answer._id);
                       }}
-                    >
-                      Reply
-                    </Button>
+                      children="Reply"
+                    />
                   </div>
                 </div>
               ))}
+
+              {/* Loading indicator at the bottom */}
+              {isFetching && (
+                <div className="flex justify-center py-4">
+                  <LoadingSpinner size="sm" />
+                </div>
+              )}
             </div>
           )}
         </div>

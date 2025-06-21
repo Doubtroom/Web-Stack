@@ -6,6 +6,19 @@ import {
   reportServices, 
   customerCareServices 
 } from '../services/data.services';
+import { API_ENDPOINTS, API_BASE_URL } from '../config/api.config';
+import axios from 'axios';
+
+// Create axios instance with base URL
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Remove the question cache
+// const questionCache = new Map();
 
 // Async thunks for Questions
 export const fetchQuestions = createAsyncThunk(
@@ -31,6 +44,7 @@ export const createQuestion = createAsyncThunk(
       const response = await questionServices.createQuestion(formData);
       return response.data.question;
     } catch (error) {
+      console.error('Error in createQuestion:', error.response?.data || error);
       return rejectWithValue(error.response?.data?.message || 'Failed to create question');
     }
   }
@@ -38,9 +52,9 @@ export const createQuestion = createAsyncThunk(
 
 export const fetchUserQuestions = createAsyncThunk(
   'data/fetchUserQuestions',
-  async (firebaseUserId, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await questionServices.getUserQuestions(firebaseUserId);
+      const response = await questionServices.getUserQuestions();
       return response.data.questions;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch user questions');
@@ -48,13 +62,30 @@ export const fetchUserQuestions = createAsyncThunk(
   }
 );
 
+export const fetchQuestionById = createAsyncThunk(
+  'data/fetchQuestionById',
+  async (questionId, { rejectWithValue }) => {
+    try {
+      const response = await api.get(API_ENDPOINTS.QUESTIONS.GET_ONE(questionId));
+      return response.data.question;
+    } catch (error) {
+      console.error('Error fetching question:', error);
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch question');
+    }
+  }
+);
+
 // Async thunks for Answers
 export const fetchAnswers = createAsyncThunk(
   'data/fetchAnswers',
-  async (questionId, { rejectWithValue }) => {
+  async ({ questionId, cursor = null }, { rejectWithValue }) => {
     try {
-      const response = await answerServices.getAnswersByQuestion(questionId);
-      return response.data.answers;
+      const response = await answerServices.getAnswersByQuestion(questionId, { cursor });
+      return {
+        answers: response.data.answers,
+        hasMore: response.data.hasMore,
+        nextCursor: response.data.nextCursor
+      };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch answers');
     }
@@ -63,9 +94,9 @@ export const fetchAnswers = createAsyncThunk(
 
 export const createAnswer = createAsyncThunk(
   'data/createAnswer',
-  async (formData, { rejectWithValue }) => {
+  async ({ questionId, formData }, { rejectWithValue }) => {
     try {
-      const response = await answerServices.createAnswer(formData);
+      const response = await answerServices.createAnswer(questionId, formData);
       return response.data.answer;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to create answer');
@@ -75,12 +106,26 @@ export const createAnswer = createAsyncThunk(
 
 export const fetchUserAnswers = createAsyncThunk(
   'data/fetchUserAnswers',
-  async (firebaseUserId, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await answerServices.getUserAnswers(firebaseUserId);
+      const response = await answerServices.getUserAnswers();
       return response.data.answers;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch user answers');
+    }
+  }
+);
+
+export const fetchAnswerById = createAsyncThunk(
+  'data/fetchAnswerById',
+  async ({ answerId}, { rejectWithValue }) => {
+    try {
+      const response = await answerServices.getAnswer(answerId);
+      return {
+        answer: response.data.answer,
+      };
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch answer');
     }
   }
 );
@@ -110,9 +155,115 @@ export const createComment = createAsyncThunk(
   }
 );
 
+export const fetchHomeQuestions = createAsyncThunk(
+  'data/fetchHomeQuestions',
+  async ({ page, limit, branch = null }, { rejectWithValue }) => {
+    try {
+      let response;
+      if (branch) {
+        response = await questionServices.getFilteredQuestions({
+          page,
+          limit,
+          branch
+        });
+      } else {
+        response = await questionServices.getAllQuestions({
+          page,
+          limit
+        });
+      }
+
+      if (!response?.data) {
+        throw new Error('No response received from server');
+      }
+
+      return {
+        questions: response.data.questions,
+        pagination: response.data.pagination
+      };
+    } catch (error) {
+      console.error('Error fetching home questions:', error);
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch questions');
+    }
+  }
+);
+
+export const upvoteAnswer = createAsyncThunk(
+  'data/upvoteAnswer',
+  async ({ answerId }, { rejectWithValue }) => {
+    try {
+      const response = await answerServices.upvoteAnswer(answerId);
+      return response.data.answer;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update upvote');
+    }
+  }
+);
+
+export const deleteComment = createAsyncThunk(
+  'data/deleteComment',
+  async (commentId, { rejectWithValue }) => {
+    try {
+      await commentServices.deleteComment(commentId);
+      return commentId;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete comment');
+    }
+  }
+);
+
+export const updateComment = createAsyncThunk(
+  'data/updateComment',
+  async ({ commentId, text }, { rejectWithValue }) => {
+    try {
+      const response = await commentServices.updateComment(commentId, { text });
+      return response.data.comment;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update comment');
+    }
+  }
+);
+
+export const upvoteComment = createAsyncThunk(
+  'data/upvoteComment',
+  async ({ commentId }, { rejectWithValue }) => {
+    try {
+      const response = await commentServices.upvoteComment(commentId);
+      return response.data.comment;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to upvote comment');
+    }
+  }
+);
+
+export const deleteQuestion = createAsyncThunk(
+  'data/deleteQuestion',
+  async (questionId, { rejectWithValue }) => {
+    try {
+      await questionServices.deleteQuestion(questionId);
+      return questionId;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete question');
+    }
+  }
+);
+
+export const deleteAnswer = createAsyncThunk(
+  'data/deleteAnswer',
+  async (answerId, { rejectWithValue }) => {
+    try {
+      await answerServices.deleteAnswer(answerId);
+      return answerId;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete answer');
+    }
+  }
+);
+
 // Initial state
 const initialState = {
   questions: [],
+  currentQuestion: null,
   answers: [],
   userQuestions: [],
   userAnswers: [],
@@ -120,7 +271,20 @@ const initialState = {
   reportedQuestions: [],
   customerCareRequests: [],
   loading: false,
+  loadingQuestions: false,
+  loadingAnswers: false,
+  updatingCommentId: null,
+  deletingCommentId: null,
   error: null,
+  homeQuestions: [],
+  homePagination: {
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 9,
+    hasNextPage: false,
+    hasPrevPage: false
+  },
   pagination: {
     currentPage: 1,
     totalPages: 1,
@@ -134,7 +298,12 @@ const initialState = {
     topic: 'all',
     search: '',
     collegeName: 'all'
-  }
+  },
+  answersPagination: {
+    hasMore: false,
+    nextCursor: null
+  },
+  currentAnswer: null
 };
 
 const dataSlice = createSlice({
@@ -151,12 +320,21 @@ const dataSlice = createSlice({
       state.pagination = initialState.pagination;
       state.filters = initialState.filters;
     },
+    clearCurrentQuestion: (state) => {
+      state.currentQuestion = null;
+    },
+    clearAnswers: (state) => {
+      state.answers = [];
+    },
     clearError: (state) => {
       state.error = null;
     },
     setFilters: (state, action) => {
       state.filters = { ...state.filters, ...action.payload };
-    }
+    },
+    clearCurrentAnswer: (state) => {
+      state.currentAnswer = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -190,15 +368,28 @@ const dataSlice = createSlice({
         state.error = action.payload;
       })
       .addCase(fetchUserQuestions.pending, (state) => {
-        state.loading = true;
+        state.loadingQuestions = true;
         state.error = null;
       })
       .addCase(fetchUserQuestions.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingQuestions = false;
         state.userQuestions = action.payload;
         state.error = null;
       })
       .addCase(fetchUserQuestions.rejected, (state, action) => {
+        state.loadingQuestions = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchQuestionById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchQuestionById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentQuestion = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchQuestionById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -210,7 +401,15 @@ const dataSlice = createSlice({
       })
       .addCase(fetchAnswers.fulfilled, (state, action) => {
         state.loading = false;
-        state.answers = action.payload;
+        if (!action.meta.arg.cursor) {
+          state.answers = action.payload.answers;
+        } else {
+          state.answers = [...state.answers, ...action.payload.answers];
+        }
+        state.answersPagination = {
+          hasMore: action.payload.hasMore,
+          nextCursor: action.payload.nextCursor
+        };
         state.error = null;
       })
       .addCase(fetchAnswers.rejected, (state, action) => {
@@ -231,16 +430,16 @@ const dataSlice = createSlice({
         state.error = action.payload;
       })
       .addCase(fetchUserAnswers.pending, (state) => {
-        state.loading = true;
+        state.loadingAnswers = true;
         state.error = null;
       })
       .addCase(fetchUserAnswers.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingAnswers = false;
         state.userAnswers = action.payload;
         state.error = null;
       })
       .addCase(fetchUserAnswers.rejected, (state, action) => {
-        state.loading = false;
+        state.loadingAnswers = false;
         state.error = action.payload;
       })
       
@@ -270,9 +469,189 @@ const dataSlice = createSlice({
       .addCase(createComment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(fetchHomeQuestions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchHomeQuestions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.homeQuestions = action.payload.questions;
+        state.homePagination = action.payload.pagination;
+        state.error = null;
+      })
+      .addCase(fetchHomeQuestions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Single Answer
+      .addCase(fetchAnswerById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAnswerById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentAnswer = action.payload.answer;
+        state.error = null;
+      })
+      .addCase(fetchAnswerById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(upvoteAnswer.pending, (state, action) => {
+        const { answerId, userId } = action.meta.arg;
+        
+        const answersToUpdate = [];
+        const answerInList = state.answers.find((a) => a._id === answerId);
+        if (answerInList) {
+          answersToUpdate.push(answerInList);
+        }
+        if (state.currentAnswer && state.currentAnswer._id === answerId) {
+          answersToUpdate.push(state.currentAnswer);
+        }
+
+        answersToUpdate.forEach(answer => {
+          if (answer) {
+            const upvotedIndex = answer.upvotedBy.indexOf(userId);
+            if (upvotedIndex === -1) {
+              answer.upvotedBy.push(userId);
+              answer.upvotes += 1;
+            } else {
+              answer.upvotedBy.splice(upvotedIndex, 1);
+              answer.upvotes -= 1;
+            }
+          }
+        });
+      })
+      .addCase(upvoteAnswer.fulfilled, (state, action) => {
+        const updatedAnswer = action.payload;
+        const answerIndex = state.answers.findIndex(
+          (answer) => answer._id === updatedAnswer._id
+        );
+        if (answerIndex !== -1) {
+          state.answers[answerIndex] = updatedAnswer;
+        }
+        if (state.currentAnswer && state.currentAnswer._id === updatedAnswer._id) {
+          state.currentAnswer = updatedAnswer;
+        }
+      })
+      .addCase(upvoteAnswer.rejected, (state, action) => {
+        const { answerId, userId } = action.meta.arg;
+
+        const answersToRevert = [];
+        const answerInList = state.answers.find((a) => a._id === answerId);
+        if (answerInList) {
+          answersToRevert.push(answerInList);
+        }
+        if (state.currentAnswer && state.currentAnswer._id === answerId) {
+          answersToRevert.push(state.currentAnswer);
+        }
+
+        answersToRevert.forEach(answer => {
+          if (answer) {
+            const upvotedIndex = answer.upvotedBy.indexOf(userId);
+            if (upvotedIndex === -1) {
+              // This case should not happen if logic is correct, but for safety
+              const userIndex = answer.upvotedBy.indexOf(userId);
+              if (userIndex > -1) {
+                answer.upvotedBy.splice(userIndex, 1);
+                answer.upvotes -= 1;
+              }
+            } else {
+              // It was added, so remove it
+              answer.upvotedBy.splice(upvotedIndex, 1);
+              answer.upvotes -= 1;
+            }
+          }
+        });
+        
+        state.error = action.payload;
+      })
+      .addCase(updateComment.pending, (state, action) => {
+        state.updatingCommentId = action.meta.arg.commentId;
+      })
+      .addCase(updateComment.fulfilled, (state, action) => {
+        state.updatingCommentId = null;
+        const updatedComment = action.payload;
+        const index = state.comments.findIndex(c => c._id === updatedComment._id);
+        if (index !== -1) {
+          state.comments[index] = updatedComment;
+        }
+      })
+      .addCase(updateComment.rejected, (state, action) => {
+        state.updatingCommentId = null;
+      })
+      .addCase(deleteComment.pending, (state, action) => {
+        state.deletingCommentId = action.meta.arg;
+      })
+      .addCase(deleteComment.fulfilled, (state, action) => {
+        state.deletingCommentId = null;
+        state.comments = state.comments.filter(
+          (comment) => comment._id !== action.payload
+        );
+      })
+      .addCase(deleteComment.rejected, (state, action) => {
+        state.deletingCommentId = null;
+      })
+      .addCase(upvoteComment.pending, (state, action) => {
+        const { commentId, userId } = action.meta.arg;
+        const comment = state.comments.find((c) => c._id === commentId);
+        if (comment) {
+          const upvotedIndex = comment.upvotedBy.indexOf(userId);
+          if (upvotedIndex === -1) {
+            comment.upvotedBy.push(userId);
+            comment.upvotes += 1;
+          } else {
+            comment.upvotedBy.splice(upvotedIndex, 1);
+            comment.upvotes -= 1;
+          }
+        }
+      })
+      .addCase(upvoteComment.fulfilled, (state, action) => {
+        const updatedComment = action.payload;
+        const commentIndex = state.comments.findIndex(
+          (c) => c._id === updatedComment._id
+        );
+        if (commentIndex !== -1) {
+          state.comments[commentIndex] = updatedComment;
+        }
+      })
+      .addCase(upvoteComment.rejected, (state, action) => {
+        const { commentId, userId } = action.meta.arg;
+        const comment = state.comments.find((c) => c._id === commentId);
+        if (comment) {
+          const upvotedIndex = comment.upvotedBy.indexOf(userId);
+           if (upvotedIndex === -1) {
+            const userIndex = comment.upvotedBy.indexOf(userId);
+            if(userIndex >-1)
+            {
+              comment.upvotedBy.splice(userIndex, 1);
+              comment.upvotes -= 1;
+            }
+          } else {
+            comment.upvotedBy.splice(upvotedIndex, 1);
+            comment.upvotes -= 1;
+          }
+        }
+        state.error = action.payload;
+      })
+      .addCase(deleteQuestion.fulfilled, (state, action) => {
+        state.userQuestions = state.userQuestions.filter(q => q._id !== action.payload);
+        state.questions = state.questions.filter(q => q._id !== action.payload);
+      })
+      .addCase(deleteAnswer.fulfilled, (state, action) => {
+        state.userAnswers = state.userAnswers.filter(a => a._id !== action.payload);
+        state.answers = state.answers.filter(a => a._id !== action.payload);
       });
-  },
+  }
 });
 
-export const { clearData, clearError, setFilters } = dataSlice.actions;
+export const { 
+  clearData, 
+  clearError, 
+  setFilters,
+  clearCurrentQuestion,
+  clearAnswers,
+  clearCurrentAnswer
+} = dataSlice.actions;
 export default dataSlice.reducer; 

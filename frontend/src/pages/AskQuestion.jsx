@@ -20,11 +20,12 @@ import {
 import { styled } from '@mui/material/styles';
 import { Upload, Trash2, HelpCircle, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import DataService from '../firebase/DataService';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { createQuestion } from '../store/dataSlice';
+import { questionServices } from '../services/data.services';
 
 // Styled components
 const StyledPaper = styled(Paper)(({ theme, isDarkMode }) => ({
@@ -109,7 +110,7 @@ const TopicChip = styled(Chip, {
   margin: '4px',
   backgroundColor: isSelected
     ? isDarkMode 
-      ? '#4f46e5'  // Indigo-600 for dark mode selected
+      ? '#14b8a6'  // Teal-500 for dark mode selected
       : '#1a365d'  // Blue-900 for light mode selected
     : isDarkMode
       ? '#312e81'  // Indigo-900 for dark mode unselected
@@ -122,7 +123,7 @@ const TopicChip = styled(Chip, {
   '&:hover': {
     backgroundColor: isSelected
       ? isDarkMode
-        ? '#4338ca'  // Indigo-700 for dark mode selected hover
+        ? '#0d9488'  // Teal-600 for dark mode selected hover
         : '#173f67'  // Blue-800 for light mode selected hover
       : isDarkMode
         ? '#4338ca'  // Indigo-700 for dark mode unselected hover
@@ -132,14 +133,12 @@ const TopicChip = styled(Chip, {
   transition: 'all 0.2s ease-in-out',
   boxShadow: isSelected
     ? isDarkMode
-      ? '0 2px 8px rgba(99, 102, 241, 0.3)'
+      ? '0 2px 8px rgba(20, 184, 166, 0.3)' // Teal-500 shadow for dark mode selected
       : '0 2px 8px rgba(26, 54, 93, 0.3)'
     : 'none',
 }));
 
-const DropZone = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isDragActive' && prop !== 'isDarkMode'
-})(({ theme, isDragActive, isDarkMode }) => ({
+const DropZone = styled(Box)(({ theme, isDragActive, isDarkMode }) => ({
   border: `2px dashed ${isDragActive 
     ? (isDarkMode ? '#4f46e5' : '#1a365d')
     : (isDarkMode ? '#4b5563' : '#bdbdbd')}`,
@@ -163,9 +162,7 @@ const DropZoneWrapper = styled('div')({
   width: '100%',
 });
 
-const LoadingOverlay = styled(Backdrop, {
-  shouldForwardProp: (prop) => prop !== 'isDarkMode'
-})(({ theme, isDarkMode }) => ({
+const LoadingOverlay = styled(Backdrop)(({ theme, isDarkMode }) => ({
   color: '#ffffff',
   zIndex: theme.zIndex.drawer + 1,
   backgroundColor: isDarkMode ? '#111827' : 'white',
@@ -177,6 +174,11 @@ const LoadingContent = styled(Box)({
   flexDirection: 'column',
   alignItems: 'center',
   gap: '16px',
+});
+
+const PageContainer = styled('div')({
+  minHeight: '100vh',
+  padding: '2rem 0',
 });
 
 const validateForm = (formData) => {
@@ -195,11 +197,11 @@ const validateForm = (formData) => {
 
 const AskQuestion = () => {
   const navigate = useNavigate();
-  const dataService = new DataService('questions');
+  const dispatch = useDispatch();
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
   
   // Get user data from localStorage
-  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  const userData = useSelector((state)=>state?.auth?.user);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -208,8 +210,8 @@ const AskQuestion = () => {
     branch: '',
     customBranch: '',
     image: null,
-    collegeName: userData.collegeName || '',
-    postedBy: userData.uid
+    collegeName: userData?.collegeName || '',
+    postedBy: userData?.userId || ''
   });
 
   // Error state
@@ -416,41 +418,46 @@ const AskQuestion = () => {
     setLoading(true);
     setError(null);
     try {
-      let photoData = null;
-      if (formData.image) {
-        photoData = await dataService.uploadImage(formData.image);
+      const { image, question, ...restData } = formData;
+      const finalQuestionData = new FormData();
+      
+      // Map question to text field
+      finalQuestionData.append('text', question);
+      
+      // Append rest of the data
+      Object.keys(restData).forEach(key => {
+        finalQuestionData.append(key, restData[key]);
+      });
+      
+      // Append image if exists
+      if (image) {
+        finalQuestionData.append('image', image);
       }
 
-      const { image, ...questionData } = formData; 
-      const finalQuestionData = {
-        ...questionData,
-        postedBy: userData.uid,
-        createdAt: new Date().toISOString(),
-        branch: formData.branch === 'custom' ? formData.customBranch : formData.branch,
-        photo: photoData?.url || null,
-        photoId: photoData?.fileId || null
-      };
-
-      await dataService.addQuestion(finalQuestionData);
-      
-      setFormData({
-        question: '',
-        topic: '',
-        branch: '',
-        customBranch: '',
-        image: null,
-        collegeName: userData.collegeName || '',
-        postedBy: userData.uid
-      });
-      setImagePreview(null);
-      setErrors({});
-      setSelectedTopics([]);
-      
-      toast.success('Question submitted successfully!');
-      navigate('/my-questions');
+      // Use Redux action to create question
+      const resultAction = await dispatch(createQuestion(finalQuestionData));
+      if (createQuestion.fulfilled.match(resultAction)) {
+        setFormData({
+          question: '',
+          topic: '',
+          branch: '',
+          customBranch: '',
+          image: null,
+          collegeName: userData?.collegeName || '',
+          postedBy: userData?.userId || ''
+        });
+        setImagePreview(null);
+        setErrors({});
+        setSelectedTopics([]);
+        
+        toast.success('Question submitted successfully!');
+        navigate('/my-questions');
+      } else {
+        throw new Error(resultAction.payload || 'Failed to submit question');
+      }
     } catch (error) {
       console.error('Error submitting question:', error);
-      setError('Failed to submit question. Please try again.');
+      setError(error.message || 'Failed to submit question. Please try again.');
     } finally {
       setIsSubmitting(false);
       setLoading(false);
@@ -462,7 +469,7 @@ const AskQuestion = () => {
   }
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} lg:pt-24`}>
+    <PageContainer>
       <Container maxWidth="md">
         <StyledPaper isDarkMode={isDarkMode}>
           <Typography 
@@ -481,201 +488,192 @@ const AskQuestion = () => {
           )}
 
           <form onSubmit={handleSubmit} className="w-full space-y-6">
-            <div>
-              <label className={`block text-sm font-medium ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} mb-2`}>
-                Topic
-              </label>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {suggestedTopics.map((topic) => (
-                  <TopicChip
-                    key={topic}
-                    label={topic}
-                    onClick={() => handleTopicClick(topic)}
-                    isDarkMode={isDarkMode}
-                    isSelected={selectedTopics.includes(topic)}
-                  />
-                ))}
+            <div className="space-y-6">
+              <div>
+                <label className={`block text-sm font-medium ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} mb-2`}>
+                  Topic
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {suggestedTopics.map((topic) => (
+                    <TopicChip
+                      key={topic}
+                      label={topic}
+                      onClick={() => handleTopicClick(topic)}
+                      isSelected={selectedTopics.includes(topic)}
+                      isDarkMode={isDarkMode}
+                    />
+                  ))}
+                </div>
+                {showCustomTopic && (
+                  <div className="mt-4">
+                    <input
+                      type="text"
+                      value={customTopic}
+                      onChange={handleCustomTopicChange}
+                      placeholder="Enter custom topic"
+                      className={`w-full p-2 border rounded-lg ${
+                        isDarkMode 
+                          ? 'border-gray-600 bg-gray-700 text-white focus:ring-blue-400' 
+                          : 'border-gray-300 bg-white text-gray-900 focus:ring-[#1a365d]'
+                      } focus:ring-2 focus:border-transparent`}
+                    />
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={handleTopicToggle}
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    showCustomTopic
-                      ? isDarkMode 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-[#1a365d] text-white'
-                      : isDarkMode
-                        ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`mt-2 text-sm ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} hover:underline`}
                 >
-                  {showCustomTopic ? 'Use Suggested Topics' : 'Custom Topic'}
+                  {showCustomTopic ? 'Choose from suggestions' : 'Add custom topic'}
                 </button>
               </div>
-              {showCustomTopic && (
-                <input
-                  type="text"
-                  value={customTopic}
-                  onChange={handleCustomTopicChange}
-                  placeholder="Enter your custom topic"
-                  className={`w-full p-2 border rounded-lg ${
-                    isDarkMode 
-                      ? 'border-gray-600 bg-gray-700 text-white focus:ring-blue-400' 
-                      : 'border-gray-300 bg-white text-gray-900 focus:ring-[#1a365d]'
-                  } focus:ring-2 focus:border-transparent`}
-                />
-              )}
-              {errors.topic && (
-                <p className={`mt-1 text-sm ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
-                  {errors.topic}
-                </p>
-              )}
-            </div>
 
-            <div>
-              <label className={`block text-sm font-medium ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} mb-2`}>
-                Branch
-              </label>
-              <select
-                name="branch"
-                value={formData.branch}
-                onChange={handleInputChange}
-                className={`w-full p-2 border rounded-lg ${
-                  isDarkMode 
-                    ? 'border-gray-600 bg-gray-700 text-white focus:ring-blue-400' 
-                    : 'border-gray-300 bg-white text-gray-900 focus:ring-[#1a365d]'
-                } focus:ring-2 focus:border-transparent`}
-              >
-                <option value="">Select Branch</option>
-                {branches.map((branch) => (
-                  <option key={branch.value} value={branch.value}>
-                    {branch.label}
-                  </option>
-                ))}
-              </select>
-              {errors.branch && (
-                <p className={`mt-1 text-sm ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
-                  {errors.branch}
-                </p>
-              )}
-            </div>
-
-            {showCustomBranch && (
               <div>
                 <label className={`block text-sm font-medium ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} mb-2`}>
-                  Specify Branch
+                  Branch
                 </label>
-                <input
-                  type="text"
-                  name="customBranch"
-                  value={formData.customBranch}
+                <select
+                  name="branch"
+                  value={formData.branch}
                   onChange={handleInputChange}
                   className={`w-full p-2 border rounded-lg ${
                     isDarkMode 
                       ? 'border-gray-600 bg-gray-700 text-white focus:ring-blue-400' 
                       : 'border-gray-300 bg-white text-gray-900 focus:ring-[#1a365d]'
                   } focus:ring-2 focus:border-transparent`}
-                  placeholder="Enter your branch"
-                />
-              </div>
-            )}
-
-            <div>
-              <label className={`block text-sm font-medium ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} mb-2`}>
-                Your Question
-              </label>
-              <textarea
-                name="question"
-                value={formData.question}
-                onChange={handleInputChange}
-                rows="4"
-                className={`w-full p-2 border rounded-lg resize-none ${
-                  isDarkMode 
-                    ? 'border-gray-600 bg-gray-700 text-white focus:ring-blue-400' 
-                    : 'border-gray-300 bg-white text-gray-900 focus:ring-[#1a365d]'
-                } focus:ring-2 focus:border-transparent`}
-                placeholder="Type your question here..."
-              />
-              {errors.question && (
-                <p className={`mt-1 text-sm ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
-                  {errors.question}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className={`block text-sm font-medium ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} mb-2`}>
-                Add Image (Optional)
-              </label>
-              <DropZoneWrapper>
-                <DropZone
-                  isDragActive={isDragActive}
-                  isDarkMode={isDarkMode}
-                  onDragEnter={handleDragIn}
-                  onDragLeave={handleDragOut}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
                 >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label
-                    htmlFor="image-upload"
-                    className="cursor-pointer flex flex-col items-center"
-                  >
-                    <Upload className={`w-8 h-8 ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} mb-2`} />
-                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                      <span className="font-semibold">Click to upload</span> or drag and drop
-                    </p>
-                    <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mt-1`}>
-                      PNG, JPG or JPEG (MAX. 5MB)
-                    </p>
+                  <option value="">Select Branch</option>
+                  {branches.map((branch) => (
+                    <option key={branch.value} value={branch.value}>
+                      {branch.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.branch && (
+                  <p className={`mt-1 text-sm ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
+                    {errors.branch}
+                  </p>
+                )}
+              </div>
+
+              {showCustomBranch && (
+                <div>
+                  <label className={`block text-sm font-medium ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} mb-2`}>
+                    Specify Branch
                   </label>
-                </DropZone>
-              </DropZoneWrapper>
-              {imagePreview && (
-                <div className="mt-4 relative">
-                  <ImagePreview src={imagePreview} alt="Preview" />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImagePreview(null);
-                      setFormData(prev => ({ ...prev, image: null }));
-                    }}
-                    className={`absolute top-2 right-2 p-1 rounded-full shadow-md ${
+                  <input
+                    type="text"
+                    name="customBranch"
+                    value={formData.customBranch}
+                    onChange={handleInputChange}
+                    className={`w-full p-2 border rounded-lg ${
                       isDarkMode 
-                        ? 'bg-gray-700 hover:bg-gray-600' 
-                        : 'bg-white hover:bg-gray-50'
-                    }`}
-                  >
-                    <X className={`w-4 h-4 ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'}`} />
-                  </button>
+                        ? 'border-gray-600 bg-gray-700 text-white focus:ring-blue-400' 
+                        : 'border-gray-300 bg-white text-gray-900 focus:ring-[#1a365d]'
+                    } focus:ring-2 focus:border-transparent`}
+                    placeholder="Enter your branch"
+                  />
                 </div>
               )}
-              {errors.image && (
-                <p className={`mt-1 text-sm ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
-                  {errors.image}
-                </p>
-              )}
-            </div>
 
-            <SubmitButton type="submit" disabled={isSubmitting} isDarkMode={isDarkMode}>
-              {isSubmitting ? (
-                <>
-                  <CircularProgress size={20} color="inherit" />
-                  Posting...
-                </>
-              ) : (
-                'Post Question'
-              )}
-            </SubmitButton>
+              <div>
+                <label className={`block text-sm font-medium ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} mb-2`}>
+                  Your Question
+                </label>
+                <textarea
+                  name="question"
+                  value={formData.question}
+                  onChange={handleInputChange}
+                  rows="4"
+                  className={`w-full p-2 border rounded-lg resize-none ${
+                    isDarkMode 
+                      ? 'border-gray-600 bg-gray-700 text-white focus:ring-blue-400' 
+                      : 'border-gray-300 bg-white text-gray-900 focus:ring-[#1a365d]'
+                  } focus:ring-2 focus:border-transparent`}
+                  placeholder="Type your question here..."
+                />
+                {errors.question && (
+                  <p className={`mt-1 text-sm ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
+                    {errors.question}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} mb-2`}>
+                  Add Image (Optional)
+                </label>
+                <DropZoneWrapper>
+                  <DropZone
+                    isDragActive={isDragActive}
+                    isDarkMode={isDarkMode}
+                    onDragEnter={handleDragIn}
+                    onDragLeave={handleDragOut}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <label
+                      htmlFor="image-upload"
+                      className="cursor-pointer flex flex-col items-center"
+                    >
+                      <Upload className={`w-8 h-8 ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'} mb-2`} />
+                      <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                        <span className="font-semibold">Click to upload</span> or drag and drop
+                      </p>
+                      <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mt-1`}>
+                        PNG, JPG or JPEG (MAX. 5MB)
+                      </p>
+                    </label>
+                  </DropZone>
+                </DropZoneWrapper>
+                {imagePreview && (
+                  <div className="mt-4 relative">
+                    <ImagePreview src={imagePreview} alt="Preview" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImagePreview(null);
+                        setFormData(prev => ({ ...prev, image: null }));
+                      }}
+                      className={`absolute top-2 right-2 p-1 rounded-full shadow-md ${
+                        isDarkMode 
+                          ? 'bg-gray-700 hover:bg-gray-600' 
+                          : 'bg-white hover:bg-gray-50'
+                      }`}
+                    >
+                      <X className={`w-4 h-4 ${isDarkMode ? 'text-blue-400' : 'text-[#1a365d]'}`} />
+                    </button>
+                  </div>
+                )}
+                {errors.image && (
+                  <p className={`mt-1 text-sm ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
+                    {errors.image}
+                  </p>
+                )}
+              </div>
+
+              <SubmitButton type="submit" disabled={isSubmitting} isDarkMode={isDarkMode}>
+                {isSubmitting ? (
+                  <>
+                    <CircularProgress size={20} color="inherit" />
+                    Posting...
+                  </>
+                ) : (
+                  'Post Question'
+                )}
+              </SubmitButton>
+            </div>
           </form>
         </StyledPaper>
       </Container>
-    </div>
+    </PageContainer>
   );
 };
 

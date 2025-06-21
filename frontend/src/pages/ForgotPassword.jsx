@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router';
 import { toast } from "sonner";
 import { useSelector } from 'react-redux';
 import LoadingSpinner from '../components/LoadingSpinner';
-import authService from '../firebase/AuthService';
+import { authService } from '../services/auth.services';
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -41,13 +41,9 @@ const ForgotPassword = () => {
     setIsLoading(true);
     
     try {
-        const response = await authService.sendPasswordResetEmail(email);
-        if (response.success) {
-          toast.success('Reset password link has been sent to your email');
-          navigate('/login', { replace: true });
-        } else {
-          toast.error('Failed to send reset password link. Please try again.');
-        }
+        await authService.requestReset(email);
+        toast.success('Reset password link has been sent to your email');
+        navigate('/login', { replace: true });
     } catch (error) {
       console.error(error);
       toast.error('Failed to send reset password link. Please try again.');

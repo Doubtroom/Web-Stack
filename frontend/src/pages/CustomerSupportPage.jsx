@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
 import { toast } from 'sonner';
-import DataService from '../firebase/DataService';
+import { customerCareServices } from '../services/data.services';
 
 
 const CustomerSupportPage = () => {
@@ -61,8 +61,10 @@ const CustomerSupportPage = () => {
     setIsSubmitting(true);
     
     try {
-      const dataService = new DataService('customerCare');
-      await dataService.sendCustomerSupportQuery(formData);
+      await customerCareServices.createRequest({
+        subject: formData.subject,
+        message: `From: ${formData.name} <${formData.email}>\n\n${formData.message}`
+      });
       toast.success('Your message has been sent successfully!');
       setFormData({
         name: '',

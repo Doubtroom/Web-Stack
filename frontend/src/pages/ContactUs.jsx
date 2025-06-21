@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Linkedin, Instagram, MessageSquare } from 'lucide-react';
-import DataService from '../firebase/DataService';
+import { customerCareServices } from '../services/data.services';
 import { toast } from 'sonner';
 
 const ContactUs = () => {
@@ -26,9 +26,10 @@ const ContactUs = () => {
     setSubmitStatus(null);
 
     try {
-        
-        const dataService = new DataService('customerCare');
-        await dataService.sendCustomerSupportQuery(formData);
+        await customerCareServices.createRequest({
+          subject: formData.name,
+          message: `From: ${formData.email}\n\n${formData.message}`
+        });
         toast.success('Your message has been sent successfully!');
       setSubmitStatus({
         type: 'success',

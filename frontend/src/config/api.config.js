@@ -28,24 +28,26 @@ export const API_ENDPOINTS = {
     DELETE: (id) => `/data/questions/${id}`,
     REPORT: (id) => `/data/questions/${id}/report`,
     REMOVE_REPORT: (id, reportId) => `/data/questions/${id}/reports/${reportId}`,
-    GET_USER_QUESTIONS: '/data/questions/user'
+    GET_USER_QUESTIONS: '/data/questions/user',
+    GET_ID_BY_FIREBASE_ID:(firebaseId)=>`/data/questions/firebase/${firebaseId}`
   },
 
   ANSWERS: {
-    BASE: '/data/answers',
-    GET_ONE: (id) => `/data/answers/${id}`,
+    CREATE: (questionId) => `/data/questions/${questionId}/answers`,
     GET_BY_QUESTION: (questionId) => `/data/questions/${questionId}/answers`,
-    CREATE:(questionId)=> `/data/questions/${questionId}/answers`,
+    GET_ONE: (id) => `/data/answers/${id}`,
     UPDATE: (id) => `/data/answers/${id}`,
+    UPVOTE: (id) => `/data/answers/${id}/upvote`,
     DELETE: (id) => `/data/answers/${id}`,
     GET_USER_ANSWERS: '/data/answers/user'
   },
 
   COMMENTS: {
-    CREATE: (answerId) => `/data/comments/${answerId}`,
+    CREATE: (answerId) => `/data/answers/${answerId}/comments`,
     GET_BY_ANSWER: (answerId) => `/data/answers/${answerId}/comments`,
     UPDATE: (id) => `/data/comments/${id}`,
-    DELETE: (id) => `/data/comments/${id}`
+    DELETE: (id) => `/data/comments/${id}`,
+    UPVOTE: (id) => `/data/comments/${id}/upvote`
   },
 
   CUSTOMER_CARE: {

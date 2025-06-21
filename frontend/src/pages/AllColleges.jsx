@@ -1,22 +1,65 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import CollegeCard from '../components/CollegeCard';
-import DataService from '../firebase/DataService';
-import LoadingSpinner from '../components/LoadingSpinner';
-import { toast } from 'sonner';
-import { Building2, Plus } from 'lucide-react';
-import Button from '../components/Button';
+import { Building2 } from 'lucide-react';
 import FilterButton from '../components/FilterButton';
 import MobileFilterButton from '../components/MobileFilterButton';
-import placeholder from '../assets/placeholder.png'
+import placeholder from '../assets/placeholder.png';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchHomeQuestions } from '../store/dataSlice';
+import QuestionCardSkeleton from '../components/QuestionCardSkeleton';
+import Pagination from '../components/Pagination';
+
+const ITEMS_PER_PAGE = 9;
 
 const AllCollege = () => {
   const navigate = useNavigate();
-  const [questions, setQuestions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filterLoading, setFilterLoading] = useState(false);
+  const dispatch = useDispatch();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const userData = useSelector((state) => state?.auth?.user);
+  const { homeQuestions, homePagination, loading } = useSelector((state) => state.data);
+  const isMounted = useRef(true);
+
   const [showMyBranch, setShowMyBranch] = useState(false);
-  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const [page, setPage] = useState(parseInt(searchParams.get('page')) || 1);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  const loadingSkeletons = Array(ITEMS_PER_PAGE).fill(null);
+
+  const fetchQuestions = useCallback(async (pageNumber) => {
+    if (!isMounted.current) return;
+    try {
+      await dispatch(fetchHomeQuestions({
+        page: pageNumber,
+        limit: ITEMS_PER_PAGE,
+        branch: showMyBranch ? userData?.branch : null
+      })).unwrap();
+      if (isMounted.current) {
+        setPage(pageNumber);
+        setSearchParams({ page: pageNumber.toString() });
+        setIsInitialLoad(false);
+      }
+    } catch (error) {
+      // Optionally handle error
+    }
+  }, [dispatch, showMyBranch, userData?.branch, setSearchParams]);
+
+  useEffect(() => {
+    isMounted.current = true;
+    const currentPage = parseInt(searchParams.get('page')) || 1;
+    fetchQuestions(currentPage);
+    return () => {
+      isMounted.current = false;
+    };
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    if (!isInitialLoad) {
+      fetchQuestions(1); // Reset to first page when filter changes
+    }
+    // eslint-disable-next-line
+  }, [showMyBranch, userData?.branch]);
 
   const formatBranchName = (branch) => {
     if (!branch) return '';
@@ -26,40 +69,12 @@ const AllCollege = () => {
       .join(' ');
   };
 
-  useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        setFilterLoading(true);
-        const dataService = new DataService('questions');
-        let fetchedQuestions;
-        
-        if (showMyBranch && userData.branch) {
-          fetchedQuestions = await dataService.getQuestionsByBranch(userData.branch);
-        } else {
-          fetchedQuestions = await dataService.getAllDocuments();
-        }
-        
-        // Sort questions by createdAt timestamp in descending order (newest first)
-        const sortedQuestions = fetchedQuestions.sort((a, b) => {
-          return new Date(b.createdAt) - new Date(a.createdAt); // For descending order (newest first)
-        });
-        
-        setQuestions(sortedQuestions);
-      } catch (error) {
-        console.error('Error fetching questions:', error);
-        toast.error('Failed to fetch questions');
-      } finally {
-        setLoading(false);
-        setFilterLoading(false);
-      }
-    };
-
-    fetchQuestions();
-  }, [showMyBranch, userData.branch]);
-
-  if (loading) {
-    return <LoadingSpinner fullScreen />;
-  }
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= homePagination.totalPages) {
+      window.scrollTo(0, 0);
+      fetchQuestions(newPage);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 mt-2 lg:mt-16">
@@ -72,7 +87,7 @@ const AllCollege = () => {
               <h1 className="text-xl sm:text-4xl font-bold text-blue-900 dark:text-blue-300">All Colleges</h1>
             </div>
             {/* Mobile Filter Button */}
-            {userData.branch && (
+            {userData?.branch && (
               <div className="sm:hidden">
                 <MobileFilterButton
                   isActive={showMyBranch}
@@ -85,7 +100,7 @@ const AllCollege = () => {
           </div>
           <div className="flex items-center gap-4">
             {/* Desktop Filter Button */}
-            {userData.branch && (
+            {userData?.branch && (
               <div className="hidden sm:block">
                 <FilterButton
                   isActive={showMyBranch}
@@ -98,33 +113,40 @@ const AllCollege = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filterLoading ? (
-            <div className="col-span-full flex justify-center py-12">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : (
-            questions.map((question) => (
+          {loading ? (
+            loadingSkeletons.map((_, index) => (
+              <QuestionCardSkeleton key={index} />
+            ))
+          ) : homeQuestions && homeQuestions.length > 0 ? (
+            homeQuestions.map((question) => (
               <CollegeCard
-                key={question.id}
-                id={question.id}
+                key={question._id}
+                id={question._id}
                 collegeName={question.collegeName}
-                img={question.photo || placeholder}
+                img={question.photoUrl || placeholder}
                 branch={question.branch}
                 topic={question.topic}
                 noOfAnswers={question.noOfAnswers || 0}
                 postedOn={question.createdAt}
               />
             ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400 text-lg">
+                {showMyBranch 
+                  ? `No questions found for ${formatBranchName(userData?.branch)} branch`
+                  : 'No questions found'}
+              </p>
+            </div>
           )}
         </div>
-        {questions.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400 text-lg">
-              {showMyBranch 
-                ? `No questions found for ${formatBranchName(userData.branch)} branch`
-                : 'No questions found'}
-            </p>
-          </div>
+        {/* Pagination */}
+        {homeQuestions && homeQuestions.length > 0 && (
+          <Pagination
+            currentPage={page}
+            totalPages={homePagination.totalPages}
+            onPageChange={handlePageChange}
+          />
         )}
       </div>
     </div>

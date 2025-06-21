@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 
-const LoadingSpinner = ({ size = 'md', fullScreen = false }) => {
+const LoadingSpinner = ({size = 'md', fullScreen = false }) => {
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
   
   const sizeClasses = {
