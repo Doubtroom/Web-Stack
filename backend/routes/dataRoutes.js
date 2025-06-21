@@ -5,27 +5,27 @@ import {createAnswer, getAnswersByQuestionId, updateAnswer, deleteAnswer,getAnsw
 import {createComment, getCommentsByAnswer, deleteComment,updateComment} from '../controllers/commentsController.js'
 import {reportQuestion, getReportedQuestions, removeReport} from '../controllers/reportedQuestionsController.js'
 import {createCustomerCare, getCustomerCareRequests, getUserCustomerCareRequests} from '../controllers/customerCareController.js'
-import { upload } from '../middleware/multer.js';
+import upload from '../middleware/multer.js';
 import { upvoteAnswer } from '../controllers/answersController.js'
 import { upvoteComment } from '../controllers/commentsController.js'
 
 
 const router=express.Router();
 
-router.post('/questions',verifyToken,upload.single('image'),createQuestion)
+router.post('/questions',verifyToken,upload,createQuestion)
 router.get('/questions/filter',verifyToken, getFilteredQuestions)
 router.get('/questions/user', verifyToken, getUserQuestions)
 router.get('/questions',verifyToken,getAllQuestions)
 router.get('/questions/:id',verifyToken,getQuestion)
-router.patch('/questions/:id',verifyToken,upload.single('image'),updateQuestion)
+router.patch('/questions/:id',verifyToken,upload,updateQuestion)
 router.delete('/questions/:id',verifyToken,deleteQuestion)
 
 router.get('/questions/:questionId/answers', verifyToken, getAnswersByQuestionId);
 
-router.post('/questions/:id/answers', verifyToken, upload.single('image'), createAnswer);
+router.post('/questions/:id/answers', verifyToken, upload, createAnswer);
 router.get('/answers/user', verifyToken, getUserAnswers);
 router.get('/answers/:id', verifyToken, getAnswer);
-router.put('/answers/:id', verifyToken, upload.single('image'), updateAnswer);
+router.put('/answers/:id', verifyToken, upload, updateAnswer);
 router.delete('/answers/:id', verifyToken, deleteAnswer);
 router.patch('/answers/:id/upvote', verifyToken, upvoteAnswer);
 
