@@ -8,6 +8,7 @@ import {createCustomerCare, getCustomerCareRequests, getUserCustomerCareRequests
 import upload from '../middleware/multer.js';
 import { upvoteAnswer } from '../controllers/answersController.js'
 import { upvoteComment } from '../controllers/commentsController.js'
+import { upsertFlashcardStatus } from '../controllers/flashcardController.js';
 
 
 const router=express.Router();
@@ -42,6 +43,8 @@ router.delete('/questions/:id/reports/:reportId', verifyToken, removeReport);
 router.post('/customer-care', verifyToken, createCustomerCare);
 router.get('/customer-care', verifyToken, getCustomerCareRequests);
 router.get('/customer-care/user', verifyToken, getUserCustomerCareRequests);
+
+router.post('/flashcards/status', verifyToken, upsertFlashcardStatus);
 
 export default router
 
