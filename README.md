@@ -24,7 +24,7 @@ Here is a live demo of the project, and some GIFs showcasing its features.
 **[Link to Live Site](https://www.doubtroom.com/)**
 
 
-| Feature |
+| Feature | '' |
 | --- | --- |
 | **User Authentication** | ![Auth GIF](https://cdn.dribbble.com/users/846207/screenshots/17484538/media/32de5311b18501ff62be3ca5c0724ec2.gif) |
 | **Asking a Question** | ![Ask Question GIF](https://media.tenor.com/uaTT7uIRkzkAAAAM/minions-confuse.gif) |
