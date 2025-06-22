@@ -300,13 +300,22 @@ export const getUserQuestions = async (req, res) => {
             .limit(limit)
             .lean();
 
+        // For each question, find an answer
+        const questionsWithAnswers = await Promise.all(questions.map(async (question) => {
+            const answer = await Answers.findOne({ questionId: question._id }).lean();
+            return {
+                ...question,
+                answer: answer ? answer.text : "No answer yet. Add one!" 
+            };
+        }));
+
         const totalPages = Math.ceil(total / limit);
         const hasNextPage = page < totalPages;
         const hasPrevPage = page > 1;
 
         res.json({
             message: "User questions fetched successfully",
-            questions,
+            questions: questionsWithAnswers,
             pagination: {
                 currentPage: page,
                 totalPages,
