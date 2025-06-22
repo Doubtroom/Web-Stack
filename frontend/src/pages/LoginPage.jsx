@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import InputField from '../components/InputField';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import Button from '../components/ButtonAuth';
-import GoogleLoginButton from '../components/GoogleLoginButton';
+import GoogleLoginButton from '../components/GoogleLoginButton'; 
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 import authService from '../firebase/AuthService.js'
