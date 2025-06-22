@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MessageSquare, Lightbulb, Clock, Edit2, Trash2 } from "lucide-react";
+import { MessageSquare, Lightbulb, Clock, Edit2, Trash2, Loader2 } from "lucide-react";
 import Button from "./Button";
 import { toast } from "sonner";
 import { questionServices, answerServices } from '../services/data.services';
@@ -22,7 +22,8 @@ const Card = ({
   onDelete,
   type = 'question', // New prop to distinguish between question and answer cards
   answerId = null, // New prop for answer ID when type is 'answer'
-  answerQuestionId=null
+  answerQuestionId=null,
+  isDeleting = false // New prop to show loading state
 
 }) => {
   const navigate = useNavigate();
@@ -97,9 +98,14 @@ const Card = ({
               </Link>
               <button
                 onClick={handleDeleteClick}
-                className="p-2 bg-white dark:bg-gray-700 rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
+                disabled={isDeleting}
+                className="p-2 bg-white dark:bg-gray-700 rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+                {isDeleting ? (
+                  <Loader2 className="w-4 h-4 text-red-600 dark:text-red-400 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+                )}
               </button>
             </div>
           )}
