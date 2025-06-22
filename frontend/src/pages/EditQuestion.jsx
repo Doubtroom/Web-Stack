@@ -106,6 +106,13 @@ const EditQuestion = () => {
     fetchQuestion();
   }, [id, navigate]);
 
+  // Scroll to top when loading starts
+  useEffect(() => {
+    if (loading) {
+      window.scrollTo(0, 0);
+    }
+  }, [loading]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({

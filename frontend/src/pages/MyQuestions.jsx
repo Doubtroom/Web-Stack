@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageSquare, HelpCircle, Edit2, Trash2, ThumbsUp, Clock, BookOpen, ChevronRight } from 'lucide-react';
+import { MessageSquare, HelpCircle, Edit2, Trash2, ThumbsUp, Clock, BookOpen, ChevronRight, Loader2 } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -15,6 +15,7 @@ const MyQuestions = () => {
   const dispatch = useDispatch();
   const [error, setError] = useState(null);
   const [hasFetched, setHasFetched] = useState(false);
+  const [deletingItems, setDeletingItems] = useState(new Set()); // Track which items are being deleted
   
   const userData = useSelector((state) => state?.auth?.user);
   const userQuestions = useSelector((state) => state?.data.userQuestions);
@@ -23,21 +24,33 @@ const MyQuestions = () => {
   const loadingAnswers = useSelector((state) => state?.data.loadingAnswers);
 
   const handleDelete = async (type, id) => {
-    if (type === 'question') {
-      try {
+    const itemKey = `${type}-${id}`;
+    
+    // Add item to deleting set
+    setDeletingItems(prev => new Set(prev).add(itemKey));
+    
+    try {
+      if (type === 'question') {
         await dispatch(deleteQuestion(id)).unwrap();
         toast.success('Question and its answers deleted successfully!');
-      } catch (error) {
-        toast.error(error || 'Failed to delete question.');
-      }
-    } else { // type === 'answer'
-      try {
+      } else { // type === 'answer'
         await dispatch(deleteAnswer(id)).unwrap();
         toast.success('Answer deleted successfully!');
-      } catch (error) {
-        toast.error(error || 'Failed to delete answer.');
       }
+    } catch (error) {
+      toast.error(error || `Failed to delete ${type}.`);
+    } finally {
+      // Remove item from deleting set
+      setDeletingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(itemKey);
+        return newSet;
+      });
     }
+  };
+
+  const isDeleting = (type, id) => {
+    return deletingItems.has(`${type}-${id}`);
   };
 
   useEffect(() => {
@@ -156,6 +169,7 @@ const MyQuestions = () => {
                   postedBy={answer.postedBy?._id}
                   showAnswerButton={false}
                   onDelete={handleDelete}
+                  isDeleting={isDeleting('answer', answer._id)}
                   className="transform hover:scale-[1.02] transition-all duration-200"
                 />
               ))}
@@ -216,6 +230,7 @@ const MyQuestions = () => {
                   postedBy={question.postedBy?._id}
                   showAnswerButton={false}
                   onDelete={handleDelete}
+                  isDeleting={isDeleting('question', question._id)}
                   className="transform hover:scale-[1.02] transition-all duration-200"
                 />
               ))}
