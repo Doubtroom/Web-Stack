@@ -69,8 +69,6 @@ export const getFlashcards = async (req, res) => {
 
                 console.log("flashcardStatus:",flashcardStatus)
 
-
-
                 return {
                     _id: question._id,
                     text: question.text,
@@ -80,6 +78,8 @@ export const getFlashcards = async (req, res) => {
                         photoUrl: answer.photoUrl
                     },
                     difficulty: flashcardStatus ? flashcardStatus.difficulty : null,
+                    nextReviewAt: flashcardStatus ? flashcardStatus.nextReviewAt : null,
+                    updatedAt: flashcardStatus ? flashcardStatus.updatedAt : null,
                 };
             })
         );
