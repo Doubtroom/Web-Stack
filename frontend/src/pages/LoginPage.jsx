@@ -5,11 +5,16 @@ import Button from '../components/ButtonAuth';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
-import { login, sendOtp, fetchUser, setAuth } from '../store/authSlice';
+import { login, sendOtp, fetchUser, setAuth, googleLogin } from '../store/authSlice';
 import { toast } from 'sonner';
 import LoadingSpinner from '../components/LoadingSpinner';
 import VerificationPrompt from '../components/VerificationPrompt';
 import { authService } from '../services/auth.services';
+import { motion } from 'framer-motion';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import GoogleLoginButton from '../components/GoogleLoginButton';
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const LoginPage = () => {
   const dispatch = useDispatch();
@@ -82,8 +87,6 @@ const LoginPage = () => {
     setIsVerificationPromptOpen(false);
   };
 
-
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -153,87 +156,138 @@ const LoginPage = () => {
     }
   };
 
+  // Google login handler
+  const handleGoogleLogin = async (credentialResponse) => {
+    if (!credentialResponse?.credential) {
+      toast.error('Google login failed. No credential received.');
+      return;
+    }
+    setLoginState({ isProcessing: true, step: 'logging', error: null });
+    try {
+      const result = await dispatch(googleLogin(credentialResponse.credential)).unwrap();
+      // Fetch user data after Google login
+      setLoginState(prev => ({ ...prev, step: 'fetching' }));
+      const userResult = await dispatch(fetchUser()).unwrap();
+      setLoginState(prev => ({ ...prev, step: 'updating' }));
+      dispatch(setAuth({
+        isAuthenticated: true,
+        isVerified: true,
+        user: userResult
+      }));
+      // Check profile completion
+      const hasCompleteProfile = Boolean(
+        userResult.branch && 
+        userResult.studyType && 
+        userResult.gender && 
+        userResult.role && 
+        userResult.collegeName && 
+        userResult.dob
+      );
+      if (hasCompleteProfile) {
+        navigate('/home', { replace: true });
+      } else {
+        navigate('/complete-profile', { replace: true });
+      }
+      toast.success('Logged in with Google!');
+    } catch (error) {
+      toast.error(error || 'Google login failed. Please try again.');
+      setLoginState({ isProcessing: false, step: 'idle', error });
+    }
+  };
+
   if (loading || loginState.isProcessing) {
     return <LoadingSpinner fullScreen />;
   }
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 ${
-      isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
-    }`}>
-      <VerificationPrompt
-        isOpen={isVerificationPromptOpen}
-        onClose={handleClosePrompt}
-        onVerify={handleVerify}
-        onNewAccount={handleNewAccount}
-      />
-      <div className={`w-full max-w-md rounded-lg shadow-md p-8 ${
-        isDarkMode ? 'bg-gray-800' : 'bg-white'
-      }`}>
-        <div className="text-center mb-8">
-          <h1 className={`text-3xl font-bold mb-2 ${
-            isDarkMode ? 'text-white' : 'text-gray-900'
-          }`}>Welcome back</h1>
-          <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-            Login to your account to continue
-          </p>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <div className={`min-h-screen flex items-center justify-center p-4 relative overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        {/* Background image with overlay */}
+        <div className="absolute inset-0 z-0">
+          <img src="https://static.vecteezy.com/system/resources/thumbnails/039/843/742/small_2x/ai-generated-the-glasses-with-school-books-in-front-of-a-blackboard-created-by-artificial-intelligence-photo.jpeg" alt="login bg" className="w-full h-full object-cover object-center opacity-60 dark:opacity-40" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-100/60 via-white/60 to-purple-100/40 dark:from-gray-900/80 dark:via-gray-900/70 dark:to-blue-900/60" />
         </div>
-
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="mb-6">
-            <InputField
-              type="email"
-              id="email"
-              label="Email"
-              placeholder="Enter your email"
-              icon={<Mail size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />}
-              value={formData.email}
-              error={errors.email}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="mb-6">
-            <InputField
-              type="password"
-              id="password"
-              label="Password"
-              placeholder="Enter your password"
-              icon={<Lock size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />}
-              value={formData.password}
-              error={errors.password}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="mb-6">
-            <Button 
-              text="Login" 
-              variant="primary" 
-              fullWidth 
-              isLoading={loading || loginState.isProcessing}
-              loadingText={`${loginState.step === 'logging' ? 'Logging in...' : 
-                          loginState.step === 'fetching' ? 'Loading user data...' :
-                          loginState.step === 'updating' ? 'Updating session...' :
-                          'Please wait...'}`}
-              type="submit"
-            />
-          </div>
-
-          <div className="text-center">
-            <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-              Don't have an account?{' '}
-              <Link 
-                to="/signup" 
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Sign up
-              </Link>
+        <VerificationPrompt
+          isOpen={isVerificationPromptOpen}
+          onClose={handleClosePrompt}
+          onVerify={handleVerify}
+          onNewAccount={handleNewAccount}
+        />
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className={`relative z-10 w-full max-w-md rounded-2xl shadow-2xl p-8 sm:p-10 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border border-blue-100 dark:border-blue-800`}
+        >
+          <div className="text-center mb-8">
+            <h1 className={`text-3xl font-bold mb-2 drop-shadow-sm ${isDarkMode ? 'text-white' : 'text-blue-900'}`}>Welcome back</h1>
+            <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+              Login to your account to continue
             </p>
           </div>
-        </form>
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="mb-6">
+              <InputField
+                type="email"
+                id="email"
+                label="Email"
+                placeholder="Enter your email"
+                icon={<Mail size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />}
+                value={formData.email}
+                error={errors.email}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-6">
+              <InputField
+                type="password"
+                id="password"
+                label="Password"
+                placeholder="Enter your password"
+                icon={<Lock size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />}
+                value={formData.password}
+                error={errors.password}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-6">
+              <Button 
+                text="Login" 
+                variant="primary" 
+                fullWidth 
+                isLoading={loading || loginState.isProcessing}
+                loadingText={`${loginState.step === 'logging' ? 'Logging in...' : 
+                            loginState.step === 'fetching' ? 'Loading user data...' :
+                            loginState.step === 'updating' ? 'Updating session...' :
+                            'Please wait...'}`}
+                type="submit"
+              />
+            </div>
+            <div className="mb-6 flex items-center justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleLogin}
+                onError={() => toast.error('Google login failed')}
+                useOneTap
+                render={({ onClick, disabled }) => (
+                  <GoogleLoginButton onClick={onClick} disabled={disabled || loading || loginState.isProcessing} />
+                )}
+              />
+            </div>
+            <div className="text-center">
+              <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
+                Don't have an account?{' '}
+                <Link 
+                  to="/signup" 
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Sign up
+                </Link>
+              </p>
+            </div>
+          </form>
+        </motion.div>
       </div>
-    </div>
+    </GoogleOAuthProvider>
   );
 };
 
