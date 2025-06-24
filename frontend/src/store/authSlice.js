@@ -148,7 +148,8 @@ const authSlice = createSlice({
     isAuthenticated: false,
     isVerified: false,
     otpSent: false,
-    resetTokenValid: false
+    resetTokenValid: false,
+    features: { flashcards: true }
   },
   reducers: {
     clearError: (state) => {
@@ -174,6 +175,14 @@ const authSlice = createSlice({
     },
     setOtpSent: (state, action) => {
       state.otpSent = action.payload;
+    },
+    updateProfile: (state, action) => {
+      if (state.user) {
+        Object.assign(state.user, action.payload);
+        if (action.payload.features) {
+          state.user.features = action.payload.features;
+        }
+      }
     }
   },
   extraReducers: (builder) => {

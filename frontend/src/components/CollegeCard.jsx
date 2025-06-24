@@ -58,7 +58,7 @@ const CollegeCard = ({ id, collegeName, img, branch, topic, noOfAnswers, postedO
   return (
     <div 
       onClick={handleCardClick}
-      className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 cursor-pointer group"
+      className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-[0_8px_32px_rgba(0,0,0,0.22)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.28)] transition-all duration-300 cursor-pointer group"
     >
       <div className="p-5 border-b border-gray-100 dark:border-gray-700">
         <div className="flex items-center justify-between">

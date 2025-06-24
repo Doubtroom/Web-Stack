@@ -50,4 +50,14 @@ export const customerCareServices = {
   createRequest: (data) => apiClient.post(API_ENDPOINTS.CUSTOMER_CARE.CREATE, data),
   getAllRequests: () => apiClient.get(API_ENDPOINTS.CUSTOMER_CARE.GET_ALL),
   getUserRequests: () => apiClient.get(API_ENDPOINTS.CUSTOMER_CARE.GET_USER_REQUESTS),
+};
+
+// Flashcard Services
+export const flashcardServices = {
+  upsertStatus: (data) => apiClient.post(API_ENDPOINTS.FLASHCARDS.UPSERT_STATUS, data),
+  getAll: () => apiClient.get(API_ENDPOINTS.FLASHCARDS.GET_ALL),
+};
+
+export const userServices = {
+  updateFeatures: (features) => apiClient.post(API_ENDPOINTS.AUTH.UPDATE_FEATURES, { features }),
 }; 

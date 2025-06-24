@@ -13,7 +13,6 @@ import UserInfoForm from './pages/UserInfoForm';
 import LandingPage from './pages/LandingPage';
 import MyQuestions from './pages/MyQuestions';
 import MyCollege from './pages/MyCollege';
-import AllColleges from './pages/AllColleges';
 import Profile from './pages/Profile';
 import SearchResults from './pages/SearchResults';
 import ContactUs from './pages/ContactUs';
@@ -28,6 +27,8 @@ import NotFoundPage from './pages/NotFoundPage'
 import OtpVerificationPage from './pages/OtpVerificationPage'
 import VerificationPage from './pages/VerificationPage';
 import ProfileCompletionDialog from './components/ProfileCompletionDialog';
+import FlashCardsPage from './pages/FlashCardsPage';
+import Promotion from './pages/Promotion';
 
 // Root path redirect component
 function RootRedirect() {
@@ -112,12 +113,16 @@ function App() {
               <Route path="answer/:id/edit" element={<EditAnswer />} />
               <Route path="ask-question" element={<AskQuestion />} />
               <Route path="my-questions" element={<MyQuestions />} />
+              <Route path="flashcards" >
+                <Route index element={<FlashCardsPage />} />
+                <Route path=":cardIndex" element={<FlashCardsPage />} />
+              </Route>
               <Route path="my-college" element={<MyCollege />} />
-              <Route path="all-colleges" element={<AllColleges />} />
               <Route path="profile" element={<Profile />} />
               <Route path="search/:query" element={<SearchResults />} />
               <Route path="customer-support" element={<CustomerSupportPage />} />
               <Route path="contact" element={<ContactUs />} />
+              <Route path="promotion" element={<Promotion />} />
             </Route>
           </Route>
 
