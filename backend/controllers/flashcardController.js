@@ -61,8 +61,8 @@ export const getFlashcards = async (req, res) => {
             answeredQuestions.map(async (question) => {
                 const answer = await Answers.findOne({ questionId: question._id }).lean();
                 const flashcardStatus = await FlashcardStatus.findOne({
-                    user: userId,
-                    question: question._id,
+                    userId: userId,
+                    questionId: question._id,
                 }).lean();
 
                 return {
