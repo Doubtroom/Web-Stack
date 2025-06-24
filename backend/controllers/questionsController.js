@@ -1,6 +1,7 @@
 import Questions from "../models/Questions.js";
 import Answers from "../models/Answers.js";
 import cloudinary from "../utils/cloudinary.js";
+import FlashcardStatus from '../models/FlashcardStatus.js';
 
 export const createQuestion = async (req, res) => {
     try {
@@ -300,22 +301,31 @@ export const getUserQuestions = async (req, res) => {
             .limit(limit)
             .lean();
 
-        // For each question, find an answer
-        const questionsWithAnswers = await Promise.all(questions.map(async (question) => {
+        const questionsWithAnswersAndStatus = await Promise.all(
+          questions.map(async (question) => {
             const answer = await Answers.findOne({ questionId: question._id }).lean();
+            const flashcardStatus = await FlashcardStatus.findOne({
+              user: userId,
+              question: question._id,
+            }).lean();
+
             return {
-                ...question,
-                answer: answer ? answer.text : "No answer yet. Add one!" 
+              ...question,
+              answer: answer
+                ? { text: answer.text, photoUrl: answer.photoUrl }
+                : { text: "No answer yet. Add one!", photoUrl: null },
+              difficulty: flashcardStatus ? flashcardStatus.difficulty : null,
             };
-        }));
+          })
+        );
 
         const totalPages = Math.ceil(total / limit);
         const hasNextPage = page < totalPages;
         const hasPrevPage = page > 1;
 
-        res.json({
+        res.status(200).json({
             message: "User questions fetched successfully",
-            questions: questionsWithAnswers,
+            questions: questionsWithAnswersAndStatus,
             pagination: {
                 currentPage: page,
                 totalPages,
