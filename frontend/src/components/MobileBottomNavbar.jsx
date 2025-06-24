@@ -1,6 +1,6 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { Home, HelpCircle, School, Grid } from 'lucide-react'
+import { Home, HelpCircle, School, Grid, Layers } from 'lucide-react'
 
 function MobileBottomNavbar() {
   return (
@@ -31,6 +31,18 @@ function MobileBottomNavbar() {
       </NavLink>
       
       <NavLink 
+        to="/flashcards" 
+        className={({ isActive }) => `flex flex-col items-center justify-center flex-1 py-2 ${
+          isActive 
+            ? 'text-[#16588E] dark:text-blue-400' 
+            : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
+        }`}
+      >
+        <Layers className="w-5 h-5" />
+        <span className="text-xs mt-1">Flashcards</span>
+      </NavLink>
+      
+      <NavLink 
         to="/my-college" 
         className={({ isActive }) => `flex flex-col items-center justify-center flex-1 py-2 ${
           isActive 
@@ -40,18 +52,6 @@ function MobileBottomNavbar() {
       >
         <School className="w-5 h-5" />
         <span className="text-xs mt-1">My College</span>
-      </NavLink>
-      
-      <NavLink 
-        to="/all-colleges" 
-        className={({ isActive }) => `flex flex-col items-center justify-center flex-1 py-2 ${
-          isActive 
-            ? 'text-[#16588E] dark:text-blue-400' 
-            : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
-        }`}
-      >
-        <Grid className="w-5 h-5" />
-        <span className="text-xs mt-1">All Colleges</span>
       </NavLink>
     </div>
   </div>

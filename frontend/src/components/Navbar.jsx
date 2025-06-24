@@ -9,6 +9,7 @@ import {
   Grid,
   Menu,
   X,
+  Layers,
 } from "lucide-react";
 import SearchBar from "./SearchBar";
 import NavItem from "./NavItem";
@@ -31,6 +32,7 @@ const Navbar = () => {
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
   const searchRef = useRef(null);
+  const user = useSelector(state => state.auth.user);
 
   const handleLogoutClick = () => {
     setShowLogoutConfirm(true);
@@ -180,8 +182,8 @@ const Navbar = () => {
           <SliderSwitch/>
           <NavItem to='/home' icon={<Home className="w-4 h-4" />} label="Home" />
           <NavItem to="/my-questions" icon={<HelpCircle className="w-4 h-4" />} label="My Content" />
+          <NavItem to="/flashcards" icon={<Layers className="w-4 h-4" />} label="Flashcards" />
           <NavItem to="/my-college" icon={<School className="w-4 h-4" />} label="My College" />
-          <NavItem to="/all-colleges" icon={<Grid className="w-4 h-4" />} label="All Colleges" />
           
           <NavLink to="/profile" className={({ isActive }) => 
             `group w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${

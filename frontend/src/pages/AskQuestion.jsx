@@ -431,7 +431,7 @@ const AskQuestion = () => {
       
       // Append image if exists
       if (image) {
-        finalQuestionData.append('image', image);
+        finalQuestionData.append('photo', image);
       }
 
       // Use Redux action to create question

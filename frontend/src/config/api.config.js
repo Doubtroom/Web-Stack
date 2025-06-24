@@ -15,7 +15,8 @@ export const API_ENDPOINTS = {
     REQUEST_RESET: '/auth/request-reset',
     VERIFY_RESET: '/auth/verify-reset',
     RESET_PASSWORD: '/auth/reset-password',
-    RECOVER_FIREBASE_PASSWORD: '/auth/recover-firebase-password'
+    RECOVER_FIREBASE_PASSWORD: '/auth/recover-firebase-password',
+    UPDATE_FEATURES: '/auth/user/features'
   },
 
   QUESTIONS: {
@@ -51,9 +52,15 @@ export const API_ENDPOINTS = {
   },
 
   CUSTOMER_CARE: {
-    BASE: '/data/customer-care',
-    CREATE: '/data/customer-care',
-    GET_ALL: '/data/customer-care',
-    GET_USER_REQUESTS: '/data/customer-care/user'
+    BASE: '/customer-care',
+    CREATE: '/customer-care',
+    GET_ALL: '/customer-care',
+    GET_USER_REQUESTS: '/customer-care/user',
+  },
+
+  FLASHCARDS: {
+    BASE: 'data/flashcards',
+    UPSERT_STATUS: 'data/flashcards/status',
+    GET_ALL: 'data/flashcards',
   }
 };

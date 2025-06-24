@@ -104,7 +104,7 @@ const AnswerForm = () => {
       }
       data.append('questionId', id);
       if (formData.photo) {
-        data.append('image', formData.photo);
+        data.append('photo', formData.photo);
       }
 
       dispatch(createAnswer({ formData: data, questionId: id })).unwrap()

@@ -12,6 +12,8 @@ import placeholder from '../assets/placeholder.png'
 import Pagination from '../components/Pagination'
 import QuestionCardSkeleton from '../components/QuestionCardSkeleton'
 import HomeSkeleton from '../components/HomeSkeleton'
+import PromotionCard from '../components/PromotionCard'
+import promotions from '../config/promotion.config.js'
 
 const ITEMS_PER_PAGE = 9;
 
@@ -120,27 +122,7 @@ const Home = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Ask Question Tab - Desktop */}
       <div className="hidden md:block max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 lg:mt-24">
-        <Link to='/ask-question'>
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 cursor-pointer group">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors duration-300">
-                  <HelpCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Have a doubt?</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Get help from the community</p>
-                </div>
-              </div>
-              <div className='bg-gradient-to-r from-[#1f5986] to-[#114073] dark:bg-blue-400 rounded-lg p-3'>
-                <div className="text-white font-medium flex items-center gap-2">
-                  Ask Question
-                  <span className="transform group-hover:translate-x-1 transition-transform duration-300">→</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Link>
+        <PromotionCard {...promotions[0]} />
       </div>
 
       {/* Questions Section */}

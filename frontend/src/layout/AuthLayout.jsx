@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { fetchUser, setAuth } from '../store/authSlice.js';
+import { fetchFlashcardStatuses } from '../store/flashcardStatusSlice.js';
 import axios from 'axios';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ProfileCompletionDialog from '../components/ProfileCompletionDialog.jsx';
@@ -60,6 +61,8 @@ function Protected({ children, authentication = false }) {
                         isVerified: response.data.user?.isVerified,
                         user: userResult
                     }));
+                    // Fetch flashcard statuses after user info
+                    dispatch(fetchFlashcardStatuses());
                 } else {
                     dispatch(setAuth({
                         isAuthenticated: false,

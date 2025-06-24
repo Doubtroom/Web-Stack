@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { logout, updateProfile } from '../store/authSlice';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Switch } from 'antd';
+import { userServices } from '../services/data.services';
 
 
 const Profile = () => {
@@ -27,6 +29,7 @@ const Profile = () => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [features, setFeatures] = useState(userProfile?.features || { flashcards: true });
   
 
 
@@ -51,6 +54,7 @@ const Profile = () => {
           email: userProfile.email || '',
           dob: userProfile.dob || ''
         });
+        setFeatures(userProfile?.features || { flashcards: true });
       } catch (error) {
         console.error('Error fetching user data:', error);
         toast.error('Failed to load profile data');
@@ -89,11 +93,27 @@ const Profile = () => {
     setShowLogoutConfirm(false);
   };
 
+  const handleFeatureToggle = async (feature) => {
+    const newFeatures = { ...features, [feature]: !features[feature] };
+    setFeatures(newFeatures);
+    try {
+      await userServices.updateFeatures(newFeatures);
+      // If turning off the feature, reload the window
+      if (newFeatures[feature] === false) {
+        window.location.reload();
+      }
+      // Optionally show a toast for success
+    } catch (error) {
+      setFeatures(features); // revert
+      toast.error('Failed to update features');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await dispatch(updateProfile(formData)).unwrap();
+      await dispatch(updateProfile({ ...formData, features })).unwrap();
       setIsEditing(false);
       toast.success('Profile updated successfully!');
     } catch (error) {
@@ -231,8 +251,34 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Profile Content */}
-        <div className={`rounded-b-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+        {/* Features Section */}
+        <div className="w-full flex flex-col gap-2 sm:gap-4 mt-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-200 mt-8 mb-2 sm:mb-4 flex items-center gap-2">
+            <span>Features</span>
+          </h2>
+          <div className={`rounded-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? 'bg-blue-900/60' : 'bg-blue-50'}`}> 
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-semibold text-blue-900 dark:text-blue-200">FlashCards</div>
+                  <div className="text-sm text-blue-800 dark:text-blue-300 opacity-80">Enable active recall and spaced repetition for better learning</div>
+                </div>
+                <Switch
+                  checked={features.flashcards}
+                  onChange={() => handleFeatureToggle('flashcards')}
+                  className={isDarkMode ? 'bg-blue-900' : 'bg-blue-200'}
+                />
+              </div>
+              {/* Add more features here as needed */}
+            </div>
+          </div>
+        </div>
+
+        {/* Personal Details Section */}
+        <h2 className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-200 mt-10 mb-2 sm:mb-4 flex items-center gap-2">
+          <span>Personal Details</span>
+        </h2>
+        <div className={`rounded-b-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}> 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
             <div className="space-y-4 sm:space-y-6">
               <div className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
