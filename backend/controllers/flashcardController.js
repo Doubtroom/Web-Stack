@@ -47,6 +47,8 @@ export const getFlashcards = async (req, res) => {
     try {
         const userId = req.user.id;
 
+        console.log("userId:",userId)
+
         // Find all questions posted by the user that have an answer
         const userQuestions = await Questions.find({ postedBy: userId }).lean();
         const answeredQuestionIds = await Answers.distinct('questionId', {
@@ -64,6 +66,10 @@ export const getFlashcards = async (req, res) => {
                     userId: userId,
                     questionId: question._id,
                 }).lean();
+
+                console.log("flashcardStatus:",flashcardStatus)
+
+
 
                 return {
                     _id: question._id,
