@@ -27,7 +27,11 @@ const userSchema = new mongoose.Schema({
     resetExpires: { type: Date, default: null },
     provider: { type: String, default: "email" },
     passwordRecoveryDone: { type: Boolean, default: false },
-    isMigrated:{type:Boolean,default:false}
+    isMigrated:{type:Boolean,default:false},
+    features: {
+        type: Object,
+        default: { flashcards: true }
+    },
 })
 
 // Add a pre-save middleware to ensure passwordRecoveryDone exists
