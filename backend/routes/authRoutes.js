@@ -1,5 +1,5 @@
 import express from "express"
-import {signup, login, saveUserProfile, getAllUsers, logout, googleLogin, getUser, authStatus} from "../controllers/authController.js"
+import {signup, login, saveUserProfile, getAllUsers, logout, googleLogin, getUser, authStatus, updateFeatures} from "../controllers/authController.js"
 import { sendOtp, verifyOtp } from '../controllers/otpController.js';
 import {handleLogout, verifyAuthentication,verifyToken} from "../middleware/authMiddleware.js"
 import { requestReset, verifyResetToken, resetPassword } from '../controllers/passwordResetController.js';
@@ -21,5 +21,7 @@ router.post('/reset-password/:token', resetPassword);
 router.get('/user', verifyAuthentication, getUser)
 
 router.get('/verify', authStatus);
+
+router.post('/user/features', verifyToken, updateFeatures)
 
 export default router

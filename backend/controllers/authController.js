@@ -197,7 +197,7 @@ export const login=async(req,res)=>{
 export const saveUserProfile=async(req,res)=>{
     const userId = req.user.id;
 
-    const {collegeName,branch,studyType,phone,gender,role,dob}=req.body
+    const {collegeName,branch,studyType,phone,gender,role,dob,features}=req.body
 
     if(!userId)return res.status(400).json({message:"User not authenticated"})
 
@@ -207,23 +207,6 @@ export const saveUserProfile=async(req,res)=>{
         if(!user) return res.status(400).json({message:"User not found"})
         if(!(user.isVerified))return res.status(401).json({message:"User not verified"})
 
-        if(user.collegeName || user.branch || user.studyType || user.phone || user.gender || user.role || user.dob) {
-            return res.status(400).json({
-                message: "Profile already exists. Profile can only be saved once.",
-                user: {
-                    email: user.email,
-                    displayName: user.displayName,
-                    collegeName: user.collegeName,
-                    branch: user.branch,
-                    studyType: user.studyType,
-                    phone: user.phone,
-                    gender: user.gender,
-                    role: user.role,
-                    dob: user.dob
-                }
-            })
-        }
-
         user.collegeName=collegeName
         user.branch=branch
         user.studyType=studyType
@@ -231,6 +214,7 @@ export const saveUserProfile=async(req,res)=>{
         user.gender=gender
         user.role=role
         user.dob=dob
+        if (features) user.features = features;
 
         await user.save()
         
@@ -245,7 +229,8 @@ export const saveUserProfile=async(req,res)=>{
                 phone: user.phone,
                 gender: user.gender,
                 role: user.role,
-                dob: user.dob
+                dob: user.dob,
+                features: user.features
             }
         })
         
@@ -372,7 +357,7 @@ export const getUser = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        console.log('User from database:', user); // Debug log
+        // console.log('User from database:', user); // Debug log
 
         // If user has firebaseId, it's a Firebase account, otherwise it's a MongoDB account
         const isFirebaseUser = !!user.firebaseId;
@@ -390,6 +375,7 @@ export const getUser = async (req, res) => {
                 role: user.role,
                 isVerified: user.isVerified,
                 dob: user.dob,
+                features: user.features,
                 firebaseId: isFirebaseUser ? user.firebaseId : null,
                 authType: isFirebaseUser ? 'firebase' : 'mongodb'
             }
@@ -514,3 +500,20 @@ export const authStatus=async (req,res)=>{
         });
     }
 }
+
+export const updateFeatures = async (req, res) => {
+    const userId = req.user.id;
+    const { features } = req.body;
+    if (!userId) return res.status(400).json({ message: 'User not authenticated' });
+    if (!features || typeof features !== 'object') return res.status(400).json({ message: 'Invalid features object' });
+    try {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        user.features = features;
+        await user.save();
+        res.status(200).json({ message: 'Features updated successfully', features: user.features });
+    } catch (error) {
+        console.error('Error updating features:', error);
+        res.status(500).json({ message: 'Failed to update features' });
+    }
+};
