@@ -1,4 +1,6 @@
 import FlashcardStatus from '../models/FlashcardStatus.js';
+import Questions from '../models/Questions.js';
+import Answers from '../models/Answers.js';
 
 const getNextReviewDate = (difficulty) => {
     const now = new Date();
@@ -38,5 +40,50 @@ export const upsertFlashcardStatus = async (req, res) => {
     } catch (error) {
         console.error('Error updating flashcard status:', error);
         res.status(500).json({ message: 'Error updating flashcard status', error: error.message });
+    }
+};
+
+export const getFlashcards = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Find all questions posted by the user that have an answer
+        const userQuestions = await Questions.find({ postedBy: userId }).lean();
+        const answeredQuestionIds = await Answers.distinct('questionId', {
+            questionId: { $in: userQuestions.map(q => q._id) }
+        });
+        
+        const answeredQuestions = userQuestions.filter(q => 
+            answeredQuestionIds.some(aqId => aqId.equals(q._id))
+        );
+
+        const flashcards = await Promise.all(
+            answeredQuestions.map(async (question) => {
+                const answer = await Answers.findOne({ questionId: question._id }).lean();
+                const flashcardStatus = await FlashcardStatus.findOne({
+                    user: userId,
+                    question: question._id,
+                }).lean();
+
+                return {
+                    _id: question._id,
+                    text: question.text,
+                    photoUrl: question.photoUrl,
+                    answer: {
+                        text: answer.text,
+                        photoUrl: answer.photoUrl
+                    },
+                    difficulty: flashcardStatus ? flashcardStatus.difficulty : null,
+                };
+            })
+        );
+
+        res.status(200).json({ flashcards });
+
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error fetching flashcards',
+            error: error.message
+        });
     }
 }; 
