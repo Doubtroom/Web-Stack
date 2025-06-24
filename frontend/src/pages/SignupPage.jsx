@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { signup, sendOtp,setOtpSent } from '../store/authSlice';
 import { toast } from 'sonner';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { motion } from 'framer-motion';
 
 const SignupPage = () => {
   const dispatch = useDispatch();
@@ -89,13 +90,21 @@ const SignupPage = () => {
   }
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <div className={`w-full max-w-md rounded-lg shadow-md p-8 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+    <div className={`min-h-screen flex items-center justify-center p-4 relative overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="absolute inset-0 z-0">
+        <img src="https://static.vecteezy.com/system/resources/thumbnails/039/843/742/small_2x/ai-generated-the-glasses-with-school-books-in-front-of-a-blackboard-created-by-artificial-intelligence-photo.jpeg" alt="signup bg" className="w-full h-full object-cover object-center opacity-60 dark:opacity-40" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-100/60 via-white/60 to-purple-100/40 dark:from-gray-900/80 dark:via-gray-900/70 dark:to-blue-900/60" />
+      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        className={`relative z-10 w-full max-w-md rounded-2xl shadow-2xl p-8 sm:p-10 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border border-blue-100 dark:border-blue-800`}
+      >
         <div className="text-center mb-8">
-          <h1 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Create an account</h1>
+          <h1 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-blue-900'}`}>Create an account</h1>
           <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Sign up to get started</p>
         </div>
-
         <form onSubmit={handleSignup}>
           <div className="mb-2">
             <InputField
@@ -109,7 +118,6 @@ const SignupPage = () => {
               onChange={handleChange}
             />
           </div>
-
           <div className="mb-2">
             <InputField
               type="email"
@@ -122,7 +130,6 @@ const SignupPage = () => {
               onChange={handleChange}
             />
           </div>
-
           <div className="mb-2">
             <InputField
               type="password"
@@ -135,7 +142,6 @@ const SignupPage = () => {
               onChange={handleChange}
             />
           </div>
-
           <div className="mb-4">
             <InputField
               type="password"
@@ -148,7 +154,6 @@ const SignupPage = () => {
               onChange={handleChange}
             />
           </div>
-
           <div className="mb-6 mt-8">
             <Button 
               text="Sign Up" 
@@ -158,7 +163,6 @@ const SignupPage = () => {
               loadingText="Creating account..."
             />
           </div>
-
           <div className="text-center">
             <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
               Already have an account?{' '}
@@ -171,7 +175,7 @@ const SignupPage = () => {
             </p>
           </div>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 };
