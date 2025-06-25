@@ -99,9 +99,7 @@ const Profile = () => {
     try {
       await userServices.updateFeatures(newFeatures);
       // If turning off the feature, reload the window
-      if (newFeatures[feature] === false) {
         window.location.reload();
-      }
       // Optionally show a toast for success
     } catch (error) {
       setFeatures(features); // revert

@@ -88,7 +88,7 @@ const FlashCardContainer = () => {
   if (cards.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] text-center p-4">
-        <h2 className="text-2xl font-semibold dark:text-white">No Flashcards Available</h2>
+        <h2 className="text-black text-2xl font-semibold dark:text-white">No Flashcards Available</h2>
         <p className="text-gray-500 dark:text-gray-400 mt-2 max-w-md">
           It looks like you don't have any questions with answers yet. Go ahead and answer some of your questions to create flashcards!
         </p>

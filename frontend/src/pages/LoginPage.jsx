@@ -13,6 +13,7 @@ import { authService } from '../services/auth.services';
 import { motion } from 'framer-motion';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import GoogleLoginButton from '../components/GoogleLoginButton';
+import LottieLoader from '../components/LottieLoader';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -196,7 +197,7 @@ const LoginPage = () => {
   };
 
   if (loading || loginState.isProcessing) {
-    return <LoadingSpinner fullScreen />;
+    return <LottieLoader text='Logging in...' fullScreen />;
   }
 
   return (
