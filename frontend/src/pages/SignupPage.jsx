@@ -8,6 +8,7 @@ import { signup, sendOtp,setOtpSent } from '../store/authSlice';
 import { toast } from 'sonner';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { motion } from 'framer-motion';
+import LottieLoader from '../components/LottieLoader';
 
 const SignupPage = () => {
   const dispatch = useDispatch();
@@ -86,7 +87,7 @@ const SignupPage = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner fullScreen />;
+    return <LottieLoader text='Signing Up...' fullScreen />;
   }
 
   return (

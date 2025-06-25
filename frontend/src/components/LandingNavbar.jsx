@@ -1,25 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { Menu } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Menu, User, LogIn, Info, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Logo from '../assets/logoWhite.png';
 import { motion } from 'framer-motion';
 import Navitem from './LandingNavItem';
 
-const NavBar = () => {
+const NavBar = React.memo(() => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
   
-    useEffect(() => {
-      const handleScroll = () => {
-        if (window.scrollY > 10) {
-          setIsScrolled(true);
-        } else {
-          setIsScrolled(false);
-        }
-      };
+    // Memoize the scroll handler
+    const handleScroll = useCallback(() => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+      // Close mobile menu on scroll
+      setIsMenuOpen(false);
+    }, []);
   
+    useEffect(() => {
       window.addEventListener('scroll', handleScroll);
       return () => window.removeEventListener('scroll', handleScroll);
+    }, [handleScroll]);
+
+    // Memoize menu toggle handler
+    const handleMenuToggle = useCallback(() => {
+      setIsMenuOpen((prev) => !prev);
     }, []);
   
     return (
@@ -67,32 +75,68 @@ const NavBar = () => {
           <motion.button 
             className={`md:hidden ${
               isScrolled ? 'text-teal-400' : 'text-white'
-            }`}
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            } flex items-center justify-center rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-teal-400`}
+            onClick={handleMenuToggle}
+            whileHover={{ scale: 1.13 }}
+            whileTap={{ scale: 0.93 }}
+            aria-label="Open menu"
+            style={{ minWidth: 48, minHeight: 48 }}
           >
-            <Menu size={24} />
+            <Menu size={32} strokeWidth={2.5} />
           </motion.button>
         </div>
   
-        {/* Mobile menu */}
+        {/* Redesigned Mobile menu */}
         <motion.div 
           initial={false}
           animate={{ 
             height: isMenuOpen ? 'auto' : 0,
             opacity: isMenuOpen ? 1 : 0
           }}
-          className={`md:hidden overflow-hidden bg-[#0a192f]/90`}
+          className={`md:hidden overflow-hidden bg-transparent`}
         >
-          <div className="py-4 space-y-4 px-2">
-            <Navitem link="/about" text="About" isScrolled={true} />
-            <Navitem link="/login" text="Log in" isScrolled={true} />
-            <Navitem link="/signup" text="Sign up" isScrolled={true} />
-          </div>
+          {isMenuOpen && (
+            <motion.div 
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="fixed inset-0 z-50 flex items-start justify-end bg-black/40 backdrop-blur-sm"
+              onClick={handleMenuToggle}
+            >
+              <div 
+                className="w-11/12 max-w-xs mt-4 mr-4 rounded-2xl bg-[#0a192f] shadow-2xl border border-white/10 p-6 flex flex-col gap-2 relative"
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Close button */}
+                <button
+                  className="absolute top-3 right-3 p-2 rounded-full hover:bg-white/10 transition-colors text-white"
+                  onClick={handleMenuToggle}
+                  aria-label="Close menu"
+                  style={{ minWidth: 40, minHeight: 40 }}
+                >
+                  <X size={26} />
+                </button>
+                {/* Nav Items */}
+                <Link to="/about" onClick={handleMenuToggle} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition-colors text-white/90 text-base font-medium">
+                  <Info size={22} className="text-teal-400" />
+                  About
+                </Link>
+                <Link to="/login" onClick={handleMenuToggle} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition-colors text-white/90 text-base font-medium">
+                  <LogIn size={22} className="text-teal-400" />
+                  Log in
+                </Link>
+                <div className="my-2 border-t border-white/10" />
+                <Link to="/signup" onClick={handleMenuToggle} className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-teal-400 to-teal-500 text-white font-semibold justify-center shadow-lg hover:from-teal-500 hover:to-teal-600 transition-all text-base">
+                  <User size={22} className="text-white" />
+                  Get Started
+                </Link>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       </motion.nav>
     );
-  };
+  });
 
-  export default NavBar;
+export default NavBar;
