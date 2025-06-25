@@ -31,7 +31,7 @@ const features = [
   },
 ];
 
-const heroImg = 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=800&q=80';
+const heroImg = 'https://doubtroom.sirv.com/Doubtroom/Flash%20Cards.png';
 const journeyImg = 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80';
 const memoryImg = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80';
 
