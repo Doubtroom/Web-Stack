@@ -33,23 +33,24 @@ import Promotion from './pages/Promotion';
 
 (function deleteStaleLocalStorage(){
   let removed = false;
-  if (localStorage.getItem(localStorageCleanupDone)===true && (localStorage.getItem('authStatus') || localStorage.getItem('profileCompleted') || localStorage.getItem('userData'))) {
+  if (localStorage.getItem('authStatus') || localStorage.getItem('profileCompleted') || localStorage.getItem('userData')) {
     localStorage.removeItem('authStatus');
     localStorage.removeItem('profileCompleted');
     localStorage.removeItem('userData');
     removed = true;
   }
+  // Remove any localStorage item that starts with 'firebase:authUser'
   Object.keys(localStorage).forEach(key => {
     if (key.startsWith('firebase:authUser')) {
       localStorage.removeItem(key);
       removed = true;
     }
   });
-  
+  // Set a flag so this runs only once
   if (removed && !localStorage.getItem('localStorageCleanupDone')) {
     localStorage.setItem('localStorageCleanupDone', 'true');
   }
-})()
+})();
 
 // Root path redirect component
 function RootRedirect() {
