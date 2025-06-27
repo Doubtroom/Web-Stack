@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MessageSquare, Lightbulb, Clock, Edit2, Trash2 } from "lucide-react";
+import { MessageSquare, Lightbulb, Clock, Edit2, Trash2, Loader2 } from "lucide-react";
 import Button from "./Button";
 import { toast } from "sonner";
-import DataService from "../firebase/DataService";
+import { questionServices, answerServices } from '../services/data.services';
 import ConfirmationDialog from './ConfirmationDialog';
 import placeholder from '../assets/placeholder.png';
+import { useSelector } from 'react-redux';
 
 const Card = ({
   id, 
@@ -21,12 +22,13 @@ const Card = ({
   onDelete,
   type = 'question', // New prop to distinguish between question and answer cards
   answerId = null, // New prop for answer ID when type is 'answer'
-  answerQuestionId=null
+  answerQuestionId=null,
+  isDeleting = false // New prop to show loading state
 
 }) => {
   const navigate = useNavigate();
-  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-  const isQuestionOwner = userData.uid === postedBy;
+  const {user:userData} = useSelector(state => state.auth)
+  const isQuestionOwner = userData?.userId === postedBy;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleCardClick = (e) => {
@@ -62,46 +64,11 @@ const Card = ({
     setShowDeleteDialog(true);
   };
 
-  const handleDeleteConfirm = async () => {
-    try {
-        const dataService = new DataService(type === 'answer' ? 'answers' : 'questions');
-        const questionsService = new DataService('questions');
-        
-        if (type === 'question') {
-          // Delete associated image if exists and is not a base64/data URL
-          if (img && imgId) {
-            await dataService.deleteImage(imgId);
-          }
-
-          const answersService = new DataService('answers');
-          const answers = await answersService.getAnswersByQuestionId(id);
-          
-          for (const answer of answers) {
-            if (answer.photo && answer.photoId) {
-              await answersService.deleteImage(answer.photoId);
-            }
-            await answersService.deleteDocument(answer.id);
-          }
-
-          await dataService.deleteDocument(id);
-        } else {
-          if (img && imgId) {
-            await dataService.deleteImage(imgId);
-          }
-          if(answerQuestionId ){
-            await questionsService.updateAnswerCount(answerQuestionId,false)
-          }
-          await dataService.deleteDocument(answerId);
-        }
-      
-      toast.success(`${type === 'answer' ? 'Answer' : 'Question'} deleted successfully!`);
-      window.location.reload(); 
-    } catch (error) {
-      console.error(`Error deleting ${type}:`, error);
-      toast.error(`Failed to delete ${type}. Please try again.`);
-    } finally {
-      setShowDeleteDialog(false);
+  const handleDeleteConfirm = () => {
+    if (onDelete) {
+      onDelete(type, type === 'question' ? id : answerId);
     }
+    setShowDeleteDialog(false);
   };
 
   return (
@@ -131,9 +98,14 @@ const Card = ({
               </Link>
               <button
                 onClick={handleDeleteClick}
-                className="p-2 bg-white dark:bg-gray-700 rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
+                disabled={isDeleting}
+                className="p-2 bg-white dark:bg-gray-700 rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+                {isDeleting ? (
+                  <Loader2 className="w-4 h-4 text-red-600 dark:text-red-400 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+                )}
               </button>
             </div>
           )}
@@ -162,7 +134,7 @@ const Card = ({
         onClose={() => setShowDeleteDialog(false)}
         onConfirm={handleDeleteConfirm}
         title={`Delete ${type === 'answer' ? 'Answer' : 'Question'}`}
-        message={`Are you sure you want to delete this ${type}?`}
+        message={`Are you sure you want to delete this ${type}? This action cannot be undone.`}
       />
     </>
   );

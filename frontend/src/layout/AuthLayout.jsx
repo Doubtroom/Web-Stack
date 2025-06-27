@@ -1,73 +1,161 @@
-import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { fetchUser, setAuth } from '../store/authSlice.js';
+import { fetchFlashcardStatuses } from '../store/flashcardStatusSlice.js';
+import axios from 'axios';
+import LoadingSpinner from '../components/LoadingSpinner.jsx';
+import ProfileCompletionDialog from '../components/ProfileCompletionDialog.jsx';
+import config from '../config/config.js';
 
-function Protected({ children, authentication = true }) {
+axios.defaults.withCredentials = true;
+
+function Protected({ children, authentication = false }) {
     const navigate = useNavigate();
     const location = useLocation();
+    const dispatch = useDispatch();
     
-    // Get auth state from Redux
-    const reduxAuthStatus = useSelector((state) => state?.auth?.status || false);
-    const profileCompleted = useSelector((state) => state?.auth?.profileCompleted || false);
-
-    // Only use localStorage as a secondary check if Redux state is false
-    const authStatus = reduxAuthStatus || localStorage.getItem('authStatus') === 'true';
-    const localProfileCompleted = localStorage.getItem('profileCompleted') === 'true';
-    const fromSignup = localStorage.getItem("fromSignup") === "true";
+    const isAuthenticated = useSelector((state) => state?.auth?.isAuthenticated);
+    const isVerified = useSelector((state) => state?.auth?.isVerified);
+    const user = useSelector((state) => state?.auth?.user);
+    const [hasAllDetails, setHasAllDetails] = useState(false);
+    const [isAuthChecked, setIsAuthChecked] = useState(false);
+    const [isUserDetailsChecked, setIsUserDetailsChecked] = useState(false);
+    const [isNavigating, setIsNavigating] = useState(false);
+    const [lastPath, setLastPath] = useState('');
+    const [navigationAttempts, setNavigationAttempts] = useState(0);
 
     useEffect(() => {
-        // Special handling for root path
-        if (location.pathname === '/') {
-            if (authStatus) {
-                navigate('/home', { replace: true });
-            } else {
-                navigate('/landing', { replace: true });
-            }
-            return;
-        }
+        if (!user) return;
+        const tempHasAllDetails = Boolean(
+            user.branch && 
+            user.studyType && 
+            user.gender && 
+            user.role && 
+            user.collegeName && 
+            user.dob
+        );
+        setHasAllDetails(tempHasAllDetails);
+        setIsUserDetailsChecked(true);
+    }, [user]);
 
-        // Handle public routes (login, signup, landing)
-        if (!authentication) {
-            if (authStatus) {
-                navigate('/home', { replace: true });
-                return;
-            }
-            return; // Allow access to public routes for non-authenticated users
-        }
+    useEffect(() => {
+        const checkAuth = async () => {
+            if (isAuthChecked) return;
+            try {
+                const response = await axios.get(config.apiBaseUrl + '/auth/verify', {
+                    withCredentials: true,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.data.isAuthenticated) {
+                    dispatch(setAuth({
+                        isAuthenticated: true,
+                        isVerified: response.data.user?.isVerified,
+                        user: null
+                    }));
 
-        // Handle protected routes
-        if (authentication) {
-            if (!authStatus) {
-                navigate('/login', { replace: true });
-                return;
-            }
-
-            // Handle profile completion
-            if (!profileCompleted && !localProfileCompleted) {
-                if (fromSignup && location.pathname !== '/complete-profile') {
-                    navigate('/complete-profile', { replace: true });
-                    return;
+                    const userResult = await dispatch(fetchUser()).unwrap();
+                    dispatch(setAuth({
+                        isAuthenticated: true,
+                        isVerified: response.data.user?.isVerified,
+                        user: userResult
+                    }));
+                    // Fetch flashcard statuses after user info
+                    dispatch(fetchFlashcardStatuses());
+                } else {
+                    dispatch(setAuth({
+                        isAuthenticated: false,
+                        isVerified: false,
+                        user: null
+                    }));
+                    setHasAllDetails(false);
+                    setIsUserDetailsChecked(true);
                 }
-                if (location.pathname !== '/complete-profile') {
-                    navigate('/complete-profile', { replace: true });
-                    return;
+            } catch (error) {
+                console.error("Auth check error:", error);
+                dispatch(setAuth({
+                    isAuthenticated: false,
+                    isVerified: false,
+                    user: null
+                }));
+                setHasAllDetails(false);
+                setIsUserDetailsChecked(true);
+            } finally {
+                setIsAuthChecked(true);
+            }
+        };
+
+        checkAuth();
+    }, [dispatch]);
+
+    // Navigation guard effect
+    useEffect(() => {
+        const handleNavigation = async () => {
+            // Skip navigation if still checking auth
+            if (!isAuthChecked) return;
+
+            // Skip if we're already navigating or if the path hasn't changed
+            if (isNavigating || lastPath === location.pathname) return;
+
+            // Set navigating state to prevent multiple navigations
+            setIsNavigating(true);
+
+            try {
+                // Only check auth for protected routes
+                if (authentication) {
+                    if (!isAuthenticated) {
+                        navigate('/login', { replace: true });
+                        return;
+                    }
+
+                    if (!isVerified) {
+                        const verificationRoutes = ['/verificationDialogue', '/verify-otp'];
+                        if (!verificationRoutes.includes(location.pathname)) {
+                            navigate('/verificationDialogue', { replace: true });
+                            return;
+                        }
+                    }
+
+                    // Only redirect from complete-profile if user has completed profile
+                    if (hasAllDetails && location.pathname === '/complete-profile') {
+                        navigate('/home', { replace: true });
+                        return;
+                    }
+                } 
+                // Handle public routes
+                else {
+                    const publicRoutes = ['/login', '/signup', '/landing'];
+                    if (isAuthenticated && hasAllDetails && publicRoutes.includes(location.pathname)) {
+                        navigate('/home', { replace: true });
+                        return;
+                    }
                 }
-            }
 
-            // Prevent accessing complete-profile if profile is already completed
-            if ((profileCompleted || localProfileCompleted) && location.pathname === '/complete-profile') {
-                navigate('/home', { replace: true });
-                return;
+                // Update last path after successful navigation
+                setLastPath(location.pathname);
+            } finally {
+                // Reset navigating state after a short delay to allow route transition
+                setTimeout(() => {
+                    setIsNavigating(false);
+                }, 100);
             }
-        }
-    }, [authStatus, profileCompleted, authentication, location, navigate, fromSignup, localProfileCompleted]);
+        };
 
-    // For root path conditional rendering
-    if (authentication === null) {
-        return typeof children === 'function' ? children({ authStatus }) : children;
+        handleNavigation();
+    }, [isAuthenticated, isVerified, hasAllDetails, isAuthChecked, location.pathname, authentication, navigate]);
+
+    // Show loading spinner only when checking auth
+    if (!isAuthChecked) {
+        return <LoadingSpinner fullScreen />;
     }
 
-    return <>{children}</>;
+    // Show profile completion dialog if user is authenticated and verified but hasn't completed profile
+    if (authentication && isAuthenticated && isVerified && !hasAllDetails && location.pathname !== '/complete-profile') {
+        return <ProfileCompletionDialog />;
+    }
+
+    return children || <Outlet />;
 }
 
 export default Protected;

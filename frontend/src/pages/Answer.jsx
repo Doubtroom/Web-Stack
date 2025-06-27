@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { MessageSquare, ThumbsUp, Clock, ArrowLeft, ZoomIn } from 'lucide-react';
-import DataService from '../firebase/DataService';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAnswerById, upvoteAnswer } from '../store/dataSlice';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Button from '../components/Button';
 import { toast } from 'sonner';
@@ -12,40 +13,24 @@ const Answer = () => {
   const { questionId, answerId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [answer, setAnswer] = useState(null);
-  const [question, setQuestion] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
   const commentSectionRef = useRef(null);
-
-  const getUserCollege = async (userId) => {
-    try {
-      const userService = new DataService('users');
-      const userDoc = await userService.getDocumentById(userId);
-      return userDoc?.collegeName || null;
-    } catch (error) {
-      console.error('Error fetching user college:', error);
-      return null;
-    }
-  };
+  
+  const userData = useSelector((state) => state?.auth?.user);
+  const { currentAnswer, currentQuestion, loading, error } = useSelector((state) => state.data);
 
   useEffect(() => {
     if (answerId) {
-      fetchAnswerAndQuestion();
-    } else {
-      setError('Invalid answer ID');
-      setLoading(false);
+      fetchData();
     }
   }, [answerId, questionId]);
 
   useEffect(() => {
     // Check if we should scroll to comments
     if (searchParams.get('scroll') === 'comments' && commentSectionRef.current && !loading) {
-      // Add a small delay to ensure the component is fully rendered
       setTimeout(() => {
-        const yOffset = -100; // Adjust this value to control how far from the top the scroll should stop
+        const yOffset = -100;
         const element = commentSectionRef.current;
         const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
         window.scrollTo({ top: y, behavior: 'smooth' });
@@ -53,57 +38,26 @@ const Answer = () => {
     }
   }, [searchParams, loading]);
 
-
-  const fetchAnswerAndQuestion = async () => {
+  const fetchData = async () => {
     try {
       if (!answerId) {
-        setError('Invalid answer ID');
-        setLoading(false);
+        toast.error('Invalid answer ID');
         return;
       }
-
-      const dataService = new DataService('answers');
-      const answerData = await dataService.getDocumentById(answerId);
+      console.log(answerId)
+      await dispatch(fetchAnswerById({ answerId})).unwrap();
       
-      if (!answerData) {
-        setError('Answer not found');
-        setLoading(false);
-        return;
-      }
-      
-      // Fetch college information for the answer
-      const collegeName = await getUserCollege(answerData.userId);
-      setAnswer({ ...answerData, collegeName });
-
-      // If questionId is not in URL params, try to get it from answer data
-      const qId = questionId || answerData.questionId;
-      if (qId) {
-        const questionService = new DataService('questions');
-        const questionData = await questionService.getDocumentById(qId);
-        if (!questionData) {
-          setError('Question not found');
-          setLoading(false);
-          return;
-        }
-        setQuestion(questionData);
-      } else {
-        setError('Question ID not found');
-        setLoading(false);
-        return;
-      }
-      
-      setLoading(false);
     } catch (err) {
-      setError('Failed to fetch answer details. Please try again later.');
       console.error('Error:', err);
-      setLoading(false);
+      toast.error('Failed to fetch answer details. Please try again later.');
     }
   };
 
-  const handleBackToQuestion = () => {
-    const qId = questionId || answer?.questionId;
+  const handleBackToQuestion = async () => {
+    const qId = currentAnswer?.questionId
+    
     if (!qId) {
-      toast.error('Could not find question ID');
+      toast.error('Could not find question ID')
       navigate('/home');
       return;
     }
@@ -112,37 +66,17 @@ const Answer = () => {
 
   const handleUpvote = async () => {
     try {
-      const dataService = new DataService('answers');
-      const userId = userData.uid;
+      const userId = userData?.userId;
       
       if (!userId) {
         toast.error('Please login to upvote');
         return;
       }
-
-      const currentUpvotedBy = Array.isArray(answer.upvotedBy) ? answer.upvotedBy : [];
-      const hasUpvoted = currentUpvotedBy.includes(userId);
-      const newUpvotes = hasUpvoted ? answer.upvotes - 1 : answer.upvotes + 1;
       
-      const newUpvotedBy = hasUpvoted 
-        ? currentUpvotedBy.filter(id => id !== userId)
-        : [...currentUpvotedBy, userId];
-
-      await dataService.updateDocument(answerId, {
-        upvotes: newUpvotes,
-        upvotedBy: newUpvotedBy
-      });
-
-      setAnswer(prev => ({
-        ...prev,
-        upvotes: newUpvotes,
-        upvotedBy: newUpvotedBy
-      }));
-
-      toast.success(hasUpvoted ? 'Upvote removed' : 'Answer upvoted!');
+      await dispatch(upvoteAnswer({ answerId, userId })).unwrap();
     } catch (error) {
       console.error('Error updating upvote:', error);
-      toast.error('Failed to update upvote. Please try again.');
+      toast.error(error || 'Failed to update upvote. Please try again.');
     }
   };
 
@@ -161,7 +95,7 @@ const Answer = () => {
     return `${Math.floor(diffInSeconds / 86400)} days ago`;
   };
 
-  if (loading) {
+  if (loading && !currentAnswer) {
     return <LoadingSpinner fullScreen />;
   }
 
@@ -188,14 +122,17 @@ const Answer = () => {
         {/* Back Button */}
         <Button
           variant="ghost"
-          className="mb-6"
+          className="mb-6 inline-flex items-center"
           onClick={handleBackToQuestion}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2 dark:text-[#3f7cc6]" />
-          <span className='dark:text-[#3f7cc6]'>
-          Back to Question
-          </span>
-        </Button>
+          children={
+            <>
+              <ArrowLeft className="w-4 h-4 mr-2 dark:text-[#3f7cc6]" />
+              <span className='dark:text-[#3f7cc6]'>
+                Back to Question
+              </span>
+            </>
+          }
+        />
 
         {/* Answer Section */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 mb-8">
@@ -203,41 +140,41 @@ const Answer = () => {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-gray-800 dark:text-white">
-                  {answer?.role === 'faculty'|| answer?.role === 'faculty(Phd)' ? answer?.userName : 'Anonymous'}
+                  {currentAnswer?.role === 'faculty'|| currentAnswer?.role === 'faculty(Phd)' ? currentAnswer?.userName : 'Anonymous'}
                 </h3>
-                {answer?.role === 'faculty'|| answer?.role === 'faculty(Phd)' && (
+                {currentAnswer?.role === 'faculty'|| currentAnswer?.role === 'faculty(Phd)' && (
                   <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
-                    {answer?.role === 'faculty' ? 'Faculty' : 'Faculty (Phd)'}
+                    {currentAnswer?.role === 'faculty' ? 'Faculty' : 'Faculty (Phd)'}
                   </span>
                 )}
-                {answer?.collegeName && (
+                {currentAnswer?.collegeName && (
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    answer.collegeName === userData.collegeName
+                    currentAnswer.collegeName === userData.collegeName
                       ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                       : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
                   }`}>
-                    {answer.collegeName === userData.collegeName ? 'My College' : 'Other College'}
+                    {currentAnswer.collegeName === userData.collegeName ? 'My College' : 'Other College'}
                   </span>
                 )}
               </div>
               <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                 <Clock className="w-4 h-4" />
-                {formatTimeAgo(answer?.createdAt)}
+                {formatTimeAgo(currentAnswer?.createdAt)}
               </span>
             </div>
           </div>
 
           <div className="prose max-w-none mb-8">
-            <p className="text-gray-700 dark:text-gray-300 text-lg">{answer?.text}</p>
+            <p className="text-gray-700 dark:text-gray-300 text-lg">{currentAnswer?.text}</p>
           </div>
 
-          {answer?.photo && (
+          {currentAnswer?.photoUrl && (
             <div 
               className="rounded-lg overflow-hidden mb-8 relative group cursor-pointer"
               onClick={() => setIsImageModalOpen(true)}
             >
               <img
-                src={answer.photo}
+                src={currentAnswer.photoUrl}
                 alt="Answer"
                 className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-[1.02]"
               />
@@ -251,24 +188,30 @@ const Answer = () => {
             <Button
               variant="ghost"
               size="sm"
-              className={`px-4 ${answer?.upvotedBy?.includes(userData.uid) ? 'text-[#173f67] dark:text-blue-400' : ''}`}
+              className={`px-4 inline-flex items-center ${currentAnswer?.upvotedBy?.includes(userData.userId) ? 'text-[#173f67] dark:text-blue-400' : ''}`}
               onClick={handleUpvote}
-            >
-              <ThumbsUp className={`w-4 h-4 mr-2 ${answer?.upvotedBy?.includes(userData.uid) ? 'fill-current' : ''} dark:text-[#3f7cc6]`} />
-              <span className='dark:text-[#3f7cc6]'>Upvote</span>
-            </Button>
+              children={
+                <>
+                  <ThumbsUp className={`w-4 h-4 mr-2 ${currentAnswer?.upvotedBy?.includes(userData.userId) ? 'fill-current' : ''} dark:text-[#3f7cc6]`} />
+                  <span className='dark:text-[#3f7cc6]'>Upvote</span>
+                </>
+              }
+            />
             <span className="text-base font-semibold text-[#173f67] dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full">
-              {answer?.upvotes || 0}
+              {currentAnswer?.upvotes || 0}
             </span>
             <Button
               variant="ghost"
               size="sm"
-              className="px-4 dark:text-[#3f7cc6]"
+              className="px-4 inline-flex items-center dark:text-[#3f7cc6]"
               onClick={handleReply}
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              <span>Reply</span>
-            </Button>
+              children={
+                <>
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  <span>Reply</span>
+                </>
+              }
+            />
           </div>
         </div>
 
@@ -285,7 +228,7 @@ const Answer = () => {
       <ImageModal
         isOpen={isImageModalOpen}
         onClose={() => setIsImageModalOpen(false)}
-        imageUrl={answer?.photo}
+        imageUrl={currentAnswer?.photoUrl}
       />
     </div>
   );

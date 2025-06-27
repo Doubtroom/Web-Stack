@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Upload, X, ArrowLeft, Lightbulb } from 'lucide-react';
-import DataService from '../firebase/DataService';
+import { questionServices } from '../services/data.services';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Button from '../components/Button';
 import { toast } from 'sonner';
@@ -20,6 +20,7 @@ const EditQuestion = () => {
   });
   const [previewUrl, setPreviewUrl] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [removePhoto, setRemovePhoto] = useState(false);
 
   const topicSuggestions = [
     "Data Structures",
@@ -83,8 +84,8 @@ const EditQuestion = () => {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-        const dataService = new DataService('questions');
-        const questionData = await dataService.getDocumentById(id);
+        const res = await questionServices.getQuestion(id);
+        const questionData = res.data.question;
         if (questionData) {
           setQuestion(questionData);
           setFormData({
@@ -93,7 +94,7 @@ const EditQuestion = () => {
             branch: questionData.branch || '',
             photo: null
           });
-          setPreviewUrl(questionData.photo || null);
+          setPreviewUrl(questionData.photoUrl || null);
         }
       } catch (error) {
         console.error('Error fetching question:', error);
@@ -104,6 +105,13 @@ const EditQuestion = () => {
 
     fetchQuestion();
   }, [id, navigate]);
+
+  // Scroll to top when loading starts
+  useEffect(() => {
+    if (loading) {
+      window.scrollTo(0, 0);
+    }
+  }, [loading]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -129,27 +137,10 @@ const EditQuestion = () => {
     }
   };
 
-  const removePhoto = async () => {
-    try {
-      if (question.photoId) {
-        const dataService = new DataService('questions');
-        await dataService.deleteImage(question.photoId);
-        
-        // Update the question document to remove photo references
-        await dataService.updateDocument(id, {
-          photo: null,
-          photoId: null,
-          updatedAt: new Date().toISOString()
-        });
-      }
-      setFormData(prev => ({
-        ...prev,
-        photo: null
-      }));
-      setPreviewUrl(null);
-    } catch (error) {
-      console.error('Error removing photo:', error);
-    }
+  const handleRemovePhoto = () => {
+    setPreviewUrl(null);
+    setFormData(prev => ({ ...prev, photo: null }));
+    setRemovePhoto(true);
   };
 
   const handleSuggestionClick = (suggestion) => {
@@ -169,38 +160,18 @@ const EditQuestion = () => {
 
     setLoading(true);
     try {
-      const dataService = new DataService('questions');
-      let photoUrl = question.photo;
-      let photoId = question.photoId;
+      const data = new FormData();
+      data.append('topic', formData.topic.trim());
+      data.append('text', formData.text.trim());
+      data.append('branch', formData.branch.trim());
 
-      // If there's a new photo, delete the old one and upload the new one
       if (formData.photo) {
-        // Delete old photo if it exists
-        if (question.photoId) {
-          try {
-            await dataService.deleteImage(question.photoId);
-          } catch (error) {
-            console.error('Error deleting old image:', error);
-            // Continue with the update even if old image deletion fails
-          }
-        }
-        // Upload new photo
-        const photoData = await dataService.uploadImage(formData.photo);
-        photoUrl = photoData.url;
-        photoId = photoData.fileId;
+        data.append('photo', formData.photo);
+      } else if (removePhoto) {
+        data.append('removePhoto', 'true');
       }
 
-      // Update question document
-      const updatedData = {
-        topic: formData.topic.trim(),
-        text: formData.text.trim(),
-        branch: formData.branch.trim(),
-        photo: photoUrl,
-        photoId: photoId,
-        updatedAt: new Date().toISOString()
-      };
-
-      await dataService.updateDocument(id, updatedData);
+      await questionServices.updateQuestion(id, data);
       toast.success('Question updated successfully!');
       navigate('/my-questions');
     } catch (error) {
@@ -329,19 +300,34 @@ const EditQuestion = () => {
                 Photo (Optional)
               </label>
               {previewUrl ? (
-                <div className="relative">
+                <div className="relative group">
                   <img
                     src={previewUrl}
                     alt="Preview"
                     className="w-full h-48 object-cover rounded-lg"
                   />
-                  <button
-                    type="button"
-                    onClick={removePhoto}
-                    className="absolute top-2 right-2 p-1 bg-white dark:bg-gray-700 rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-600"
-                  >
-                    <X className="w-4 h-4 text-[#173f67] dark:text-gray-200" />
-                  </button>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
+                    <label 
+                      htmlFor="photo-upload" 
+                      className="text-white font-semibold cursor-pointer px-4 py-2 bg-black/50 rounded-md hover:bg-black/70"
+                    >
+                      Change Photo
+                    </label>
+                    <button 
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="text-white font-semibold cursor-pointer px-4 py-2 bg-red-600/80 rounded-md hover:bg-red-700/80 ml-4"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <input
+                    id="photo-upload"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                  />
                 </div>
               ) : (
                 <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-200 dark:border-gray-600 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">

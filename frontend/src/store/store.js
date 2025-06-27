@@ -1,12 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
 import darkModeReducer from './darkModeSlice.js';
 import authReducer from './authSlice.js';
-import profileReducer from './profileSlice';
+import dataReducer from './dataSlice.js';
+import flashcardStatusReducer from './flashcardStatusSlice.js';
 
 export const store = configureStore({
   reducer: {
     darkMode: darkModeReducer,
     auth: authReducer,
-    profile: profileReducer
+    data: dataReducer,
+    flashcardStatus: flashcardStatusReducer,
   },
 }); 

@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { User,Calendar , Building2, GraduationCap, Phone, Briefcase, Mail, Edit2, Save, X, Camera } from 'lucide-react';
 import { toast } from 'sonner';
-import DataService from '../firebase/DataService';
-import userService from '../firebase/UserService';
-import authService from '../firebase/AuthService';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../store/authSlice';
+import { logout, updateProfile } from '../store/authSlice';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Switch } from 'antd';
+import { userServices } from '../services/data.services';
 
 
 const Profile = () => {
+  const userProfile = useSelector((state) => state?.auth?.user);
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
   const [userData, setUserData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -25,32 +25,36 @@ const Profile = () => {
     collegeName: '',
     dob: ''
   });
+
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [features, setFeatures] = useState(userProfile?.features || { flashcards: true });
+  
 
 
   useEffect(() => {
     const fetchUserData = async () => {
+      setLoading(true);
       try {
-        const storedUserData = JSON.parse(localStorage.getItem("userData") || "{}");
-        const dataService = new DataService("users");
-        const userProfile = await dataService.getUserData(storedUserData.uid);
-        
-        if (userProfile) {
-          setUserData(userProfile);
-          setFormData({
-            name: userProfile.name || '',
-            branch: userProfile.branch || '',
-            studyType: userProfile.studyType || '',
-            phone: userProfile.phone || '',
-            gender: userProfile.gender || '',
-            role: userProfile.role || '',
-            collegeName: userProfile.collegeName || '',
-            email: userProfile.email || '',
-            dob: userProfile.dob || ''
-          });
+        if (!userProfile) {
+          toast.error('User profile not found');
+          return;
         }
+
+        setUserData(userProfile);
+        setFormData({
+          name: userProfile.displayName || '',
+          branch: userProfile.branch || '',
+          studyType: userProfile.studyType || '',
+          phone: userProfile.phone || '',
+          gender: userProfile.gender || '',
+          role: userProfile.role || '',
+          collegeName: userProfile.collegeName || '',
+          email: userProfile.email || '',
+          dob: userProfile.dob || ''
+        });
+        setFeatures(userProfile?.features || { flashcards: true });
       } catch (error) {
         console.error('Error fetching user data:', error);
         toast.error('Failed to load profile data');
@@ -60,7 +64,7 @@ const Profile = () => {
     };
 
     fetchUserData();
-  }, []);
+  }, [userProfile]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -71,16 +75,15 @@ const Profile = () => {
   };
 
   const handleLogoutConfirm = async () => {
+    setLoading(true)
     try {
-      await authService.logout();
-      dispatch(logout());
-      localStorage.removeItem('authStatus');
-      localStorage.removeItem('userData');
-      localStorage.setItem('profileCompleted', false);
-      toast.success('Logged out successfully!');
-      navigate('/landing', { state: { fromLogout: true }, replace: true });
+      const result = await dispatch(logout()).unwrap();
+      if (result){
+        toast.success('Logged out successfully!');
+        navigate('/landing', { state: { fromLogout: true }, replace: true });
+      }
     } catch (error) {
-      toast.error('Logout Failed!');
+      toast.error(error || 'Logout failed. Please try again.');
     } finally {
       setShowLogoutConfirm(false);
     }
@@ -90,27 +93,32 @@ const Profile = () => {
     setShowLogoutConfirm(false);
   };
 
+  const handleFeatureToggle = async (feature) => {
+    const newFeatures = { ...features, [feature]: !features[feature] };
+    setFeatures(newFeatures);
+    try {
+      await userServices.updateFeatures(newFeatures);
+      // If turning off the feature, reload the window
+        window.location.reload();
+      // Optionally show a toast for success
+    } catch (error) {
+      setFeatures(features); // revert
+      toast.error('Failed to update features');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      const storedUserData = JSON.parse(localStorage.getItem("userData") || "{}");
-      await userService.saveUserProfile(storedUserData.uid, formData);
-      
-      // Update local storage with new data
-      const updatedUserData = {
-        ...storedUserData,
-        displayName: formData.name,
-        collegeName: formData.collegeName,
-        branch: formData.branch
-      };
-      localStorage.setItem("userData", JSON.stringify(updatedUserData));
-      
-      setUserData(prev => ({ ...prev, ...formData }));
+      await dispatch(updateProfile({ ...formData, features })).unwrap();
       setIsEditing(false);
       toast.success('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      toast.error(error.message || 'Failed to update profile');
+    } finally {
+      setLoading(false);
     }
   };
   const formatBranchName = (branch) => {
@@ -235,14 +243,40 @@ const Profile = () => {
               )}
             </div>
             <div className="text-center sm:text-left">
-              <h1 className="text-2xl sm:text-3xl font-bold">{userData?.name || 'Your Name'}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">{userData?.displayName || 'Your Name'}</h1>
               <p className="text-white/80 text-sm sm:text-base">{userData?.role || 'Role'}</p>
             </div>
           </div>
         </div>
 
-        {/* Profile Content */}
-        <div className={`rounded-b-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+        {/* Features Section */}
+        <div className="w-full flex flex-col gap-2 sm:gap-4 mt-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-200 mt-8 mb-2 sm:mb-4 flex items-center gap-2">
+            <span>Features</span>
+          </h2>
+          <div className={`rounded-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? 'bg-blue-900/60' : 'bg-blue-50'}`}> 
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-semibold text-blue-900 dark:text-blue-200">FlashCards</div>
+                  <div className="text-sm text-blue-800 dark:text-blue-300 opacity-80">Enable active recall and spaced repetition for better learning</div>
+                </div>
+                <Switch
+                  checked={features.flashcards}
+                  onChange={() => handleFeatureToggle('flashcards')}
+                  className={isDarkMode ? 'bg-blue-900' : 'bg-blue-200'}
+                />
+              </div>
+              {/* Add more features here as needed */}
+            </div>
+          </div>
+        </div>
+
+        {/* Personal Details Section */}
+        <h2 className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-200 mt-10 mb-2 sm:mb-4 flex items-center gap-2">
+          <span>Personal Details</span>
+        </h2>
+        <div className={`rounded-b-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}> 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
             <div className="space-y-4 sm:space-y-6">
               <div className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>

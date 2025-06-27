@@ -1,48 +1,37 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { cva } from 'class-variance-authority';
+import { cn } from '../lib/utils'; // Assuming you have a utility for merging class names
 
-const Button = ({ 
-  children, 
-  variant = 'primary', // primary, secondary, outline, ghost
-  size = 'md', // sm, md, lg
-  fullWidth = false,
-  className = '',
-  ...props 
-}) => {
-  const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
-  
-  const baseStyles = 'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2';
-  
-  const variants = {
-    primary: isDarkMode 
-      ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-lg shadow-blue-500/20' 
-      : 'bg-[#173f67] text-white hover:bg-[#1e3c72] focus:ring-[#173f67] shadow-lg shadow-[#173f67]/20',
-    secondary: isDarkMode
-      ? 'bg-gray-700 text-gray-200 hover:bg-gray-600 focus:ring-gray-500'
-      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-400',
-    outline: isDarkMode
-      ? 'bg-transparent text-blue-400 border border-blue-400 hover:bg-blue-400/10 focus:ring-blue-400'
-      : 'bg-transparent text-[#173f67] border border-[#173f67] hover:bg-[#173f67]/10 focus:ring-[#173f67]',
-    ghost: isDarkMode
-      ? 'text-blue-400 hover:bg-blue-400/10 focus:ring-blue-400'
-      : 'text-[#173f67] hover:bg-[#173f67]/10 focus:ring-[#173f67]'
-  };
+const buttonVariants = cva(
+  'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus:outline-none disabled:opacity-50 disabled:pointer-events-none',
+  {
+    variants: {
+      variant: {
+        primary: 'bg-[#173f67] text-white hover:bg-[#14365a] dark:bg-blue-600 dark:hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-[#173f67] dark:focus:ring-blue-500',
+        secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-offset-2 focus:ring-gray-400',
+        outline: 'border border-[#173f67] text-[#173f67] hover:bg-[#173f67] hover:text-white dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-500 dark:hover:text-white focus:ring-2 focus:ring-offset-2 focus:ring-[#173f67] dark:focus:ring-blue-500',
+        ghost: 'hover:bg-gray-100 dark:hover:bg-gray-700',
+        link: 'text-[#173f67] underline-offset-4 hover:underline dark:text-blue-400 focus:ring-2 focus:ring-offset-2 focus:ring-[#173f67] dark:focus:ring-blue-500',
+      },
+      size: {
+        sm: 'h-9 px-3',
+        md: 'h-10 px-4',
+        lg: 'h-11 px-8',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+    },
+  }
+);
 
-  const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base'
-  };
-
-  const width = fullWidth ? 'w-full' : '';
-
+const Button = ({ className, variant, size, ...props }) => {
   return (
     <button
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${width} ${className}`}
+      className={cn(buttonVariants({ variant, size, className }))}
       {...props}
-    >
-      {children}
-    </button>
+    />
   );
 };
 

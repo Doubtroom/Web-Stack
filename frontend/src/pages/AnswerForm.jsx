@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Upload, X } from 'lucide-react';
-import DataService from '../firebase/DataService';
+import { useDispatch } from 'react-redux';
+import { createAnswer, fetchQuestionById } from '../store/dataSlice';
+import { questionServices } from '../services/data.services';
 import { toast } from 'sonner';
 import Button from '../components/Button';
 
 const AnswerForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [question, setQuestion] = useState(null);
@@ -29,19 +32,18 @@ const AnswerForm = () => {
       }
 
       try {
-        const dataService = new DataService('questions');
-        const questionData = await dataService.getDocumentById(id);
+        const questionData = await questionServices.getQuestion(id);
         
-        if (!questionData) {
+        if (!questionData.data) {
           toast.error('Question not found');
           navigate('/');
           return;
         }
         
-        setQuestion(questionData);
+        setQuestion(questionData.data);
       } catch (error) {
         console.error('Error fetching question:', error);
-        toast.error('Failed to fetch question details');
+        toast.error(error.response?.data?.message || 'Failed to fetch question details');
         navigate('/');
       } finally {
         setLoading(false);
@@ -96,47 +98,32 @@ const AnswerForm = () => {
 
     setSubmitting(true);
     try {
-      const dataService = new DataService('answers');
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      
-      // Upload photo if exists
-      let photoUrl = null;
-      let photoId = null;
+      const data = new FormData();
+      if (formData.text.trim()) {
+        data.append('text', formData.text.trim());
+      }
+      data.append('questionId', id);
       if (formData.photo) {
-        const photoData = await dataService.uploadImage(formData.photo);
-        photoUrl = photoData.url;
-        photoId = photoData.fileId;
+        data.append('photo', formData.photo);
       }
 
-      // Create answer document
-      const answerData = {
-        text: formData.text.trim() || null,
-        photo: photoUrl,
-        photoId: photoId,
-        questionId: id,
-        userId: userData.uid,
-        userName: userData.displayName || 'Anonymous',
-        createdAt: new Date().toISOString(),
-        upvotes: 0,
-        upvotedBy: [],
-        replies: [],
-        replyCount: 0,
-        role: userData.role
-      };
-
-      await dataService.addDocument(answerData);
-      
-      // Update answer count in question document
-      const questionService = new DataService('questions');
-      await questionService.updateAnswerCount(id, true);
-      
-      toast.success('Answer posted successfully!');
-      window.scrollTo(0, 0);
-      navigate(`/question/${id}`);
+      dispatch(createAnswer({ formData: data, questionId: id })).unwrap()
+        .then(() => {
+          toast.success('Answer posted successfully!');
+          dispatch(fetchQuestionById(id));
+          window.scrollTo(0, 0);
+          navigate(`/question/${id}`);
+        })
+        .catch((error) => {
+          console.error('Error posting answer:', error);
+          toast.error(error || 'Failed to post answer. Please try again.');
+        })
+        .finally(() => {
+          setSubmitting(false);
+        });
     } catch (error) {
-      console.error('Error posting answer:', error);
-      toast.error('Failed to post answer. Please try again.');
-    } finally {
+      console.error('Error preparing form data:', error);
+      toast.error('An unexpected error occurred. Please try again.');
       setSubmitting(false);
     }
   };

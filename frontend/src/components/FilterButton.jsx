@@ -1,44 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Filter } from 'lucide-react';
-import { Button, styled } from '@mui/material';
-import { motion } from 'framer-motion';
-
-const StyledButton = styled(Button)(({ theme }) => ({
-  borderRadius: '12px',
-  padding: '8px 16px',
-  textTransform: 'none',
-  transition: 'all 0.3s ease-in-out',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '8px',
-  minWidth: '120px',
-  justifyContent: 'center',
-  backdropFilter: 'blur(8px)',
-  '@media (min-width: 640px)': {
-    minWidth: '160px',
-  },
-  '&:hover': {
-    transform: 'translateY(-2px)',
-  },
-}));
-
-const DropdownMenu = styled('div')(({ theme }) => ({
-  position: 'absolute',
-  top: '100%',
-  right: 0,
-  marginTop: '8px',
-  backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : 'white',
-  borderRadius: '12px',
-  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-  padding: '8px',
-  minWidth: '160px',
-  zIndex: 50,
-  border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
-}));
+import { useSelector } from 'react-redux';
 
 const FilterButton = ({ isActive, onClick, activeText, inactiveText }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const dropdownRef = useRef(null);
+  
+  // Get dark mode state from Redux
+  const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -54,6 +25,8 @@ const FilterButton = ({ isActive, onClick, activeText, inactiveText }) => {
   }, []);
 
   const handleButtonClick = () => {
+    setIsPressed(true);
+    setTimeout(() => setIsPressed(false), 150);
     setIsOpen(!isOpen);
   };
 
@@ -62,58 +35,193 @@ const FilterButton = ({ isActive, onClick, activeText, inactiveText }) => {
     setIsOpen(false);
   };
 
+  const buttonStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 18px',
+    borderRadius: '16px',
+    border: '1px solid',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+    minWidth: '140px',
+    justifyContent: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+    transform: isPressed ? 'scale(0.95)' : isHovered ? 'scale(1.02)' : 'scale(1)',
+    ...(isActive ? {
+      backgroundColor: '#3b82f6',
+      color: '#ffffff',
+      borderColor: '#3b82f6',
+      boxShadow: isHovered 
+        ? '0 10px 25px -3px rgba(59, 130, 246, 0.4), 0 4px 6px -2px rgba(59, 130, 246, 0.2)' 
+        : '0 4px 6px -1px rgba(59, 130, 246, 0.2), 0 2px 4px -1px rgba(59, 130, 246, 0.1)'
+    } : {
+      backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+      color: isDarkMode ? '#e5e7eb' : '#374151',
+      borderColor: isDarkMode ? '#374151' : '#d1d5db',
+      boxShadow: isHovered 
+        ? isDarkMode 
+          ? '0 10px 25px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)' 
+          : '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+        : isDarkMode 
+          ? '0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2)' 
+          : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+    })
+  };
+
+  const dropdownStyle = {
+    position: 'absolute',
+    top: '100%',
+    right: 0,
+    marginTop: '8px',
+    backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+    borderRadius: '16px',
+    border: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
+    boxShadow: isDarkMode 
+      ? '0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2)' 
+      : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+    padding: '8px',
+    minWidth: '180px',
+    zIndex: 50,
+    opacity: isOpen ? 1 : 0,
+    transform: isOpen ? 'translateY(0) scale(1)' : 'translateY(-10px) scale(0.95)',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+    backdropFilter: 'blur(10px)',
+    border: isDarkMode ? '1px solid rgba(55, 65, 81, 0.8)' : '1px solid rgba(255, 255, 255, 0.2)'
+  };
+
+  const optionStyle = {
+    width: '100%',
+    textAlign: 'left',
+    padding: '12px 16px',
+    borderRadius: '12px',
+    border: 'none',
+    background: 'none',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500',
+    transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+    position: 'relative',
+    overflow: 'hidden',
+    ...(isActive ? {
+      backgroundColor: isDarkMode ? '#1e3a8a' : '#eff6ff',
+      color: isDarkMode ? '#93c5fd' : '#1d4ed8',
+      boxShadow: isDarkMode 
+        ? '0 1px 3px 0 rgba(59, 130, 246, 0.3)' 
+        : '0 1px 3px 0 rgba(59, 130, 246, 0.1)'
+    } : {
+      color: isDarkMode ? '#e5e7eb' : '#374151'
+    })
+  };
+
+  const rippleStyle = {
+    position: 'absolute',
+    borderRadius: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    transform: 'scale(0)',
+    animation: 'ripple 0.6s linear',
+    pointerEvents: 'none'
+  };
+
+  const createRipple = (event) => {
+    const button = event.currentTarget;
+    const ripple = document.createElement('span');
+    const rect = button.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = event.clientX - rect.left - size / 2;
+    const y = event.clientY - rect.top - size / 2;
+    
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    ripple.style.position = 'absolute';
+    ripple.style.borderRadius = '50%';
+    ripple.style.backgroundColor = isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(255, 255, 255, 0.3)';
+    ripple.style.transform = 'scale(0)';
+    ripple.style.animation = 'ripple 0.6s linear';
+    ripple.style.pointerEvents = 'none';
+    
+    button.appendChild(ripple);
+    
+    setTimeout(() => {
+      ripple.remove();
+    }, 600);
+  };
+
   return (
-    <div className="relative" ref={dropdownRef}>
-      <motion.div
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+    <div style={{ position: 'relative' }} ref={dropdownRef}>
+      <style>
+        {`
+          @keyframes ripple {
+            to {
+              transform: scale(4);
+              opacity: 0;
+            }
+          }
+          @keyframes slideIn {
+            from {
+              opacity: 0;
+              transform: translateY(-10px) scale(0.95);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+            }
+          }
+          @keyframes pulse {
+            0%, 100% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.05);
+            }
+          }
+        `}
+      </style>
+      
+      <button
+        onClick={(e) => {
+          createRipple(e);
+          handleButtonClick();
+        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={buttonStyle}
       >
-        <StyledButton
-          variant={isActive ? "contained" : "outlined"}
-          onClick={handleButtonClick}
-          className={`
-            ${isActive 
-              ? 'bg-primary-600 dark:bg-primary-700 text-white border-primary-600 dark:border-primary-500' 
-              : 'bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700'
-            }
-            hover:bg-primary-700 dark:hover:bg-primary-600
-            hover:border-primary-700 dark:hover:border-primary-500
-            hover:shadow-lg dark:hover:shadow-gray-900/30
-            transition-all duration-300
-            text-sm sm:text-base
-            px-3 sm:px-4
-            py-2 sm:py-2.5
-          `}
-          sx={{
-            '& .MuiSvgIcon-root': {
-              color: isActive 
-                ? 'white' 
-                : 'currentColor',
-            }
+        <Filter 
+          size={16} 
+          style={{
+            transition: 'transform 0.2s ease',
+            transform: isHovered ? 'scale(1.1)' : 'scale(1)'
           }}
-        >
-          <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
-          {isActive ? activeText : inactiveText}
-        </StyledButton>
-      </motion.div>
+        />
+        {isActive ? activeText : inactiveText}
+      </button>
 
       {isOpen && (
-        <DropdownMenu className="dark:bg-gray-800 dark:border-gray-700">
+        <div style={dropdownStyle}>
           <button
             onClick={handleOptionClick}
-            className={`
-              w-full text-left px-3 py-2 rounded-lg text-sm sm:text-base
-              flex items-center gap-2
-              ${isActive 
-                ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' 
-                : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-200'
+            style={optionStyle}
+            onMouseEnter={(e) => {
+              if (!isActive) {
+                e.target.style.backgroundColor = isDarkMode ? '#374151' : '#f8fafc';
+                e.target.style.transform = 'translateX(4px)';
               }
-              transition-colors duration-200
-            `}
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive) {
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.transform = 'translateX(0)';
+              }
+            }}
           >
             {isActive ? inactiveText : activeText}
           </button>
-        </DropdownMenu>
+        </div>
       )}
     </div>
   );
