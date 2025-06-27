@@ -104,7 +104,7 @@ function App() {
           <Route element={<Protected authentication={true} />}>
             <Route element={<Layout />}>
               <Route path="home" element={<Home />} />
-              <Route path="question">
+              <Route path="question"> 
                 <Route path=":id" element={<Question />} />
                 <Route path=":id/edit" element={<EditQuestion />} />
                 <Route path=":id/answer" element={<AnswerForm />} />
