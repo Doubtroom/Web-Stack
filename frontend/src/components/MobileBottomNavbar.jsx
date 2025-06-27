@@ -19,7 +19,7 @@ function MobileBottomNavbar() {
       </NavLink>
       
       <NavLink 
-        to="/my-questions" 
+        to="/my-content" 
         className={({ isActive }) => `flex flex-col items-center justify-center flex-1 py-2 ${
           isActive 
             ? 'text-[#16588E] dark:text-blue-400' 
