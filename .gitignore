@@ -31,4 +31,7 @@ lerna-debug.log*
 
 # OS generated files
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Certs for local HTTPS
+frontend/cert/ 

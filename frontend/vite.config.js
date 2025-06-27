@@ -1,20 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import fs from 'fs';
-
-let httpsConfig = undefined;
-if (process.env.NODE_ENV === 'development') {
-  httpsConfig = {
-    key: fs.readFileSync('./cert/localhost-key.pem'),
-    cert: fs.readFileSync('./cert/localhost.pem'),
-  };
-}
+import fs from 'fs'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
-    https: httpsConfig,
+    https: {
+      key: fs.readFileSync('./cert/localhost-key.pem'),
+      cert: fs.readFileSync('./cert/localhost-cert.pem'),
+    },
     port: 3001,
   },
   build: {
