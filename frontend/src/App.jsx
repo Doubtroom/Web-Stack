@@ -30,6 +30,27 @@ import ProfileCompletionDialog from './components/ProfileCompletionDialog';
 import FlashCardsPage from './pages/FlashCardsPage';
 import Promotion from './pages/Promotion';
 
+
+(function deleteStaleLocalStorage(){
+  let removed = false;
+  if (localStorage.getItem(localStorageCleanupDone)===true && (localStorage.getItem('authStatus') || localStorage.getItem('profileCompleted') || localStorage.getItem('userData'))) {
+    localStorage.removeItem('authStatus');
+    localStorage.removeItem('profileCompleted');
+    localStorage.removeItem('userData');
+    removed = true;
+  }
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('firebase:authUser')) {
+      localStorage.removeItem(key);
+      removed = true;
+    }
+  });
+  
+  if (removed && !localStorage.getItem('localStorageCleanupDone')) {
+    localStorage.setItem('localStorageCleanupDone', 'true');
+  }
+})()
+
 // Root path redirect component
 function RootRedirect() {
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
