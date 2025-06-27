@@ -11,7 +11,7 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import UserInfoForm from './pages/UserInfoForm';
 import LandingPage from './pages/LandingPage';
-import MyQuestions from './pages/MyQuestions';
+import MyQuestions from './pages/MyContent';
 import MyCollege from './pages/MyCollege';
 import Profile from './pages/Profile';
 import SearchResults from './pages/SearchResults';
@@ -112,7 +112,7 @@ function App() {
               </Route>
               <Route path="answer/:id/edit" element={<EditAnswer />} />
               <Route path="ask-question" element={<AskQuestion />} />
-              <Route path="my-questions" element={<MyQuestions />} />
+              <Route path="my-content" element={<MyQuestions />} />
               <Route path="flashcards" >
                 <Route index element={<FlashCardsPage />} />
                 <Route path=":cardIndex" element={<FlashCardsPage />} />

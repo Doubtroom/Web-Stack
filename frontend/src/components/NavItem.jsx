@@ -3,13 +3,12 @@ import { NavLink, useLocation } from "react-router-dom";
 
 const NavItem = ({ icon, label, classNames = "", color = "white", onClick, to }) => {
   const location = useLocation();
-  const isActive = location.pathname === to;
+  const isActive = location.pathname === to || location.pathname.includes(to);
   
   return (
     <NavLink 
       to={to} 
-      className={({ isActive }) => `
-        flex items-center text-sm text-${color} 
+      className={({ isActive }) => `        flex items-center text-sm text-${color} 
         hover:bg-gray-100 lg:hover:bg-transparent lg:hover:text-gray-200\
         hover:text-amber-100 dark:hover:text-blue-400
         ${classNames} cursor-pointer p-1 relative group overflow-hidden

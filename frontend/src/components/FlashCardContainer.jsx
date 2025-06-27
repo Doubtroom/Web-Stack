@@ -16,16 +16,12 @@ const FlashCardContainer = () => {
   const [showNextDuePrompt, setShowNextDuePrompt] = useState(false);
   const [nextDueIndex, setNextDueIndex] = useState(null);
 
-  // useEffect(()=>{
-  //   console.log(cards)
-  // },[cards])
 
   useEffect(() => {
     const fetchFlashcards = async () => {
       try {
         setLoading(true);
         const response = await flashcardServices.getAll();
-        console.log(response)
         setCards(response.data.flashcards);
         setError(null);
       } catch (err) {

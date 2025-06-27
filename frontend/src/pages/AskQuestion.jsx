@@ -451,7 +451,7 @@ const AskQuestion = () => {
         setSelectedTopics([]);
         
         toast.success('Question submitted successfully!');
-        navigate('/my-questions');
+        navigate('/my-content');
       } else {
         throw new Error(resultAction.payload || 'Failed to submit question');
       }

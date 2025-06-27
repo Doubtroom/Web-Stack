@@ -2,7 +2,8 @@ import React, { useState, useRef, useLayoutEffect, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { flashcardServices } from '../services/data.services';
 import { toast } from 'sonner';
-import { Button, Card, Modal, ConfigProvider, theme } from 'antd';
+import { Button, Modal, ConfigProvider, theme } from 'antd';
+import FlashCardBlank from './FlashCardBlank';
 
 const FlashCard = ({ questionId, questionText, questionImage, answer, answerImage, difficulty, onRate }) => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -68,16 +69,9 @@ const FlashCard = ({ questionId, questionText, questionImage, answer, answerImag
   };
 
   const renderCardContent = (content) => (
-    <div className="w-full h-full rounded-2xl overflow-visible border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-[0_8px_32px_rgba(0,0,0,0.22)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.28)]  transition-all duration-300">
-      <Card
-        className="w-full h-full rounded-2xl !bg-transparent shadow-none border-none"
-        styles={{ body: { padding: 24, height: '100%' } }}
-      >
-        <div className="flex flex-col h-full justify-between items-center rounded-2xl">
-          {content}
-        </div>
-      </Card>
-    </div>
+    <FlashCardBlank>
+      {content}
+    </FlashCardBlank>
   );
 
   const showRatingButtons = difficulty === null || isEditing;
@@ -96,7 +90,7 @@ const FlashCard = ({ questionId, questionText, questionImage, answer, answerImag
                 {questionImage && <img src={questionImage} alt="Question" className="max-w-full max-h-32 rounded-lg object-contain mb-4 cursor-pointer" onClick={() => showModal(questionText, questionImage)} />}
                 {questionText && (
                   <div className="relative w-full">
-                    <p ref={questionTextRef} className="text-xl font-semibold dark:text-gray-100 break-words" style={{ maxHeight: questionImage ? '3rem' : '5.25rem', overflowY: 'hidden' }}>
+                    <p ref={questionTextRef} className="text-xl text-black font-semibold dark:text-gray-100 break-words" style={{ maxHeight: questionImage ? '3rem' : '5.25rem', overflowY: 'hidden' }}>
                       {questionText}
                     </p>
                     {isQuestionOverflowing && (
@@ -116,21 +110,21 @@ const FlashCard = ({ questionId, questionText, questionImage, answer, answerImag
                         <Button 
                             disabled={isSubmitting} 
                             onClick={() => handleRating('hard')} 
-                            className="!bg-red-100/70 !text-red-700 !font-bold !rounded-full !shadow-[0_0_12px_2px_rgba(239,68,68,0.10)] hover:!bg-red-200/80 hover:!shadow-[0_0_24px_4px_rgba(239,68,68,0.18)] hover:scale-105 transition-all border-none px-6 py-2"
+                            className="!bg-red-100/70 !text-red-700 !font-bold !rounded-full hover:!bg-red-200/80 hover:scale-105 transition-all border-none px-6 py-2"
                         >
                             Hard
                         </Button>
                         <Button
                             disabled={isSubmitting}
                             onClick={() => handleRating('medium')}
-                            className="!bg-amber-100/70 !text-amber-700 !font-bold !rounded-full !shadow-[0_0_12px_2px_rgba(251,191,36,0.10)] hover:!bg-amber-200/80 hover:!shadow-[0_0_24px_4px_rgba(251,191,36,0.18)] hover:scale-105 transition-all border-none px-6 py-2"
+                            className="!bg-amber-100/70 !text-amber-700 !font-bold !rounded-full hover:!bg-amber-200/80 hover:scale-105 transition-all border-none px-6 py-2"
                         >
                             Medium
                         </Button>
                         <Button
                             disabled={isSubmitting}
                             onClick={() => handleRating('easy')}
-                            className="!bg-emerald-100/70 !text-emerald-700 !font-bold !rounded-full !shadow-[0_0_12px_2px_rgba(16,185,129,0.10)] hover:!bg-emerald-200/80 hover:!shadow-[0_0_24px_4px_rgba(16,185,129,0.18)] hover:scale-105 transition-all border-none px-6 py-2"
+                            className="!bg-emerald-100/70 !text-emerald-700 !font-bold !rounded-full hover:!bg-emerald-200/80 hover:scale-105 transition-all border-none px-6 py-2"
                         >
                             Easy
                         </Button>
@@ -162,7 +156,7 @@ const FlashCard = ({ questionId, questionText, questionImage, answer, answerImag
               <div className="text-center flex-grow flex flex-col justify-center items-center w-full overflow-hidden">
                 {answerImage && <img src={answerImage} alt="Answer" className="max-w-full max-h-32 rounded-lg object-contain mb-4 cursor-pointer" onClick={() => showModal(answer, answerImage)} />}
                 <div className="relative w-full">
-                  <p ref={answerTextRef} className="text-xl font-medium dark:text-gray-100 break-words" style={{ maxHeight: '8.75rem', overflowY: 'hidden' }}>
+                  <p ref={answerTextRef} className="text-xl text-black font-medium dark:text-gray-100 break-words" style={{ maxHeight: '8.75rem', overflowY: 'hidden' }}>
                     {answer}
                   </p>
                   {isAnswerOverflowing && (

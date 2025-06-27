@@ -119,7 +119,6 @@ function Protected({ children, authentication = false }) {
 
                     // Only redirect from complete-profile if user has completed profile
                     if (hasAllDetails && location.pathname === '/complete-profile') {
-                        console.log("hi1")
                         navigate('/home', { replace: true });
                         return;
                     }
@@ -128,7 +127,6 @@ function Protected({ children, authentication = false }) {
                 else {
                     const publicRoutes = ['/login', '/signup', '/landing'];
                     if (isAuthenticated && hasAllDetails && publicRoutes.includes(location.pathname)) {
-                        console.log("hi2")
                         navigate('/home', { replace: true });
                         return;
                     }

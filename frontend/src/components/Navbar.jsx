@@ -32,6 +32,7 @@ const Navbar = () => {
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
   const searchRef = useRef(null);
+  const mobileMenuRef = useRef(null);
   const user = useSelector(state => state.auth.user);
 
   const handleLogoutClick = () => {
@@ -58,6 +59,7 @@ const Navbar = () => {
 
   const handleScroll = () => {
     const currentScrollY = window.scrollY;
+    setIsOpen(false);
     
     // Show navbar when scrolling up or at the top
     if (currentScrollY < lastScrollY || currentScrollY < 50) {
@@ -96,6 +98,9 @@ const Navbar = () => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowSearchDropdown(false);
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+        setIsOpen(false);
       }
     };
 
@@ -181,7 +186,7 @@ const Navbar = () => {
         <div className="hidden lg:flex items-center space-x-6">
           <SliderSwitch/>
           <NavItem to='/home' icon={<Home className="w-4 h-4" />} label="Home" />
-          <NavItem to="/my-questions" icon={<HelpCircle className="w-4 h-4" />} label="My Content" />
+          <NavItem to="/my-content" icon={<HelpCircle className="w-4 h-4" />} label="My Content" />
           <NavItem to="/flashcards" icon={<Layers className="w-4 h-4" />} label="Flashcards" />
           <NavItem to="/my-college" icon={<School className="w-4 h-4" />} label="My College" />
           
@@ -201,12 +206,16 @@ const Navbar = () => {
         {/* Mobile Menu Items */}
         <div className="lg:hidden flex items-center gap-4 sm:gap-4">
           <SliderSwitch />
-          <div className="relative">
+          <div className="relative" ref={mobileMenuRef}>
             <button 
               onClick={() => setIsOpen(!isOpen)}
-              className="w-9 h-9 sm:w-9 sm:h-9 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer"
+              className={`group w-9 h-9 sm:w-9 sm:h-9 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
+                isOpen
+                  ? 'ring-2 dark:ring-blue-400 ring-gray-600 bg-amber-100 dark:bg-gray-700'
+                  : 'bg-gray-200 dark:bg-gray-700 hover:ring-2 hover:ring-gray-600 dark:hover:ring-blue-300'
+              }`}
             >
-              <User className="w-5 h-5 sm:w-5 sm:h-5 text-black" />
+              <User className={`w-5 h-5 sm:w-5 sm:h-5 group-hover:dark:text-blue-400 ${isOpen ? 'dark:text-blue-400 text-gray-600' : 'text-gray-600 dark:text-gray-300'}`} />
             </button>
             
             {/* Mobile User Menu */}

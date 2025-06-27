@@ -16,7 +16,7 @@ const MyCollegeSkeleton = () => {
             </div>
             {/* Mobile Filter Button Skeleton */}
             <div className="sm:hidden">
-              <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-32 animate-pulse" />
+              <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-12 animate-pulse" />
             </div>
           </div>
           {/* Desktop Filter Button Skeleton */}
