@@ -304,42 +304,29 @@ export const upvoteAnswer = async (req, res) => {
             return res.status(404).json({ message: 'Answer not found' });
         }
 
-        const upvotedIndex = answer.upvotedBy.findIndex(upvoterId => upvoterId.equals(userId));
+        const hasUpvoted = answer.upvotedBy.includes(userId);
 
-        let updatedAnswer;
+        const update = hasUpvoted
+            ? { $pull: { upvotedBy: userId }, $inc: { upvotes: -1 } }
+            : { $addToSet: { upvotedBy: userId }, $inc: { upvotes: 1 } };
 
-        if (upvotedIndex === -1) {
-            // User has not upvoted yet, so upvote
-            updatedAnswer = await Answers.findByIdAndUpdate(
-                answerId,
-                { 
-                    $inc: { upvotes: 1 }, 
-                    $addToSet: { upvotedBy: userId } 
-                },
-                { new: true }
-            ).populate('postedBy', 'displayName collegeName role _id');
-        } else {
-            // User has already upvoted, so remove upvote
-            updatedAnswer = await Answers.findByIdAndUpdate(
-                answerId,
-                { 
-                    $inc: { upvotes: -1 }, 
-                    $pull: { upvotedBy: userId } 
-                },
-                { new: true }
-            ).populate('postedBy', 'displayName collegeName role _id');
-        }
+        const updatedAnswer = await Answers.findByIdAndUpdate(
+            answerId,
+            update,
+            { new: true }
+        ).populate('postedBy', 'displayName collegeName role _id');
 
         res.json({
-            message: 'Upvote status updated successfully',
+            message: hasUpvoted ? 'Upvote removed' : 'Upvoted successfully',
             answer: updatedAnswer
         });
 
     } catch (error) {
-        console.error('Error upvoting answer:', error);
+        console.error('Error toggling upvote:', error);
         res.status(500).json({
-            message: 'Error upvoting answer',
+            message: 'Error toggling upvote',
             error: error.message
         });
     }
 };
+
