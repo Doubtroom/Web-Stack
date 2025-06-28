@@ -105,8 +105,20 @@ export const login=async(req,res)=>{
         const user=await User.findOne({email})
         if(!user) return res.status(400).json({message:"User not found"})
         
-        const match=await bcrypt.compare(password,user.password)
-        if(!match) return res.status(400).json({message:"Invalid password"})
+        // Check if user needs password migration
+        if (user.isMigrated && user.password.startsWith('FIREBASE_MIGRATED')) {
+            // This is a migrated user with temporary password, update with new password
+            const hashedPassword = await bcrypt.hash(password, 12)
+            user.password = hashedPassword
+            user.isMigrated = false // Mark migration as complete
+            await user.save()
+            
+            // Continue with normal authentication flow
+        } else {
+            // Normal password verification
+            const match=await bcrypt.compare(password,user.password)
+            if(!match) return res.status(400).json({message:"Invalid password"})
+        }
 
         const accessToken = jwt.sign(
             {id: user._id, email: user.email},
