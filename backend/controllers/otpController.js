@@ -17,6 +17,10 @@ export const sendOtp = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if(user.isVerified){
+      return res.status(401).json({message:"User is already verified"})
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000);
     const expiresAt = new Date(Date.now() + 5 * 60000);
 
@@ -54,11 +58,16 @@ export const verifyOtp = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if(user.isVerified){
+      return res.status(401).json({message:"User is already verified"})
+    }
+
     if (
       !user.otp ||
       !user.otp.code ||
       new Date() > new Date(user.otp.expiresAt)
     ) {
+      user.otp.code=null
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 

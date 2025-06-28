@@ -97,7 +97,6 @@ export const login=async(req,res)=>{
                             isAuthenticated: true
                         })
                     } catch (refreshError) {
-                        // If both tokens are invalid, proceed with login
                     }
                 }
             }
