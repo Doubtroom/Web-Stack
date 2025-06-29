@@ -7,6 +7,7 @@ import { logout, updateProfile } from '../store/authSlice';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Switch } from 'antd';
 import { userServices } from '../services/data.services';
+import LogoutLoader from '../components/LogoutLoader'
 
 
 const Profile = () => {
@@ -15,6 +16,7 @@ const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loading2, setLoading2] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     branch: '',
@@ -38,7 +40,7 @@ const Profile = () => {
       setLoading(true);
       try {
         if (!userProfile) {
-          toast.error('User profile not found');
+          console.error('User profile not found');
           return;
         }
 
@@ -75,7 +77,7 @@ const Profile = () => {
   };
 
   const handleLogoutConfirm = async () => {
-    setLoading(true)
+    setLoading2(true)
     try {
       const result = await dispatch(logout()).unwrap();
       if (result){
@@ -144,6 +146,12 @@ const Profile = () => {
       <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
+    );
+  }
+
+  if (loading2) {
+    return (
+        <LogoutLoader/>
     );
   }
 

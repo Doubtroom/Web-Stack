@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { login, logout, sendOtp,setOtpSent } from '../store/authSlice';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle } from 'lucide-react';
-import LoadingSpinner from "../components/LoadingSpinner.jsx"
+import LogoutLoader from '../components/LogoutLoader'
 
 const VerificationPrompt = ({ isOpen, onLogout, onVerify }) => {
     return (
@@ -102,7 +102,7 @@ const VerificationPage = () => {
       }
   };
   if(isLoading){
-        return <LoadingSpinner fullScreen />;
+        return <LogoutLoader fullScreen />;
     
   }
   return (

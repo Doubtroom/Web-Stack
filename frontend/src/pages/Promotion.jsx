@@ -33,7 +33,7 @@ const features = [
 
 const heroImg = 'https://doubtroom.sirv.com/Doubtroom/Flash%20Cards.png';
 const journeyImg = 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80';
-const memoryImg = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80';
+const forgettingCurveImg = 'https://www.growthengineering.co.uk/wp-content/uploads/2016/09/combating-the-forgetting-curve.png';
 
 const Promotion = () => {
   return (
@@ -75,7 +75,7 @@ const Promotion = () => {
           <span className="font-semibold text-purple-600 dark:text-purple-300">Spaced repetition</span> leverages your brain's natural forgetting curve, helping you remember more with less effort.
         </p>
         <motion.img
-          src={memoryImg}
+          src={forgettingCurveImg}
           alt="Memory science"
           className="mx-auto rounded-xl shadow-xl w-full max-w-md mb-4 object-cover"
           initial={{ scale: 0.95, opacity: 0 }}
@@ -156,10 +156,7 @@ const Promotion = () => {
             Try FlashCards Now
           </button>
         </Link>
-        <p className="text-gray-500 dark:text-gray-400 max-w-xl text-center text-base">
-          <Smile className="inline w-5 h-5 mr-1 text-yellow-400 align-middle" />
-          Learning that sticks. Results that last.
-        </p>
+
       </motion.div>
     </div>
   );

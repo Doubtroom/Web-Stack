@@ -20,6 +20,12 @@ const api = axios.create({
 // Remove the question cache
 // const questionCache = new Map();
 
+// Add request deduplication tracking
+const pendingUpvotes = new Map();
+
+// Simple, robust upvote state management
+const upvoteState = new Map();
+
 // Async thunks for Questions
 export const fetchQuestions = createAsyncThunk(
   'data/fetchQuestions',
@@ -190,11 +196,30 @@ export const fetchHomeQuestions = createAsyncThunk(
 
 export const upvoteAnswer = createAsyncThunk(
   'data/upvoteAnswer',
-  async ({ answerId }, { rejectWithValue }) => {
+  async ({ answerId, userId }, { rejectWithValue }) => {
+    // Check if there's already a request in progress for this answer-user combination
+    const key = `${answerId}-${userId}`;
+    if (upvoteState.has(key)) {
+      throw new Error('Request already in progress');
+    }
+
     try {
+      // Mark this combination as in progress
+      upvoteState.set(key, true);
+      
       const response = await answerServices.upvoteAnswer(answerId);
-      return response.data.answer;
+      
+      // Clear the state
+      upvoteState.delete(key);
+      
+      return {
+        answer: response.data.answer,
+        userId,
+        answerId
+      };
     } catch (error) {
+      // Clear the state on error
+      upvoteState.delete(key);
       return rejectWithValue(error.response?.data?.message || 'Failed to update upvote');
     }
   }
@@ -259,6 +284,17 @@ export const deleteAnswer = createAsyncThunk(
     }
   }
 );
+
+// Simple upvote action - no debouncing, just immediate API call
+export const simpleUpvote = (answerId, userId) => async (dispatch) => {
+  try {
+    await dispatch(upvoteAnswer({ answerId, userId })).unwrap();
+  } catch (error) {
+    if (error !== 'Request already in progress') {
+      throw error;
+    }
+  }
+};
 
 // Initial state
 const initialState = {
@@ -501,67 +537,81 @@ const dataSlice = createSlice({
       .addCase(upvoteAnswer.pending, (state, action) => {
         const { answerId, userId } = action.meta.arg;
         
+        // Find the answer to update
         const answersToUpdate = [];
         const answerInList = state.answers.find((a) => a._id === answerId);
         if (answerInList) {
-          answersToUpdate.push(answerInList);
+          answersToUpdate.push({ answer: answerInList, type: 'list' });
         }
         if (state.currentAnswer && state.currentAnswer._id === answerId) {
-          answersToUpdate.push(state.currentAnswer);
+          answersToUpdate.push({ answer: state.currentAnswer, type: 'current' });
         }
 
-        answersToUpdate.forEach(answer => {
+        // Apply optimistic update
+        answersToUpdate.forEach(({ answer, type }) => {
           if (answer) {
-            const upvotedIndex = answer.upvotedBy.indexOf(userId);
-            if (upvotedIndex === -1) {
+            // Store original state for rollback
+            if (!answer._originalUpvoteState) {
+              answer._originalUpvoteState = {
+                upvotes: answer.upvotes,
+                upvotedBy: [...answer.upvotedBy]
+              };
+            }
+            
+            const isUpvoted = answer.upvotedBy.includes(userId);
+            if (isUpvoted) {
+              // Remove upvote
+              const index = answer.upvotedBy.indexOf(userId);
+              if (index > -1) {
+                answer.upvotedBy.splice(index, 1);
+                answer.upvotes -= 1;
+              }
+            } else {
+              // Add upvote
               answer.upvotedBy.push(userId);
               answer.upvotes += 1;
-            } else {
-              answer.upvotedBy.splice(upvotedIndex, 1);
-              answer.upvotes -= 1;
             }
           }
         });
       })
       .addCase(upvoteAnswer.fulfilled, (state, action) => {
-        const updatedAnswer = action.payload;
+        const { answer: updatedAnswer, userId, answerId } = action.payload;
+        
+        // Update answers list
         const answerIndex = state.answers.findIndex(
-          (answer) => answer._id === updatedAnswer._id
+          (answer) => answer._id === answerId
         );
         if (answerIndex !== -1) {
+          // Remove optimistic state and apply server response
+          delete state.answers[answerIndex]._originalUpvoteState;
           state.answers[answerIndex] = updatedAnswer;
         }
-        if (state.currentAnswer && state.currentAnswer._id === updatedAnswer._id) {
+        
+        // Update current answer if it's the same
+        if (state.currentAnswer && state.currentAnswer._id === answerId) {
+          delete state.currentAnswer._originalUpvoteState;
           state.currentAnswer = updatedAnswer;
         }
       })
       .addCase(upvoteAnswer.rejected, (state, action) => {
         const { answerId, userId } = action.meta.arg;
 
+        // Rollback optimistic updates
         const answersToRevert = [];
         const answerInList = state.answers.find((a) => a._id === answerId);
         if (answerInList) {
-          answersToRevert.push(answerInList);
+          answersToRevert.push({ answer: answerInList, type: 'list' });
         }
         if (state.currentAnswer && state.currentAnswer._id === answerId) {
-          answersToRevert.push(state.currentAnswer);
+          answersToRevert.push({ answer: state.currentAnswer, type: 'current' });
         }
 
-        answersToRevert.forEach(answer => {
-          if (answer) {
-            const upvotedIndex = answer.upvotedBy.indexOf(userId);
-            if (upvotedIndex === -1) {
-              // This case should not happen if logic is correct, but for safety
-              const userIndex = answer.upvotedBy.indexOf(userId);
-              if (userIndex > -1) {
-                answer.upvotedBy.splice(userIndex, 1);
-                answer.upvotes -= 1;
-              }
-            } else {
-              // It was added, so remove it
-              answer.upvotedBy.splice(upvotedIndex, 1);
-              answer.upvotes -= 1;
-            }
+        answersToRevert.forEach(({ answer, type }) => {
+          if (answer && answer._originalUpvoteState) {
+            // Restore original state
+            answer.upvotes = answer._originalUpvoteState.upvotes;
+            answer.upvotedBy = answer._originalUpvoteState.upvotedBy;
+            delete answer._originalUpvoteState;
           }
         });
         

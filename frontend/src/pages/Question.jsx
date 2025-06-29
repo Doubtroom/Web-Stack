@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MessageSquare, ThumbsUp, Clock, Maximize2, Edit2, Trash2, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MessageSquare, Clock, Maximize2, Edit2, Trash2, MoreVertical } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAnswers, fetchQuestionById, upvoteAnswer } from '../store/dataSlice';
+import { fetchAnswers, fetchQuestionById } from '../store/dataSlice';
 import LoadingSpinner from '../components/LoadingSpinner';
 import QuestionSkeleton from '../components/QuestionSkeleton';
 import Button from '../components/Button';
@@ -10,18 +10,20 @@ import { toast } from 'sonner';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import ImageModal from '../components/ImageModal';
 import AnswerSkeleton from '../components/AnswerSkeleton';
+import AnswerCard from '../components/AnswerCard';
+import { useSmartUpvote } from '../hooks/useSmartUpvote';
 
 const Question = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { handleUpvote, userData } = useSmartUpvote();
   const [showOptions, setShowOptions] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [page, setPage] = useState(1);
   const [isFetching, setIsFetching] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const userData = useSelector((state) => state?.auth?.user);
   const { currentQuestion, answers, loading, error, answersPagination } = useSelector((state) => state.data);
 
   const fetchData = useCallback(async (cursor = null) => {
@@ -108,24 +110,16 @@ const Question = () => {
     navigate(`/question/${id}/edit`);
   };
 
-  const handleUpvote = async (answerId) => {
-    try {
-      const userId = userData?.userId;
-      
-      if (!userId) {
-        toast.error('Please login to upvote');
-        return;
-      }
-      
-      await dispatch(upvoteAnswer({ answerId, userId })).unwrap();
-    } catch (error) {
-      console.error('Error updating upvote:', error);
-      toast.error(error || 'Failed to update upvote. Please try again.');
-    }
-  };
-
   const handleReply = (answerId) => {
     navigate(`/question/${id}/answer/${answerId}?scroll=comments`);
+  };
+
+  const handleAnswerCardClick = (answerId) => {
+    navigate(`/question/${id}/answer/${answerId}`);
+  };
+
+  const handleImageClick = (imageUrl) => {
+    setSelectedImage(imageUrl);
   };
 
   const formatTimeAgo = (dateString) => {
@@ -294,94 +288,16 @@ const Question = () => {
           ) : (
             <div className="space-y-8 flex flex-col gap-10">
               {answers.map((answer, index) => (
-                <div 
-                  key={answer._id || `answer-${index}`} 
-                  className="group bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer border border-gray-100 dark:border-gray-600 flex flex-col relative"
-                  onClick={() => navigate(`/question/${id}/answer/${answer._id}`)}
-                >
-                  {/* Answer Number */}
-                  <div className="absolute -left-3 -top-3 w-6 h-6 bg-blue-800 dark:bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-medium">
-                    {index + 1}
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-gray-800 dark:text-white">
-                            {answer.role === 'faculty'|| answer.role === 'faculty(Phd)' ?answer.userName:'Anonymous'}
-                          </h3>
-                          {answer.role === 'faculty'|| answer.role === 'faculty(Phd)' && (
-                            <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
-                              {answer.role === 'faculty' ? 'Faculty' : 'Faculty (Phd)'}
-                            </span>
-                          )}
-                          {answer.collegeName && (
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              answer.collegeName === userData.collegeName
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
-                            }`}>
-                              {answer.collegeName === userData.collegeName ? 'My College' : 'Other College'}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">{formatTimeAgo(answer.createdAt)}</span>
-                      </div>
-                    </div>
-                    <p className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-2">{answer.text}</p>
-                    {answer.photoUrl && (
-                      <div 
-                        className="mt-4 rounded-lg overflow-hidden w-full h-32 relative group cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedImage(answer.photoUrl);
-                        }}
-                      >
-                        <img
-                          src={answer.photoUrl}
-                          alt="Answer"
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                        />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                          <Maximize2 className="w-6 h-6 text-white" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-4 mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={`px-3 inline-flex items-center ${answer.upvotedBy?.includes(userData.userId) ? 'text-[#173f67] dark:text-blue-400' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUpvote(answer._id);
-                        }}
-                        children={
-                          <>
-                            <ThumbsUp className={`w-4 h-4 mr-1 ${answer.upvotedBy?.includes(userData.userId) ? 'fill-current' : ''} dark:text-[#3f7cc6]`} />
-                            <span className='dark:text-[#3f7cc6]'>Upvote</span>
-                          </>
-                        }
-                      />
-                      <span className="text-base font-semibold text-[#173f67] dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full">
-                        {answer.upvotes || 0}
-                      </span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="px-3 dark:text-[#3f7cc6]"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleReply(answer._id);
-                      }}
-                      children="Reply"
-                    />
-                  </div>
-                </div>
+                <AnswerCard
+                  key={answer._id || `answer-${index}`}
+                  answer={answer}
+                  index={index}
+                  userData={userData}
+                  onUpvote={handleUpvote}
+                  onReply={handleReply}
+                  onImageClick={handleImageClick}
+                  onCardClick={() => handleAnswerCardClick(answer._id)}
+                />
               ))}
 
               {/* Loading indicator at the bottom */}

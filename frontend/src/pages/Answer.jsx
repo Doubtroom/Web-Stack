@@ -2,22 +2,24 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { MessageSquare, ThumbsUp, Clock, ArrowLeft, ZoomIn } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAnswerById, upvoteAnswer } from '../store/dataSlice';
+import { fetchAnswerById } from '../store/dataSlice';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Button from '../components/Button';
 import { toast } from 'sonner';
 import CommentSection from '../components/CommentSection';
 import ImageModal from '../components/ImageModal';
+import { useSmartUpvote } from '../hooks/useSmartUpvote';
 
 const Answer = () => {
   const { questionId, answerId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { handleUpvote, userData } = useSmartUpvote();
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isUpvoting, setIsUpvoting] = useState(false);
   const commentSectionRef = useRef(null);
   
-  const userData = useSelector((state) => state?.auth?.user);
   const { currentAnswer, currentQuestion, loading, error } = useSelector((state) => state.data);
 
   useEffect(() => {
@@ -64,22 +66,6 @@ const Answer = () => {
     navigate(`/question/${qId}`);
   };
 
-  const handleUpvote = async () => {
-    try {
-      const userId = userData?.userId;
-      
-      if (!userId) {
-        toast.error('Please login to upvote');
-        return;
-      }
-      
-      await dispatch(upvoteAnswer({ answerId, userId })).unwrap();
-    } catch (error) {
-      console.error('Error updating upvote:', error);
-      toast.error(error || 'Failed to update upvote. Please try again.');
-    }
-  };
-
   const handleReply = () => {
     commentSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -93,6 +79,17 @@ const Answer = () => {
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} mins ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hrs ago`;
     return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  };
+
+  const handleUpvoteClick = async () => {
+    if (isUpvoting) return;
+    
+    setIsUpvoting(true);
+    try {
+      await handleUpvote(answerId);
+    } finally {
+      setIsUpvoting(false);
+    }
   };
 
   if (loading && !currentAnswer) {
@@ -126,8 +123,8 @@ const Answer = () => {
           onClick={handleBackToQuestion}
           children={
             <>
-              <ArrowLeft className="w-4 h-4 mr-2 dark:text-[#3f7cc6]" />
-              <span className='dark:text-[#3f7cc6]'>
+              <ArrowLeft className="w-4 h-4 mr-2 text-[#173f67] dark:text-[#3f7cc6]" />
+              <span className='text-[#173f67] dark:text-[#3f7cc6]'>
                 Back to Question
               </span>
             </>
@@ -186,24 +183,31 @@ const Answer = () => {
 
           <div className="flex items-center gap-2">
             <Button
+              disabled={isUpvoting}
               variant="ghost"
               size="sm"
-              className={`px-4 inline-flex items-center ${currentAnswer?.upvotedBy?.includes(userData.userId) ? 'text-[#173f67] dark:text-blue-400' : ''}`}
-              onClick={handleUpvote}
+              className={`px-4 inline-flex items-center transition-all duration-200 ${
+                currentAnswer?.upvotedBy?.includes(userData.userId) ? 'text-[#173f67] dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'
+              } ${isUpvoting ? 'opacity-50 cursor-not-allowed' : 'hover:text-[#173f67] dark:hover:text-blue-400 hover:scale-105 active:scale-95'}`}
+              onClick={handleUpvoteClick}
               children={
                 <>
-                  <ThumbsUp className={`w-4 h-4 mr-2 ${currentAnswer?.upvotedBy?.includes(userData.userId) ? 'fill-current' : ''} dark:text-[#3f7cc6]`} />
-                  <span className='dark:text-[#3f7cc6]'>Upvote</span>
+                  <ThumbsUp className={`w-4 h-4 mr-2 transition-all duration-200 ${
+                    currentAnswer?.upvotedBy?.includes(userData.userId) ? 'fill-current' : ''
+                  } text-[#173f67] dark:text-[#3f7cc6] ${isUpvoting ? 'animate-pulse' : ''}`} />
+                  <span className='text-[#173f67] dark:text-[#3f7cc6]'>
+                    {isUpvoting ? 'Updating...' : 'Upvote'}
+                  </span>
                 </>
               }
             />
-            <span className="text-base font-semibold text-[#173f67] dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full">
+            <span className="text-base font-semibold text-[#173f67] dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full transition-all duration-200">
               {currentAnswer?.upvotes || 0}
             </span>
             <Button
               variant="ghost"
               size="sm"
-              className="px-4 inline-flex items-center dark:text-[#3f7cc6]"
+              className="px-4 inline-flex items-center text-[#173f67] dark:text-[#3f7cc6]"
               onClick={handleReply}
               children={
                 <>
