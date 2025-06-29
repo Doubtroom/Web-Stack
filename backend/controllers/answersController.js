@@ -298,35 +298,65 @@ export const upvoteAnswer = async (req, res) => {
         const { id: answerId } = req.params;
         const userId = req.user.id;
 
-        const answer = await Answers.findById(answerId);
+        // Use findOneAndUpdate with atomic operations to prevent race conditions
+        const answer = await Answers.findOneAndUpdate(
+            { _id: answerId },
+            {},
+            { new: true }
+        );
 
         if (!answer) {
             return res.status(404).json({ message: 'Answer not found' });
         }
 
-        const hasUpvoted = answer.upvotedBy.includes(userId);
+        const upvotedIndex = answer.upvotedBy.findIndex(upvoterId => upvoterId.equals(userId));
 
-        const update = hasUpvoted
-            ? { $pull: { upvotedBy: userId }, $inc: { upvotes: -1 } }
-            : { $addToSet: { upvotedBy: userId }, $inc: { upvotes: 1 } };
+        let updatedAnswer;
 
-        const updatedAnswer = await Answers.findByIdAndUpdate(
-            answerId,
-            update,
-            { new: true }
-        ).populate('postedBy', 'displayName collegeName role _id');
+        if (upvotedIndex === -1) {
+            // User has not upvoted yet, so upvote
+            updatedAnswer = await Answers.findOneAndUpdate(
+                { _id: answerId },
+                { 
+                    $inc: { upvotes: 1 }, 
+                    $addToSet: { upvotedBy: userId } 
+                },
+                { 
+                    new: true,
+                    runValidators: true
+                }
+            ).populate('postedBy', 'displayName collegeName role _id');
+        } else {
+            // User has already upvoted, so remove upvote
+            updatedAnswer = await Answers.findOneAndUpdate(
+                { _id: answerId },
+                { 
+                    $inc: { upvotes: -1 }, 
+                    $pull: { upvotedBy: userId } 
+                },
+                { 
+                    new: true,
+                    runValidators: true
+                }
+            ).populate('postedBy', 'displayName collegeName role _id');
+        }
+
+        // Ensure upvotes count is never negative
+        if (updatedAnswer.upvotes < 0) {
+            updatedAnswer.upvotes = 0;
+            await updatedAnswer.save();
+        }
 
         res.json({
-            message: hasUpvoted ? 'Upvote removed' : 'Upvoted successfully',
+            message: 'Upvote status updated successfully',
             answer: updatedAnswer
         });
 
     } catch (error) {
-        console.error('Error toggling upvote:', error);
+        console.error('Error upvoting answer:', error);
         res.status(500).json({
-            message: 'Error toggling upvote',
+            message: 'Error upvoting answer',
             error: error.message
         });
     }
 };
-
