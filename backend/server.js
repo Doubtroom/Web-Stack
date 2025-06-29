@@ -3,11 +3,45 @@ import mongoose from "mongoose"
 import dotenv from "dotenv"
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import rateLimit from "express-rate-limit"
 import authRoutes from "./routes/authRoutes.js"
 import dataRoutes from "./routes/dataRoutes.js"
 
 dotenv.config()
 const app=express()
+
+// Rate limiting middleware
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: {
+    error: 'Too many requests from this IP, please try again later.',
+    retryAfter: '15 minutes'
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Specific rate limiter for upvote operations (more restrictive)
+const upvoteLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 30, // limit each IP to 30 upvotes per minute
+  message: {
+    error: 'Too many upvote requests, please slow down.',
+    retryAfter: '1 minute'
+  },
+  keyGenerator: (req) => {
+    // Use user ID if authenticated, otherwise IP
+    return req.user?.id || req.ip;
+  },
+  skip: (req) => {
+    // Skip rate limiting for non-upvote operations
+    return !req.path.includes('/upvote');
+  }
+});
+
+// Apply rate limiting to all routes
+app.use(limiter);
 
 // Middleware
 app.use(cors({
@@ -20,6 +54,9 @@ app.use(cors({
 
 app.use(express.json())
 app.use(cookieParser())  // Add cookie-parser middleware
+
+// Apply upvote-specific rate limiting to data routes
+app.use('/api/data', upvoteLimiter);
 
 // Routes
 app.use('/api/auth',authRoutes)
