@@ -32,6 +32,7 @@ body {
 }
 
 /* Custom scrollbar */
+/*
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -48,6 +49,7 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #2a4a6f;
 }
+*/
 
 /* Smooth scrolling */
 html {
@@ -173,4 +175,49 @@ html {
 .hover-underline:hover::after {
   transform: scaleX(1);
   transform-origin: left;
+}
+
+/* Light theme scrollbar */
+.scrollbar-light ::-webkit-scrollbar {
+  width: 8px;
+}
+.scrollbar-light ::-webkit-scrollbar-track {
+  background: #f3f4f6; /* light background */
+}
+.scrollbar-light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* light thumb */
+  border-radius: 4px;
+}
+.scrollbar-light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Dark theme scrollbar */
+.scrollbar-dark ::-webkit-scrollbar {
+  width: 8px;
+}
+.scrollbar-dark ::-webkit-scrollbar-track {
+  background: #0a192f; /* dark background */
+}
+.scrollbar-dark ::-webkit-scrollbar-thumb {
+  background: #1a3a5f; /* dark thumb */
+  border-radius: 4px;
+}
+.scrollbar-dark ::-webkit-scrollbar-thumb:hover {
+  background: #2a4a6f;
+}
+
+/* Custom dark mode for react-medium-image-zoom modal overlay */
+@media (prefers-color-scheme: dark) {
+  [data-rmiz-modal-overlay="visible"] {
+    background: rgba(0,0,0,0.95) !important;
+  }
+}
+
+/* Custom cursor for yet-another-react-lightbox zoom/pan */
+.yarl__slide_zoomed {
+  cursor: grab !important;
+}
+.yarl__slide_zoomed:active {
+  cursor: grabbing !important;
 }

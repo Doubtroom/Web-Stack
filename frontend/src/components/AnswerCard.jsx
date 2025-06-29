@@ -38,6 +38,15 @@ const AnswerCard = ({
 
   const isUpvoted = answer.upvotedBy?.includes(userData?.userId);
 
+  const getOptimizedCloudinaryUrl = (url) => {
+    if (!url) return url;
+    // Only transform if it's a Cloudinary image URL
+    const match = url.match(/(https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.*)/);
+    if (!match) return url;
+    // Insert transformation string after /upload/
+    return `${match[1]}w_150,h_150,c_fill,q_auto,f_auto/${match[2]}`;
+  };
+
   return (
     <div 
       className="group bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer border border-gray-100 dark:border-gray-600 flex flex-col relative"
@@ -79,13 +88,9 @@ const AnswerCard = ({
         {answer.photoUrl && (
           <div 
             className="mt-4 rounded-lg overflow-hidden w-full h-32 relative group cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              onImageClick(answer.photoUrl);
-            }}
           >
             <img
-              src={answer.photoUrl}
+              src={getOptimizedCloudinaryUrl(answer.photoUrl)}
               alt="Answer"
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />

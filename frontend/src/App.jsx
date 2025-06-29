@@ -70,7 +70,7 @@ function App() {
   }, []);
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`min-h-screen ${isDarkMode ? 'dark bg-gray-900 scrollbar-dark' : 'bg-gray-50 scrollbar-light'}`}>
       <Router future={{ 
         v7_startTransition: true,
         v7_relativeSplatPath: true 

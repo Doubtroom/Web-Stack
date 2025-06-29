@@ -76,7 +76,6 @@ const MobileFilterButton = ({ isActive, onClick, activeText, inactiveText }) => 
     marginTop: '8px',
     backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
     borderRadius: '16px',
-    border: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
     boxShadow: isDarkMode 
       ? '0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2)' 
       : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',

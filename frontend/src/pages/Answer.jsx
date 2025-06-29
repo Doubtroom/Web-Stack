@@ -7,7 +7,9 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import Button from '../components/Button';
 import { toast } from 'sonner';
 import CommentSection from '../components/CommentSection';
-import ImageModal from '../components/ImageModal';
+import Lightbox from 'yet-another-react-lightbox';
+import 'yet-another-react-lightbox/styles.css';
+import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import { useSmartUpvote } from '../hooks/useSmartUpvote';
 
 const Answer = () => {
@@ -19,6 +21,7 @@ const Answer = () => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isUpvoting, setIsUpvoting] = useState(false);
   const commentSectionRef = useRef(null);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   
   const { currentAnswer, currentQuestion, loading, error } = useSelector((state) => state.data);
 
@@ -166,19 +169,34 @@ const Answer = () => {
           </div>
 
           {currentAnswer?.photoUrl && (
-            <div 
-              className="rounded-lg overflow-hidden mb-8 relative group cursor-pointer"
-              onClick={() => setIsImageModalOpen(true)}
-            >
+            <div className="rounded-lg overflow-hidden mb-8 relative group cursor-pointer" onClick={() => setIsLightboxOpen(true)}>
               <img
                 src={currentAnswer.photoUrl}
                 alt="Answer"
                 className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                style={{ borderRadius: '0.75rem', maxHeight: '60vh', width: '100%' }}
               />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <ZoomIn className="w-8 h-8 text-white" />
-              </div>
             </div>
+          )}
+          {currentAnswer?.photoUrl && (
+            <Lightbox
+              open={isLightboxOpen}
+              close={() => setIsLightboxOpen(false)}
+              slides={[{ src: currentAnswer.photoUrl }]}
+              plugins={[Zoom]}
+              zoom={{
+                maxZoomPixelRatio: 3,
+                zoomInMultiplier: 2,
+                doubleTapDelay: 300,
+                doubleClickDelay: 300,
+                doubleClickMaxStops: 2,
+                keyboardMoveDistance: 50,
+                wheelZoomDistanceFactor: 100,
+                pinchZoomDistanceFactor: 100,
+                scrollToZoom: true,
+              }}
+              render={{ buttonPrev: () => null, buttonNext: () => null }}
+            />
           )}
 
           <div className="flex items-center gap-2">
@@ -227,13 +245,6 @@ const Answer = () => {
           <CommentSection answerId={answerId} />
         </div>
       </div>
-
-      {/* Image Modal */}
-      <ImageModal
-        isOpen={isImageModalOpen}
-        onClose={() => setIsImageModalOpen(false)}
-        imageUrl={currentAnswer?.photoUrl}
-      />
     </div>
   );
 };

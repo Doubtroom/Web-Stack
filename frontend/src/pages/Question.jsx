@@ -8,7 +8,9 @@ import QuestionSkeleton from '../components/QuestionSkeleton';
 import Button from '../components/Button';
 import { toast } from 'sonner';
 import ConfirmationDialog from '../components/ConfirmationDialog';
-import ImageModal from '../components/ImageModal';
+import Lightbox from 'yet-another-react-lightbox';
+import 'yet-another-react-lightbox/styles.css';
+import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import AnswerSkeleton from '../components/AnswerSkeleton';
 import AnswerCard from '../components/AnswerCard';
 import { useSmartUpvote } from '../hooks/useSmartUpvote';
@@ -20,7 +22,7 @@ const Question = () => {
   const { handleUpvote, userData } = useSmartUpvote();
   const [showOptions, setShowOptions] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [isFetching, setIsFetching] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -116,10 +118,6 @@ const Question = () => {
 
   const handleAnswerCardClick = (answerId) => {
     navigate(`/question/${id}/answer/${answerId}`);
-  };
-
-  const handleImageClick = (imageUrl) => {
-    setSelectedImage(imageUrl);
   };
 
   const formatTimeAgo = (dateString) => {
@@ -247,16 +245,34 @@ const Question = () => {
               </span>
             </div>
             {currentQuestion?.photoUrl && (
-              <div className="mt-6 rounded-lg overflow-hidden cursor-pointer group relative" onClick={() => setSelectedImage(currentQuestion.photoUrl)}>
+              <div className="mt-6 rounded-lg overflow-hidden group relative cursor-pointer" onClick={() => setIsLightboxOpen(true)}>
                 <img
                   src={currentQuestion.photoUrl}
                   alt="Question"
-                  className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                  className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-[1.02] rounded-lg"
+                  style={{ maxHeight: '60vh', width: '100%' }}
                 />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                  <Maximize2 className="w-6 h-6 text-white" />
-                </div>
               </div>
+            )}
+            {currentQuestion?.photoUrl && (
+              <Lightbox
+                open={isLightboxOpen}
+                close={() => setIsLightboxOpen(false)}
+                slides={[{ src: currentQuestion.photoUrl }]}
+                plugins={[Zoom]}
+                zoom={{
+                  maxZoomPixelRatio: 3,
+                  zoomInMultiplier: 2,
+                  doubleTapDelay: 300,
+                  doubleClickDelay: 300,
+                  doubleClickMaxStops: 2,
+                  keyboardMoveDistance: 50,
+                  wheelZoomDistanceFactor: 100,
+                  pinchZoomDistanceFactor: 100,
+                  scrollToZoom: true,
+                }}
+                render={{ buttonPrev: () => null, buttonNext: () => null }}
+              />
             )}
           </div>
         </div>
@@ -295,7 +311,6 @@ const Question = () => {
                   userData={userData}
                   onUpvote={handleUpvote}
                   onReply={handleReply}
-                  onImageClick={handleImageClick}
                   onCardClick={() => handleAnswerCardClick(answer._id)}
                 />
               ))}
@@ -317,12 +332,6 @@ const Question = () => {
         onConfirm={handleDelete}
         title="Delete Question"
         message="Are you sure you want to delete this question? This action cannot be undone."
-      />
-
-      <ImageModal
-        isOpen={!!selectedImage}
-        onClose={() => setSelectedImage(null)}
-        imageUrl={selectedImage}
       />
     </div>
   );
