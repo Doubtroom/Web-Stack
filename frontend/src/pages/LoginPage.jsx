@@ -7,13 +7,12 @@ import { useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { login, sendOtp, fetchUser, setAuth, googleLogin } from '../store/authSlice';
 import { toast } from 'sonner';
-import LoadingSpinner from '../components/LoadingSpinner';
 import VerificationPrompt from '../components/VerificationPrompt';
-import { authService } from '../services/auth.services';
 import { motion } from 'framer-motion';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 import LottieLoader from '../components/LottieLoader';
+import { imageLinks } from '../config/assetConfig';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -205,7 +204,7 @@ const LoginPage = () => {
       <div className={`min-h-screen flex items-center justify-center p-4 relative overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         {/* Background image with overlay */}
         <div className="absolute inset-0 z-0">
-          <img src="https://static.vecteezy.com/system/resources/thumbnails/039/843/742/small_2x/ai-generated-the-glasses-with-school-books-in-front-of-a-blackboard-created-by-artificial-intelligence-photo.jpeg" alt="login bg" className="w-full h-full object-cover object-center opacity-60 dark:opacity-40" />
+        <img src={imageLinks.authBackground} alt="login bg" className="w-full h-full object-cover object-center opacity-60 dark:opacity-40" />
           <div className="absolute inset-0 bg-gradient-to-br from-blue-100/60 via-white/60 to-purple-100/40 dark:from-gray-900/80 dark:via-gray-900/70 dark:to-blue-900/60" />
         </div>
         <VerificationPrompt

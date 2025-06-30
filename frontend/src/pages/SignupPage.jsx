@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { motion } from 'framer-motion';
 import LottieLoader from '../components/LottieLoader';
+import {imageLinks} from '../config/assetConfig.js'
 
 const SignupPage = () => {
   const dispatch = useDispatch();
@@ -93,7 +94,7 @@ const SignupPage = () => {
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 relative overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="absolute inset-0 z-0">
-        <img src="https://static.vecteezy.com/system/resources/thumbnails/039/843/742/small_2x/ai-generated-the-glasses-with-school-books-in-front-of-a-blackboard-created-by-artificial-intelligence-photo.jpeg" alt="signup bg" className="w-full h-full object-cover object-center opacity-60 dark:opacity-40" />
+      <img src={imageLinks.authBackground} alt="login bg" className="w-full h-full object-cover object-center opacity-60 dark:opacity-40" />
         <div className="absolute inset-0 bg-gradient-to-br from-blue-100/60 via-white/60 to-purple-100/40 dark:from-gray-900/80 dark:via-gray-900/70 dark:to-blue-900/60" />
       </div>
       <motion.div
