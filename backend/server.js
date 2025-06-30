@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser"
 import rateLimit from "express-rate-limit"
 import authRoutes from "./routes/authRoutes.js"
 import dataRoutes from "./routes/dataRoutes.js"
+import formDataRoutes from "./routes/formDataRoutes.js"
 
 dotenv.config()
 const app=express()
@@ -61,6 +62,7 @@ app.use('/api/data', upvoteLimiter);
 // Routes
 app.use('/api/auth',authRoutes)
 app.use('/api/data',dataRoutes)
+app.use('/api/form-data', formDataRoutes)
 
 mongoose.connect(process.env.MONGO_URI,{
   dbName: "org-db"
