@@ -1,7 +1,7 @@
 # DoubtRoom 🚀
 
 <div align="center">
-  <img src="./backend/public/logo.png" alt="DoubtRoom Logo" width="200"/>
+  <img src="./frontend/src/assets/placeholder.png" alt="DoubtRoom Logo" width="200"/>
 </div>
 
 <p align="center">
