@@ -11,6 +11,9 @@ import { limiter, authLimiter, internalLimiter } from "./middleware/rateLimiterM
 dotenv.config()
 const app=express()
 
+// Trust the first proxy (important for rate limiting and correct IP detection)
+app.set('trust proxy', 1);
+
 // Remove global rate limiter
 // app.use(limiter);
 
