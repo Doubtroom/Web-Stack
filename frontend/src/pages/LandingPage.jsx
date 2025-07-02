@@ -5,6 +5,7 @@ import Logo from '../assets/logoWhite.png';
 import { motion } from 'framer-motion';
 import NavBar from '../components/LandingNavbar';
 import Footer from '../components/LandingFooter';
+import Art2 from '../assets/art2.png';
 
 
 const FeatureCard = ({ icon, title, description, delay }) => {
@@ -240,7 +241,7 @@ const HeroSection = () => {
                   }}
                 />
                 <motion.img 
-                  src="https://doubtroom.sirv.com/Doubtroom/art2.png"
+                  src={Art2}
                   className="relative z-10 w-full h-auto object-contain drop-shadow-2xl"
                   alt="Doubtroom Illustration"
                   whileHover={{ scale: 1.05 }}
