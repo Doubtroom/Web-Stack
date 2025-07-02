@@ -13,7 +13,6 @@ if (process.env.NODE_ENV === 'development') {
       cert: fs.readFileSync('./cert/localhost-cert.pem'),
     };
   } catch (e) {
-    // Certs not found, fallback to HTTP
     serverConfig.https = undefined;
   }
 }
@@ -26,14 +25,8 @@ export default defineConfig({
     sourcemap: false, // Disable source maps in production
   },
   optimizeDeps: {
-    include: [
-      'firebase/app',
-      'firebase/app-check',
-      'firebase/auth',
-      'firebase/firestore',
-      'firebase/storage'
-    ],
-    exclude: ['firebase', 'axios', 'react-zoom-pan-pinch', 'appwrite']
+    include: [],
+    exclude: ['axios', 'react-zoom-pan-pinch', 'firebase', 'appwrite']
   }
 })
 

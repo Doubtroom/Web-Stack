@@ -1,7 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  isDarkMode: localStorage.getItem('darkMode') === 'true' || false,
+  isDarkMode: localStorage.getItem('darkMode') === null
+    ? (() => { localStorage.setItem('darkMode', 'true'); return true; })()
+    : localStorage.getItem('darkMode') === 'true',
 };
 
 const darkModeSlice = createSlice({
