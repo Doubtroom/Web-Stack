@@ -19,7 +19,7 @@ const Question = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { handleUpvote, userData } = useSmartUpvote();
+  const { handleUpvote } = useSmartUpvote();
   const [showOptions, setShowOptions] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -27,6 +27,7 @@ const Question = () => {
   const [isFetching, setIsFetching] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const { currentQuestion, answers, loading, error, answersPagination } = useSelector((state) => state.data);
+  const user = useSelector((state) => state.auth.user);
 
   const fetchData = useCallback(async (cursor = null) => {
     if (!id) return;
@@ -178,7 +179,7 @@ const Question = () => {
     );
   }
 
-  const isQuestionOwner = currentQuestion?.postedBy === userData.userId;
+  const isQuestionOwner = currentQuestion?.postedBy === user.userId;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -308,7 +309,7 @@ const Question = () => {
                   key={answer._id || `answer-${index}`}
                   answer={answer}
                   index={index}
-                  userData={userData}
+                  userData={user}
                   onUpvote={handleUpvote}
                   onReply={handleReply}
                   onCardClick={() => handleAnswerCardClick(answer._id)}

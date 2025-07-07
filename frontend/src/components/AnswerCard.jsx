@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ThumbsUp, Maximize2 } from 'lucide-react';
 import Button from './Button';
 
@@ -69,13 +69,13 @@ const AnswerCard = ({
                   {answer.role === 'faculty' ? 'Faculty' : 'Faculty (Phd)'}
                 </span>
               )}
-              {answer.collegeName && (
+              {answer.postedBy.collegeName && (
                 <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                  answer.collegeName === userData.collegeName
+                  answer.postedBy.collegeName === userData.collegeName
                     ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                     : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
                 }`}>
-                  {answer.collegeName === userData.collegeName ? 'My College' : 'Other College'}
+                  {answer.postedBy.collegeName === userData.collegeName ? 'My College' : 'Other College'}
                 </span>
               )}
             </div>

@@ -49,7 +49,6 @@ const Answer = () => {
         toast.error('Invalid answer ID');
         return;
       }
-      console.log(answerId)
       await dispatch(fetchAnswerById({ answerId})).unwrap();
       
     } catch (err) {
