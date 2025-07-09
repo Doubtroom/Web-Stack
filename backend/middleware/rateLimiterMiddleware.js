@@ -1,8 +1,8 @@
 import rateLimit from "express-rate-limit"
 
-export const limiter = rateLimit({
+export const formDataLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    max: 100, 
     message: {
       error: 'Too many requests from this IP, please try again later.',
       retryAfter: '15 minutes'
@@ -11,11 +11,11 @@ export const limiter = rateLimit({
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   });
 
-export const authLimiter = rateLimit({
+export const userLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // stricter limit for auth routes
+    max: 300,
     message: {
-      error: 'Too many authentication attempts, please try again later.',
+      error: 'Too many user api attempts, please try again later.',
       retryAfter: '15 minutes'
     },
     standardHeaders: true,
@@ -23,8 +23,8 @@ export const authLimiter = rateLimit({
 });
 
 export const internalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500, // higher limit for internal APIs
+    windowMs: 15 * 60 * 1000, 
+    max: 500, 
     message: {
       error: 'Too many requests to internal API, please try again later.',
       retryAfter: '15 minutes'
@@ -34,88 +34,11 @@ export const internalLimiter = rateLimit({
 });
 
 // Custom rate limiters for specific auth endpoints
-export const signupLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 10,
-    message: {
-      error: 'Too many signup attempts, please try again later.',
-      retryAfter: '15 minutes'
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
-export const loginLimiter = rateLimit({
+export const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 15,
     message: {
-      error: 'Too many login attempts, please try again later.',
-      retryAfter: '15 minutes'
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
-export const sendOtpLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 10,
-    message: {
-      error: 'Too many OTP requests, please try again later.',
-      retryAfter: '15 minutes'
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
-export const verifyOtpLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 15,
-    message: {
-      error: 'Too many OTP verifications, please try again later.',
-      retryAfter: '15 minutes'
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
-export const googleLoginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 15,
-    message: {
-      error: 'Too many Google login attempts, please try again later.',
-      retryAfter: '15 minutes'
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
-export const requestResetLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 10,
-    message: {
-      error: 'Too many password reset requests, please try again later.',
-      retryAfter: '15 minutes'
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
-export const verifyResetLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 15,
-    message: {
-      error: 'Too many password reset verifications, please try again later.',
-      retryAfter: '15 minutes'
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
-export const resetPasswordLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 10,
-    message: {
-      error: 'Too many password reset attempts, please try again later.',
+      error: 'Too many authentication attempts, please try again later.',
       retryAfter: '15 minutes'
     },
     standardHeaders: true,

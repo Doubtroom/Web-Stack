@@ -23,7 +23,7 @@ export const requestReset = async (req, res) => {
         await user.save();
 
         // Send reset email
-        await sendPasswordResetEmail(email, resetToken);
+        await sendPasswordResetEmail(email, resetToken, resetExpires.getTime());
 
         res.json({ message: "Password reset email sent successfully" });
     } catch (error) {

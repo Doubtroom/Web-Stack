@@ -19,7 +19,7 @@ export const sendOtpEmail = async (email, otp) => {
   await transporter.sendMail(mailOptions);
 };
 
-export const sendPasswordResetEmail = async (email, resetToken) => {
+export const sendPasswordResetEmail = async (email, resetToken, expiresAt) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -28,8 +28,10 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
     }
   });
 
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}?expires=${expiresAt}`;
+  const expiryDate = new Date(expiresAt);
+  const expiryString = expiryDate.toLocaleString('en-US', { hour12: true });
+  
   const mailOptions = {
     from: `"My App" <${process.env.EMAIL_USER}>`,
     to: email,
@@ -37,7 +39,7 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
     html: `
       <p>You requested a password reset</p>
       <p>Click this <a href="${resetUrl}">link</a> to reset your password.</p>
-      <p>This link will expire in 1 hour.</p>
+      <p>This link will expire on <strong>${expiryString}</strong>.</p>
       <p>If you didn't request this, please ignore this email.</p>
     `
   };

@@ -6,7 +6,8 @@ import cookieParser from "cookie-parser"
 import authRoutes from "./routes/authRoutes.js"
 import dataRoutes from "./routes/dataRoutes.js"
 import formDataRoutes from "./routes/formDataRoutes.js"
-import { limiter, authLimiter, internalLimiter } from "./middleware/rateLimiterMiddleware.js"
+import userRoutes from "./routes/userRoutes.js"
+import { formDataLimiter,authLimiter,userLimiter, internalLimiter } from "./middleware/rateLimiterMiddleware.js"
 
 dotenv.config()
 const app=express()
@@ -28,8 +29,9 @@ app.use(cookieParser())
 
 // Routes with specific rate limiters
 app.use('/api/auth', authLimiter, authRoutes)
+app.use('/api/user', userLimiter, userRoutes)
 app.use('/api/data', internalLimiter, dataRoutes)
-app.use('/api/form-data', limiter, formDataRoutes)
+app.use('/api/form-data', formDataLimiter, formDataRoutes)
 
 mongoose.connect(process.env.MONGO_URI,{
   dbName: "org-db"
