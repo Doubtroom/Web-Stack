@@ -32,3 +32,92 @@ export const internalLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
+
+// Custom rate limiters for specific auth endpoints
+export const signupLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: {
+      error: 'Too many signup attempts, please try again later.',
+      retryAfter: '15 minutes'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+export const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 15,
+    message: {
+      error: 'Too many login attempts, please try again later.',
+      retryAfter: '15 minutes'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+export const sendOtpLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: {
+      error: 'Too many OTP requests, please try again later.',
+      retryAfter: '15 minutes'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+export const verifyOtpLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 15,
+    message: {
+      error: 'Too many OTP verifications, please try again later.',
+      retryAfter: '15 minutes'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+export const googleLoginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 15,
+    message: {
+      error: 'Too many Google login attempts, please try again later.',
+      retryAfter: '15 minutes'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+export const requestResetLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: {
+      error: 'Too many password reset requests, please try again later.',
+      retryAfter: '15 minutes'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+export const verifyResetLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 15,
+    message: {
+      error: 'Too many password reset verifications, please try again later.',
+      retryAfter: '15 minutes'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+export const resetPasswordLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: {
+      error: 'Too many password reset attempts, please try again later.',
+      retryAfter: '15 minutes'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});

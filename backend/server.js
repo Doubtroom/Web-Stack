@@ -14,9 +14,6 @@ const app=express()
 // Trust the first proxy (important for rate limiting and correct IP detection)
 app.set('trust proxy', 1);
 
-// Remove global rate limiter
-// app.use(limiter);
-
 // Middleware
 app.use(cors({
     origin: [process.env.CLIENT_URL, 'https://localhost:3001'],
@@ -27,7 +24,7 @@ app.use(cors({
 }))
 
 app.use(express.json())
-app.use(cookieParser())  // Add cookie-parser middleware
+app.use(cookieParser())
 
 // Routes with specific rate limiters
 app.use('/api/auth', authLimiter, authRoutes)
