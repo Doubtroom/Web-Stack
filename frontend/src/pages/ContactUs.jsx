@@ -1,24 +1,24 @@
-import React, { useState } from 'react';
-import { Mail, Linkedin, Instagram, MessageSquare } from 'lucide-react';
-import { customerCareServices } from '../services/data.services';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import { Mail, Linkedin, Instagram, MessageSquare } from "lucide-react";
+import { customerCareServices } from "../services/data.services";
+import { toast } from "sonner";
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: ''
+    name: "",
+    email: "",
+    message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-  }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,25 +26,25 @@ const ContactUs = () => {
     setSubmitStatus(null);
 
     try {
-        await customerCareServices.createRequest({
-          subject: formData.name,
-          message: `From: ${formData.email}\n\n${formData.message}`
-        });
-        toast.success('Your message has been sent successfully!');
-      setSubmitStatus({
-        type: 'success',
-        message: 'Message sent successfully! We will get back to you soon.'
+      await customerCareServices.createRequest({
+        subject: formData.name,
+        message: `From: ${formData.email}\n\n${formData.message}`,
       });
-      
+      toast.success("Your message has been sent successfully!");
+      setSubmitStatus({
+        type: "success",
+        message: "Message sent successfully! We will get back to you soon.",
+      });
+
       setFormData({
-        name: '',
-        email: '',
-        message: ''
+        name: "",
+        email: "",
+        message: "",
       });
     } catch (error) {
       setSubmitStatus({
-        type: 'error',
-        message: 'Failed to send message. Please try again later.'
+        type: "error",
+        message: "Failed to send message. Please try again later.",
       });
     } finally {
       setIsSubmitting(false);
@@ -54,25 +54,25 @@ const ContactUs = () => {
   const socialLinks = [
     {
       icon: <Mail className="w-6 h-6 text-black dark:text-white" />,
-      label: 'Email',
-      value: 'doubtroomteam@gmail.com',
-      link: 'mailto:doubtroomteam@gmail.com',
-      color: 'bg-red-100 dark:bg-red-900/30'
+      label: "Email",
+      value: "doubtroomteam@gmail.com",
+      link: "mailto:doubtroomteam@gmail.com",
+      color: "bg-red-100 dark:bg-red-900/30",
     },
     {
       icon: <Linkedin className="w-6 h-6 text-black dark:text-white" />,
-      label: 'LinkedIn',
-      value: 'Doubtroom',
-      link: 'https://linkedin.com/company/doubt-room',
-      color: 'bg-blue-100 dark:bg-blue-900/30'
+      label: "LinkedIn",
+      value: "Doubtroom",
+      link: "https://linkedin.com/company/doubt-room",
+      color: "bg-blue-100 dark:bg-blue-900/30",
     },
     {
       icon: <Instagram className="w-6 h-6 text-black dark:text-white" />,
-      label: 'Instagram',
-      value: '@doubtroom',
-      link: 'https://www.instagram.com/doubt_room?igsh=eXQxaTUxOTdiZDRz',
-      color: 'bg-pink-100 dark:bg-pink-900/30'
-    }
+      label: "Instagram",
+      value: "@doubtroom",
+      link: "https://www.instagram.com/doubt_room?igsh=eXQxaTUxOTdiZDRz",
+      color: "bg-pink-100 dark:bg-pink-900/30",
+    },
   ];
 
   return (
@@ -105,8 +105,12 @@ const ContactUs = () => {
                     {social.icon}
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-white">{social.label}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{social.value}</p>
+                    <h3 className="font-medium text-gray-900 dark:text-white">
+                      {social.label}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {social.value}
+                    </p>
                   </div>
                 </a>
               ))}
@@ -120,7 +124,10 @@ const ContactUs = () => {
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   Name
                 </label>
                 <input
@@ -135,7 +142,10 @@ const ContactUs = () => {
                 />
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   Email
                 </label>
                 <input
@@ -150,7 +160,10 @@ const ContactUs = () => {
                 />
               </div>
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="message"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   Message
                 </label>
                 <textarea
@@ -165,11 +178,13 @@ const ContactUs = () => {
                 ></textarea>
               </div>
               {submitStatus && (
-                <div className={`p-4 rounded-lg ${
-                  submitStatus.type === 'success' 
-                    ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' 
-                    : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'
-                }`}>
+                <div
+                  className={`p-4 rounded-lg ${
+                    submitStatus.type === "success"
+                      ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200"
+                      : "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200"
+                  }`}
+                >
                   {submitStatus.message}
                 </div>
               )}
@@ -177,14 +192,30 @@ const ContactUs = () => {
                 type="submit"
                 disabled={isSubmitting}
                 className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2 ${
-                  isSubmitting ? 'opacity-75 cursor-not-allowed' : ''
+                  isSubmitting ? "opacity-75 cursor-not-allowed" : ""
                 }`}
               >
                 {isSubmitting ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     <span>Sending...</span>
                   </>
@@ -201,7 +232,8 @@ const ContactUs = () => {
 
         <div className="mt-12  text-center">
           <p className="text-gray-600 dark:text-gray-300">
-            We typically respond within 3-4 business days. For urgent matters, please reach out to us directly via email.
+            We typically respond within 3-4 business days. For urgent matters,
+            please reach out to us directly via email.
           </p>
         </div>
       </div>
@@ -209,4 +241,4 @@ const ContactUs = () => {
   );
 };
 
-export default ContactUs; 
+export default ContactUs;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const QuestionSkeleton = () => {
   return (
@@ -33,4 +33,4 @@ const QuestionSkeleton = () => {
   );
 };
 
-export default QuestionSkeleton; 
+export default QuestionSkeleton;

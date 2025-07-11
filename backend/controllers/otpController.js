@@ -1,7 +1,7 @@
-import User from '../models/User.js'
-import { sendOtpEmail } from '../utils/email.js'
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
+import User from "../models/User.js";
+import { sendOtpEmail } from "../utils/email.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 export const sendOtp = async (req, res) => {
   try {
@@ -12,13 +12,13 @@ export const sendOtp = async (req, res) => {
 
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     const user = await User.findById(decoded.id);
-    
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if(user.isVerified){
-      return res.status(401).json({message:"User is already verified"})
+    if (user.isVerified) {
+      return res.status(401).json({ message: "User is already verified" });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000);
@@ -28,9 +28,9 @@ export const sendOtp = async (req, res) => {
 
     user.otp = {
       code: hashedOtp,
-      expiresAt
+      expiresAt,
     };
-    
+
     await user.save();
 
     await sendOtpEmail(user.email, otp);
@@ -58,8 +58,8 @@ export const verifyOtp = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if(user.isVerified){
-      return res.status(401).json({message:"User is already verified"})
+    if (user.isVerified) {
+      return res.status(401).json({ message: "User is already verified" });
     }
 
     if (
@@ -67,7 +67,7 @@ export const verifyOtp = async (req, res) => {
       !user.otp.code ||
       new Date() > new Date(user.otp.expiresAt)
     ) {
-      user.otp.code=null
+      user.otp.code = null;
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
@@ -77,33 +77,33 @@ export const verifyOtp = async (req, res) => {
     }
 
     const newRefreshToken = jwt.sign(
-      {id: user._id},
+      { id: user._id },
       process.env.REFRESH_TOKEN_SECRET,
-      {expiresIn: "30d"}
-    )
+      { expiresIn: "30d" },
+    );
 
-    const encryptedRefreshToken = await bcrypt.hash(newRefreshToken, 12)
+    const encryptedRefreshToken = await bcrypt.hash(newRefreshToken, 12);
 
-    user.refreshToken = encryptedRefreshToken
+    user.refreshToken = encryptedRefreshToken;
     user.otp = undefined;
     user.isVerified = true;
     await user.save();
 
-    res.cookie('refreshToken', newRefreshToken, {
+    res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 30 * 24 * 60 * 60 * 1000
-    })
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
 
-    res.json({ 
+    res.json({
       message: "OTP verified successfully",
       user: {
         userId: user._id,
         email: user.email,
         displayName: user.displayName,
-        isVerified: user.isVerified
-      }
+        isVerified: user.isVerified,
+      },
     });
   } catch (error) {
     console.error("Error verifying OTP:", error);

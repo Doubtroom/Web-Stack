@@ -1,9 +1,9 @@
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toggleDarkMode } from '../store/darkModeSlice.js';
-import { Moon, Sun } from 'lucide-react';
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleDarkMode } from "../store/darkModeSlice.js";
+import { Moon, Sun } from "lucide-react";
 
-const SliderSwitch = ({classNames}) => {
+const SliderSwitch = ({ classNames }) => {
   const dispatch = useDispatch();
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
 
@@ -18,14 +18,18 @@ const SliderSwitch = ({classNames}) => {
     >
       <span
         className={`${
-          isDarkMode ? 'translate-x-6' : 'translate-x-1'
+          isDarkMode ? "translate-x-6" : "translate-x-1"
         } inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out`}
       />
       <span className="absolute left-1 top-1/2 -translate-y-1/2">
-        <Sun className={`h-4 w-4 ${isDarkMode ? 'text-gray-400' : 'text-yellow-500'}`} />
+        <Sun
+          className={`h-4 w-4 ${isDarkMode ? "text-gray-400" : "text-yellow-500"}`}
+        />
       </span>
       <span className="absolute right-1 top-1/2 -translate-y-1/2">
-        <Moon className={`h-4 w-4 ${isDarkMode ? 'text-blue-500' : 'text-gray-400'}`} />
+        <Moon
+          className={`h-4 w-4 ${isDarkMode ? "text-blue-500" : "text-gray-400"}`}
+        />
       </span>
     </button>
   );

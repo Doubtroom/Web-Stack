@@ -1,5 +1,5 @@
-import axios from 'axios';
-import { API_BASE_URL } from '../config/api.config';
+import axios from "axios";
+import { API_BASE_URL } from "../config/api.config";
 
 axios.defaults.withCredentials = true;
 
@@ -7,7 +7,7 @@ const apiClient = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true, // This is crucial for cookies
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
 });
 
@@ -16,16 +16,16 @@ apiClient.interceptors.request.use(
   (config) => {
     if (config.data instanceof FormData) {
       // Let the browser set the Content-Type for FormData
-      delete config.headers['Content-Type'];
+      delete config.headers["Content-Type"];
     } else {
       // Set Content-Type for other requests
-      config.headers['Content-Type'] = 'application/json';
+      config.headers["Content-Type"] = "application/json";
     }
     return config;
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 apiClient.interceptors.response.use(
@@ -33,10 +33,10 @@ apiClient.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       // Redirect to login on authentication error
-      window.location.href = '/login';
+      window.location.href = "/login";
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

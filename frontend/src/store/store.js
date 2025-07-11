@@ -1,8 +1,8 @@
-import { configureStore } from '@reduxjs/toolkit';
-import darkModeReducer from './darkModeSlice.js';
-import authReducer from './authSlice.js';
-import dataReducer from './dataSlice.js';
-import flashcardStatusReducer from './flashcardStatusSlice.js';
+import { configureStore } from "@reduxjs/toolkit";
+import darkModeReducer from "./darkModeSlice.js";
+import authReducer from "./authSlice.js";
+import dataReducer from "./dataSlice.js";
+import flashcardStatusReducer from "./flashcardStatusSlice.js";
 
 export const store = configureStore({
   reducer: {
@@ -11,4 +11,4 @@ export const store = configureStore({
     data: dataReducer,
     flashcardStatus: flashcardStatusReducer,
   },
-}); 
+});

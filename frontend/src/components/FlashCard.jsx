@@ -1,16 +1,24 @@
-import React, { useState, useRef, useLayoutEffect, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { flashcardServices } from '../services/data.services';
-import { toast } from 'sonner';
-import { Button, Modal, ConfigProvider, theme } from 'antd';
-import FlashCardBlank from './FlashCardBlank';
+import React, { useState, useRef, useLayoutEffect, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { flashcardServices } from "../services/data.services";
+import { toast } from "sonner";
+import { Button, Modal, ConfigProvider, theme } from "antd";
+import FlashCardBlank from "./FlashCardBlank";
 
-const FlashCard = ({ questionId, questionText, questionImage, answer, answerImage, difficulty, onRate }) => {
+const FlashCard = ({
+  questionId,
+  questionText,
+  questionImage,
+  answer,
+  answerImage,
+  difficulty,
+  onRate,
+}) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [modalContent, setModalContent] = useState({ text: '', image: null });
+  const [modalContent, setModalContent] = useState({ text: "", image: null });
   const [showSeeAnswerConfirm, setShowSeeAnswerConfirm] = useState(false);
 
   const questionTextRef = useRef(null);
@@ -27,7 +35,8 @@ const FlashCard = ({ questionId, questionText, questionImage, answer, answerImag
   useLayoutEffect(() => {
     const checkOverflow = (ref, setter) => {
       if (ref.current) {
-        const isOverflowing = ref.current.scrollHeight > ref.current.clientHeight;
+        const isOverflowing =
+          ref.current.scrollHeight > ref.current.clientHeight;
         setter(isOverflowing);
       }
     };
@@ -50,17 +59,20 @@ const FlashCard = ({ questionId, questionText, questionImage, answer, answerImag
 
   const handleRating = async (newDifficulty) => {
     if (isSubmitting) return;
-    
+
     const originalDifficulty = difficulty;
     setIsSubmitting(true);
     setIsEditing(false);
     onRate(questionId, newDifficulty);
 
     try {
-      await flashcardServices.upsertStatus({ questionId, difficulty: newDifficulty });
+      await flashcardServices.upsertStatus({
+        questionId,
+        difficulty: newDifficulty,
+      });
       toast.success(`Rated as ${newDifficulty}.`);
     } catch (error) {
-      toast.error('Failed to save rating. Reverting.');
+      toast.error("Failed to save rating. Reverting.");
       onRate(questionId, originalDifficulty); // Revert on error
       console.error(error);
     } finally {
@@ -69,32 +81,54 @@ const FlashCard = ({ questionId, questionText, questionImage, answer, answerImag
   };
 
   const renderCardContent = (content) => (
-    <FlashCardBlank>
-      {content}
-    </FlashCardBlank>
+    <FlashCardBlank>{content}</FlashCardBlank>
   );
 
   const showRatingButtons = difficulty === null || isEditing;
 
   return (
-    <div className="w-full h-full" style={{ perspective: '1000px' }}>
-      <div 
+    <div className="w-full h-full" style={{ perspective: "1000px" }}>
+      <div
         className={`relative w-full h-full transition-transform duration-500 ease-in-out`}
-        style={{ transformStyle: 'preserve-3d', transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
+        style={{
+          transformStyle: "preserve-3d",
+          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+        }}
       >
         {/* Front of the Card */}
-        <div className="absolute w-full h-full" style={{ backfaceVisibility: 'hidden' }}>
+        <div
+          className="absolute w-full h-full"
+          style={{ backfaceVisibility: "hidden" }}
+        >
           {renderCardContent(
             <>
               <div className="text-center flex-grow flex flex-col justify-center items-center w-full overflow-hidden">
-                {questionImage && <img src={questionImage} alt="Question" className="max-w-full max-h-32 rounded-lg object-contain mb-4 cursor-pointer" onClick={() => showModal(questionText, questionImage)} />}
+                {questionImage && (
+                  <img
+                    src={questionImage}
+                    alt="Question"
+                    className="max-w-full max-h-32 rounded-lg object-contain mb-4 cursor-pointer"
+                    onClick={() => showModal(questionText, questionImage)}
+                  />
+                )}
                 {questionText && (
                   <div className="relative w-full">
-                    <p ref={questionTextRef} className="text-xl text-black font-semibold dark:text-gray-100 break-words" style={{ maxHeight: questionImage ? '3rem' : '5.25rem', overflowY: 'hidden' }}>
+                    <p
+                      ref={questionTextRef}
+                      className="text-xl text-black font-semibold dark:text-gray-100 break-words"
+                      style={{
+                        maxHeight: questionImage ? "3rem" : "5.25rem",
+                        overflowY: "hidden",
+                      }}
+                    >
                       {questionText}
                     </p>
                     {isQuestionOverflowing && (
-                      <Button type="link" onClick={() => showModal(questionText, questionImage)} className="text-red-500">
+                      <Button
+                        type="link"
+                        onClick={() => showModal(questionText, questionImage)}
+                        className="text-red-500"
+                      >
                         Read More
                       </Button>
                     )}
@@ -105,30 +139,32 @@ const FlashCard = ({ questionId, questionText, questionImage, answer, answerImag
               <div className="w-full flex flex-col items-center gap-3 my-4">
                 {showRatingButtons ? (
                   <div className="text-center min-h-16">
-                     <p className="text-md text-gray-600 dark:text-gray-300 mb-3">How confident are you?</p>
-                     <div className="flex justify-center flex-wrap gap-2 sm:gap-4">
-                        <Button 
-                            disabled={isSubmitting} 
-                            onClick={() => handleRating('hard')} 
-                            className="!bg-red-100/70 !text-red-700 !font-bold !rounded-full hover:!bg-red-200/80 hover:scale-105 transition-all border-none px-6 py-2"
-                        >
-                            Hard
-                        </Button>
-                        <Button
-                            disabled={isSubmitting}
-                            onClick={() => handleRating('medium')}
-                            className="!bg-amber-100/70 !text-amber-700 !font-bold !rounded-full hover:!bg-amber-200/80 hover:scale-105 transition-all border-none px-6 py-2"
-                        >
-                            Medium
-                        </Button>
-                        <Button
-                            disabled={isSubmitting}
-                            onClick={() => handleRating('easy')}
-                            className="!bg-emerald-100/70 !text-emerald-700 !font-bold !rounded-full hover:!bg-emerald-200/80 hover:scale-105 transition-all border-none px-6 py-2"
-                        >
-                            Easy
-                        </Button>
-                     </div>
+                    <p className="text-md text-gray-600 dark:text-gray-300 mb-3">
+                      How confident are you?
+                    </p>
+                    <div className="flex justify-center flex-wrap gap-2 sm:gap-4">
+                      <Button
+                        disabled={isSubmitting}
+                        onClick={() => handleRating("hard")}
+                        className="!bg-red-100/70 !text-red-700 !font-bold !rounded-full hover:!bg-red-200/80 hover:scale-105 transition-all border-none px-6 py-2"
+                      >
+                        Hard
+                      </Button>
+                      <Button
+                        disabled={isSubmitting}
+                        onClick={() => handleRating("medium")}
+                        className="!bg-amber-100/70 !text-amber-700 !font-bold !rounded-full hover:!bg-amber-200/80 hover:scale-105 transition-all border-none px-6 py-2"
+                      >
+                        Medium
+                      </Button>
+                      <Button
+                        disabled={isSubmitting}
+                        onClick={() => handleRating("easy")}
+                        className="!bg-emerald-100/70 !text-emerald-700 !font-bold !rounded-full hover:!bg-emerald-200/80 hover:scale-105 transition-all border-none px-6 py-2"
+                      >
+                        Easy
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center h-16 flex flex-col justify-center items-center">
@@ -142,53 +178,101 @@ const FlashCard = ({ questionId, questionText, questionImage, answer, answerImag
                 )}
               </div>
 
-              <Button type="primary" size="large" onClick={() => setShowSeeAnswerConfirm(true)} className="!bg-indigo-600 hover:!bg-indigo-700 !text-white !font-semibold !border-indigo-600 disabled:!bg-gray-400 dark:disabled:!bg-gray-600 disabled:!cursor-not-allowed disabled:!text-gray-100 dark:disabled:!text-gray-400" >
+              <Button
+                type="primary"
+                size="large"
+                onClick={() => setShowSeeAnswerConfirm(true)}
+                className="!bg-indigo-600 hover:!bg-indigo-700 !text-white !font-semibold !border-indigo-600 disabled:!bg-gray-400 dark:disabled:!bg-gray-600 disabled:!cursor-not-allowed disabled:!text-gray-100 dark:disabled:!text-gray-400"
+              >
                 See Answer
               </Button>
-            </>
+            </>,
           )}
         </div>
 
         {/* Back of the Card */}
-        <div className="absolute w-full h-full" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
+        <div
+          className="absolute w-full h-full"
+          style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+        >
           {renderCardContent(
             <>
               <div className="text-center flex-grow flex flex-col justify-center items-center w-full overflow-hidden">
-                {answerImage && <img src={answerImage} alt="Answer" className="max-w-full max-h-32 rounded-lg object-contain mb-4 cursor-pointer" onClick={() => showModal(answer, answerImage)} />}
+                {answerImage && (
+                  <img
+                    src={answerImage}
+                    alt="Answer"
+                    className="max-w-full max-h-32 rounded-lg object-contain mb-4 cursor-pointer"
+                    onClick={() => showModal(answer, answerImage)}
+                  />
+                )}
                 <div className="relative w-full">
-                  <p ref={answerTextRef} className="text-xl text-black font-medium dark:text-gray-100 break-words" style={{ maxHeight: '8.75rem', overflowY: 'hidden' }}>
+                  <p
+                    ref={answerTextRef}
+                    className="text-xl text-black font-medium dark:text-gray-100 break-words"
+                    style={{ maxHeight: "8.75rem", overflowY: "hidden" }}
+                  >
                     {answer}
                   </p>
                   {isAnswerOverflowing && (
-                    <Button type="link" onClick={() => showModal(answer, answerImage)} className="text-red-500">
+                    <Button
+                      type="link"
+                      onClick={() => showModal(answer, answerImage)}
+                      className="text-red-500"
+                    >
                       Read More
                     </Button>
                   )}
                 </div>
               </div>
-              <Button type="text" onClick={() => setIsFlipped(false)} className="mt-2 self-center text-gray-500 dark:text-gray-400">
+              <Button
+                type="text"
+                onClick={() => setIsFlipped(false)}
+                className="mt-2 self-center text-gray-500 dark:text-gray-400"
+              >
                 Flip Back
               </Button>
-            </>
+            </>,
           )}
         </div>
       </div>
-      <ConfigProvider theme={{ algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
+      <ConfigProvider
+        theme={{
+          algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
+        }}
+      >
         <Modal
           open={isModalVisible}
           onCancel={handleModalClose}
           footer={null}
           centered
           width="80vw"
-          styles={{ body: { padding: '24px 0 24px 24px' } }}
+          styles={{ body: { padding: "24px 0 24px 24px" } }}
         >
-          <div style={{ maxHeight: '80vh', overflowY: 'auto', paddingRight: '24px' }}>
-            {modalContent.image && <img src={modalContent.image} alt="Content" className="max-w-full rounded-lg object-contain mb-4 mx-auto" style={{ maxHeight: '60vh' }} />}
+          <div
+            style={{
+              maxHeight: "80vh",
+              overflowY: "auto",
+              paddingRight: "24px",
+            }}
+          >
+            {modalContent.image && (
+              <img
+                src={modalContent.image}
+                alt="Content"
+                className="max-w-full rounded-lg object-contain mb-4 mx-auto"
+                style={{ maxHeight: "60vh" }}
+              />
+            )}
             <p className="text-lg whitespace-pre-wrap">{modalContent.text}</p>
           </div>
         </Modal>
       </ConfigProvider>
-      <ConfigProvider theme={{ algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
+      <ConfigProvider
+        theme={{
+          algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
+        }}
+      >
         <Modal
           open={showSeeAnswerConfirm}
           onCancel={() => setShowSeeAnswerConfirm(false)}
@@ -200,12 +284,16 @@ const FlashCard = ({ questionId, questionText, questionImage, answer, answerImag
           cancelText="Cancel"
           centered
         >
-          <div className="text-lg font-semibold mb-2">Are you sure you want to see the answer?</div>
-          <div className="text-gray-400 dark:text-gray-300">Try to recall the answer yourself before revealing it!</div>
+          <div className="text-lg font-semibold mb-2">
+            Are you sure you want to see the answer?
+          </div>
+          <div className="text-gray-400 dark:text-gray-300">
+            Try to recall the answer yourself before revealing it!
+          </div>
         </Modal>
       </ConfigProvider>
     </div>
   );
 };
 
-export default FlashCard; 
+export default FlashCard;

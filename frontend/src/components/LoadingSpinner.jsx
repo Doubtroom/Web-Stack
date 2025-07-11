@@ -1,5 +1,5 @@
-import React from 'react';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import React from "react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 // import { useSelector } from 'react-redux';
 // const sizeClasses = {
@@ -34,4 +34,4 @@ const LoadingSpinner = ({ fullScreen = false }) => {
   return lottie;
 };
 
-export default LoadingSpinner; 
+export default LoadingSpinner;

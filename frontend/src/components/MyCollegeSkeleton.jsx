@@ -1,5 +1,5 @@
-import React from 'react';
-import QuestionCardSkeleton from './QuestionCardSkeleton';
+import React from "react";
+import QuestionCardSkeleton from "./QuestionCardSkeleton";
 
 const ITEMS_PER_PAGE = 9;
 
@@ -27,13 +27,15 @@ const MyCollegeSkeleton = () => {
 
         {/* Questions Grid Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array(ITEMS_PER_PAGE).fill(null).map((_, index) => (
-            <QuestionCardSkeleton key={index} />
-          ))}
+          {Array(ITEMS_PER_PAGE)
+            .fill(null)
+            .map((_, index) => (
+              <QuestionCardSkeleton key={index} />
+            ))}
         </div>
       </div>
     </div>
   );
 };
 
-export default MyCollegeSkeleton; 
+export default MyCollegeSkeleton;

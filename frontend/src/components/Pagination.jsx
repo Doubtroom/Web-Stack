@@ -1,5 +1,5 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   const renderPageNumbers = () => {
@@ -19,12 +19,12 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
           onClick={() => onPageChange(i)}
           className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-all duration-200 ${
             currentPage === i
-              ? 'bg-gradient-to-r from-[#1f5986] to-[#114073] dark:from-[#2d7cb8] dark:to-[#1a5c9e] text-white shadow-lg'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:scale-105 hover:shadow-md hover:shadow-blue-100 dark:hover:shadow-blue-900/20'
+              ? "bg-gradient-to-r from-[#1f5986] to-[#114073] dark:from-[#2d7cb8] dark:to-[#1a5c9e] text-white shadow-lg"
+              : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:scale-105 hover:shadow-md hover:shadow-blue-100 dark:hover:shadow-blue-900/20"
           }`}
         >
           {i}
-        </button>
+        </button>,
       );
     }
     return pages;
@@ -38,8 +38,8 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
           disabled={currentPage === 1}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
             currentPage > 1
-              ? 'bg-gradient-to-r from-[#1f5986] to-[#114073] dark:from-[#2d7cb8] dark:to-[#1a5c9e] text-white hover:scale-105 hover:shadow-lg hover:shadow-blue-200 dark:hover:shadow-blue-900/30'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+              ? "bg-gradient-to-r from-[#1f5986] to-[#114073] dark:from-[#2d7cb8] dark:to-[#1a5c9e] text-white hover:scale-105 hover:shadow-lg hover:shadow-blue-200 dark:hover:shadow-blue-900/30"
+              : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
           }`}
         >
           <ChevronLeft className="w-5 h-5" />
@@ -55,8 +55,8 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
           disabled={currentPage === totalPages}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
             currentPage < totalPages
-              ? 'bg-gradient-to-r from-[#1f5986] to-[#114073] dark:from-[#2d7cb8] dark:to-[#1a5c9e] text-white hover:scale-105 hover:shadow-lg hover:shadow-blue-200 dark:hover:shadow-blue-900/30'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+              ? "bg-gradient-to-r from-[#1f5986] to-[#114073] dark:from-[#2d7cb8] dark:to-[#1a5c9e] text-white hover:scale-105 hover:shadow-lg hover:shadow-blue-200 dark:hover:shadow-blue-900/30"
+              : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
           }`}
         >
           Next
@@ -71,4 +71,4 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   );
 };
 
-export default Pagination; 
+export default Pagination;

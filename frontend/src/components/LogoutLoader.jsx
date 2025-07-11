@@ -1,10 +1,10 @@
-import React from 'react';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import React from "react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 const LogoutLoader = ({ fullScreen = true }) => {
   const containerClass = fullScreen
-    ? 'fixed inset-0 z-50 flex flex-col items-center justify-center min-h-screen w-screen bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm'
-    : 'flex flex-col items-center justify-center min-h-[200px] w-full';
+    ? "fixed inset-0 z-50 flex flex-col items-center justify-center min-h-screen w-screen bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm"
+    : "flex flex-col items-center justify-center min-h-[200px] w-full";
 
   return (
     <div className={containerClass}>
@@ -26,4 +26,4 @@ const LogoutLoader = ({ fullScreen = true }) => {
   );
 };
 
-export default LogoutLoader; 
+export default LogoutLoader;

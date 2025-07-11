@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Building2 } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchQuestions } from '../store/dataSlice';
-import CollegeCard from '../components/CollegeCard';
-import { toast } from 'sonner';
-import FilterButton from '../components/FilterButton';
-import MobileFilterButton from '../components/MobileFilterButton';
-import Pagination from '../components/Pagination';
-import placeholder from '../assets/placeholder.png';
-import MyCollegeSkeleton from '../components/MyCollegeSkeleton';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Building2 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchQuestions } from "../store/dataSlice";
+import CollegeCard from "../components/CollegeCard";
+import { toast } from "sonner";
+import FilterButton from "../components/FilterButton";
+import MobileFilterButton from "../components/MobileFilterButton";
+import Pagination from "../components/Pagination";
+import placeholder from "../assets/placeholder.png";
+import MyCollegeSkeleton from "../components/MyCollegeSkeleton";
 
 const MyCollege = () => {
   const navigate = useNavigate();
@@ -18,46 +18,54 @@ const MyCollege = () => {
   const [showMyBranch, setShowMyBranch] = useState(false);
   const isMounted = useRef(true);
   const isFetching = useRef(false);
-  
+
   // Get data from Redux store
-  const { questions = [], loading, error, pagination } = useSelector((state) => state.data);
+  const {
+    questions = [],
+    loading,
+    error,
+    pagination,
+  } = useSelector((state) => state.data);
   const { user } = useSelector((state) => state.auth);
 
   const formatBranchName = (branch) => {
-    if (!branch) return '';
+    if (!branch) return "";
     return branch
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
   };
 
-  const fetchCollegeQuestions = useCallback(async (page) => {
-    // Prevent multiple simultaneous fetches
-    if (isFetching.current) return;
-    
-    try {
-      isFetching.current = true;
-      const filters = {
-        collegeName: user?.collegeName,
-        ...(showMyBranch && user?.branch ? { branch: user.branch } : {}),
-        page,
-        limit: 9
-      };
-      
-      await dispatch(fetchQuestions(filters)).unwrap();
-      // Only update URL if component is still mounted
-      if (isMounted.current) {
-        setSearchParams({ page: page.toString() });
+  const fetchCollegeQuestions = useCallback(
+    async (page) => {
+      // Prevent multiple simultaneous fetches
+      if (isFetching.current) return;
+
+      try {
+        isFetching.current = true;
+        const filters = {
+          collegeName: user?.collegeName,
+          ...(showMyBranch && user?.branch ? { branch: user.branch } : {}),
+          page,
+          limit: 9,
+        };
+
+        await dispatch(fetchQuestions(filters)).unwrap();
+        // Only update URL if component is still mounted
+        if (isMounted.current) {
+          setSearchParams({ page: page.toString() });
+        }
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+        if (isMounted.current) {
+          toast.error(error || "Failed to fetch questions");
+        }
+      } finally {
+        isFetching.current = false;
       }
-    } catch (error) {
-      console.error('Error fetching questions:', error);
-      if (isMounted.current) {
-        toast.error(error || 'Failed to fetch questions');
-      }
-    } finally {
-      isFetching.current = false;
-    }
-  }, [dispatch, user?.collegeName, user?.branch, showMyBranch, setSearchParams]);
+    },
+    [dispatch, user?.collegeName, user?.branch, showMyBranch, setSearchParams],
+  );
 
   const handlePageChange = async (page) => {
     window.scrollTo(0, 0);
@@ -66,7 +74,7 @@ const MyCollege = () => {
 
   useEffect(() => {
     if (user?.collegeName) {
-      const page = parseInt(searchParams.get('page')) || 1;
+      const page = parseInt(searchParams.get("page")) || 1;
       fetchCollegeQuestions(page);
     }
 
@@ -84,11 +92,11 @@ const MyCollege = () => {
   }, [error]);
 
   const formatText = (text) => {
-    if (!text) return 'Question';
+    if (!text) return "Question";
     return text
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
   };
 
   // Show skeleton when loading
@@ -105,7 +113,7 @@ const MyCollege = () => {
             <div className="flex items-center gap-2">
               <Building2 className="w-6 h-6 lg:w-8 lg:h-8 text-blue-900 dark:text-blue-300" />
               <h1 className="text-xl sm:text-4xl font-bold text-blue-900 dark:text-blue-300 break-words max-w-[250px] sm:max-w-[400px] md:max-w-[500px]">
-                {user?.collegeName || 'Your College'}
+                {user?.collegeName || "Your College"}
               </h1>
             </div>
             {/* Mobile Filter Button */}
@@ -152,7 +160,7 @@ const MyCollege = () => {
           ) : (
             <div className="col-span-full text-center py-12">
               <p className="text-gray-500 dark:text-gray-400 text-lg">
-                {showMyBranch 
+                {showMyBranch
                   ? `No questions found for ${formatBranchName(user?.branch)} branch in ${user?.collegeName}`
                   : `No questions found for ${user?.collegeName}`}
               </p>

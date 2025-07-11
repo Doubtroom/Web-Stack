@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { ThumbsUp, Maximize2 } from 'lucide-react';
-import Button from './Button';
+import React, { useEffect, useState } from "react";
+import { ThumbsUp, Maximize2 } from "lucide-react";
+import Button from "./Button";
 
-const AnswerCard = ({ 
-  answer, 
-  index, 
-  userData, 
-  onUpvote, 
-  onReply, 
-  onImageClick, 
-  onCardClick
+const AnswerCard = ({
+  answer,
+  index,
+  userData,
+  onUpvote,
+  onReply,
+  onImageClick,
+  onCardClick,
 }) => {
   const [isUpvoting, setIsUpvoting] = useState(false);
 
@@ -18,16 +18,18 @@ const AnswerCard = ({
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
 
-    if (diffInSeconds < 60) return 'just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} mins ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hrs ago`;
+    if (diffInSeconds < 60) return "just now";
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} mins ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} hrs ago`;
     return `${Math.floor(diffInSeconds / 86400)} days ago`;
   };
 
   const handleUpvote = async (e) => {
     e.stopPropagation();
     if (isUpvoting || !onUpvote) return;
-    
+
     setIsUpvoting(true);
     try {
       await onUpvote(answer._id);
@@ -41,14 +43,16 @@ const AnswerCard = ({
   const getOptimizedCloudinaryUrl = (url) => {
     if (!url) return url;
     // Only transform if it's a Cloudinary image URL
-    const match = url.match(/(https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.*)/);
+    const match = url.match(
+      /(https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.*)/,
+    );
     if (!match) return url;
     // Insert transformation string after /upload/
     return `${match[1]}w_150,h_150,c_fill,q_auto,f_auto/${match[2]}`;
   };
 
   return (
-    <div 
+    <div
       className="group bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer border border-gray-100 dark:border-gray-600 flex flex-col relative"
       onClick={onCardClick}
     >
@@ -62,33 +66,42 @@ const AnswerCard = ({
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-gray-800 dark:text-white">
-                {answer.role === 'faculty' || answer.role === 'faculty(Phd)' ? answer.userName : 'Anonymous'}
+                {answer.role === "faculty" || answer.role === "faculty(Phd)"
+                  ? answer.userName
+                  : "Anonymous"}
               </h3>
-              {(answer.role === 'faculty' || answer.role === 'faculty(Phd)') && (
+              {(answer.role === "faculty" ||
+                answer.role === "faculty(Phd)") && (
                 <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
-                  {answer.role === 'faculty' ? 'Faculty' : 'Faculty (Phd)'}
+                  {answer.role === "faculty" ? "Faculty" : "Faculty (Phd)"}
                 </span>
               )}
               {answer.postedBy.collegeName && (
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                  answer.postedBy.collegeName === userData.collegeName
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                    : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
-                }`}>
-                  {answer.postedBy.collegeName === userData.collegeName ? 'My College' : 'Other College'}
+                <span
+                  className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    answer.postedBy.collegeName === userData.collegeName
+                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400"
+                  }`}
+                >
+                  {answer.postedBy.collegeName === userData.collegeName
+                    ? "My College"
+                    : "Other College"}
                 </span>
               )}
             </div>
-            <span className="text-sm text-gray-500 dark:text-gray-400">{formatTimeAgo(answer.createdAt)}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {formatTimeAgo(answer.createdAt)}
+            </span>
           </div>
         </div>
-        
-        <p className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-2">{answer.text}</p>
-        
+
+        <p className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-2">
+          {answer.text}
+        </p>
+
         {answer.photoUrl && (
-          <div 
-            className="mt-4 rounded-lg overflow-hidden w-full h-32 relative group cursor-pointer"
-          >
+          <div className="mt-4 rounded-lg overflow-hidden w-full h-32 relative group cursor-pointer">
             <img
               src={getOptimizedCloudinaryUrl(answer.photoUrl)}
               alt="Answer"
@@ -100,7 +113,7 @@ const AnswerCard = ({
           </div>
         )}
       </div>
-      
+
       <div className="flex items-center gap-4 mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
         <div className="flex items-center gap-2">
           <Button
@@ -108,16 +121,20 @@ const AnswerCard = ({
             size="sm"
             disabled={isUpvoting}
             className={`px-3 inline-flex items-center transition-all duration-200 ${
-              isUpvoted ? 'text-[#173f67] dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'
-            } ${isUpvoting ? 'opacity-50 cursor-not-allowed' : 'hover:text-[#173f67] dark:hover:text-blue-400 hover:scale-105 active:scale-95'}`}
+              isUpvoted
+                ? "text-[#173f67] dark:text-blue-400"
+                : "text-gray-600 dark:text-gray-400"
+            } ${isUpvoting ? "opacity-50 cursor-not-allowed" : "hover:text-[#173f67] dark:hover:text-blue-400 hover:scale-105 active:scale-95"}`}
             onClick={handleUpvote}
             children={
               <>
-                <ThumbsUp className={`w-4 h-4 mr-1 transition-all duration-200 ${
-                  isUpvoted ? 'fill-current' : ''
-                } text-[#173f67] dark:text-[#3f7cc6] ${isUpvoting ? 'animate-pulse' : ''}`} />
-                <span className='text-[#173f67] dark:text-[#3f7cc6]'>
-                  {isUpvoting ? 'Updating...' : 'Upvote'}
+                <ThumbsUp
+                  className={`w-4 h-4 mr-1 transition-all duration-200 ${
+                    isUpvoted ? "fill-current" : ""
+                  } text-[#173f67] dark:text-[#3f7cc6] ${isUpvoting ? "animate-pulse" : ""}`}
+                />
+                <span className="text-[#173f67] dark:text-[#3f7cc6]">
+                  {isUpvoting ? "Updating..." : "Upvote"}
                 </span>
               </>
             }
@@ -141,4 +158,4 @@ const AnswerCard = ({
   );
 };
 
-export default AnswerCard; 
+export default AnswerCard;

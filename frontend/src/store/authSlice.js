@@ -1,21 +1,21 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { authService } from '../services/auth.services.js';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { authService } from "../services/auth.services.js";
 
 // Async thunks
 export const login = createAsyncThunk(
-  'auth/login',
+  "auth/login",
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await authService.login(credentials);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed');
+      return rejectWithValue(error.response?.data?.message || "Login failed");
     }
-  }
+  },
 );
 
 export const signup = createAsyncThunk(
-  'auth/signup',
+  "auth/signup",
   async (userData, { rejectWithValue }) => {
     try {
       const response = await authService.signup(userData);
@@ -23,124 +23,140 @@ export const signup = createAsyncThunk(
       await authService.sendOtp(userData.email);
       return {
         ...response.data,
-        otpSent: true
+        otpSent: true,
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Signup failed');
+      return rejectWithValue(error.response?.data?.message || "Signup failed");
     }
-  }
+  },
 );
 
 export const googleLogin = createAsyncThunk(
-  'auth/google-login',
+  "auth/google-login",
   async (token, { rejectWithValue }) => {
     try {
       const response = await authService.googleLogin(token);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Google login failed');
+      return rejectWithValue(
+        error.response?.data?.message || "Google login failed",
+      );
     }
-  }
+  },
 );
 
 export const logout = createAsyncThunk(
-  'auth/logout',
+  "auth/logout",
   async (_, { rejectWithValue }) => {
     try {
-      const response=await authService.logout();
+      const response = await authService.logout();
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Logout failed');
+      return rejectWithValue(error.response?.data?.message || "Logout failed");
     }
-  }
+  },
 );
 
 export const fetchUser = createAsyncThunk(
-  'auth/user',
+  "/user",
   async (_, { rejectWithValue }) => {
     try {
       const response = await authService.getUser();
       return response.data.user;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch user data');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch user data",
+      );
     }
-  }
+  },
 );
 
 export const updateProfile = createAsyncThunk(
-  'auth/saveUserProfile',
+  "auth/saveUserProfile",
   async (profileData, { rejectWithValue }) => {
     try {
       const response = await authService.saveProfile(profileData);
       return response.data.user;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Profile update failed');
+      return rejectWithValue(
+        error.response?.data?.message || "Profile update failed",
+      );
     }
-  }
+  },
 );
 
 export const sendOtp = createAsyncThunk(
-  'auth/send-otp',
+  "auth/send-otp",
   async (email, { rejectWithValue }) => {
     try {
       const response = await authService.sendOtp(email);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to send OTP');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to send OTP",
+      );
     }
-  }
+  },
 );
 
 export const verifyOtp = createAsyncThunk(
-  'auth/verify-otp',
+  "auth/verify-otp",
   async (otpData, { rejectWithValue }) => {
     try {
       const response = await authService.verifyOtp(otpData);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'OTP verification failed');
+      return rejectWithValue(
+        error.response?.data?.message || "OTP verification failed",
+      );
     }
-  }
+  },
 );
 
 export const requestPasswordReset = createAsyncThunk(
-  '/auth/request-reset',
+  "/auth/request-reset",
   async (email, { rejectWithValue }) => {
     try {
       const response = await authService.requestReset(email);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to request password reset');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to request password reset",
+      );
     }
-  }
+  },
 );
 
 export const verifyResetToken = createAsyncThunk(
-  'auth/verifyResetToken',
+  "auth/verifyResetToken",
   async (token, { rejectWithValue }) => {
     try {
       const response = await authService.verifyResetToken(token);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Invalid reset token');
+      return rejectWithValue(
+        error.response?.data?.message || "Invalid reset token",
+      );
     }
-  }
+  },
 );
 
 export const resetPassword = createAsyncThunk(
-  'auth/reset-password',
+  "auth/reset-password",
   async ({ token, newPassword }, { rejectWithValue }) => {
     try {
       const response = await authService.resetPassword(token, newPassword);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Password reset failed');
+      return rejectWithValue(
+        error.response?.data?.message || "Password reset failed",
+      );
     }
-  }
+  },
 );
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState: {
     user: null,
     loading: false,
@@ -149,14 +165,14 @@ const authSlice = createSlice({
     isVerified: false,
     otpSent: false,
     resetTokenValid: false,
-    features: { flashcards: true }
+    features: { flashcards: true },
   },
   reducers: {
     clearError: (state) => {
       state.error = null;
     },
     setAuth: (state, action) => {
-      if (typeof action.payload === 'boolean') {
+      if (typeof action.payload === "boolean") {
         state.isAuthenticated = action.payload;
       } else {
         state.isAuthenticated = action.payload.isAuthenticated;
@@ -183,7 +199,7 @@ const authSlice = createSlice({
           state.user.features = action.payload.features;
         }
       }
-    }
+    },
   },
   extraReducers: (builder) => {
     builder

@@ -1,14 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { MessageSquare, HelpCircle, Edit2, Trash2, ThumbsUp, Clock, BookOpen, ChevronRight, Loader2 } from 'lucide-react';
-import LoadingSpinner from '../components/LoadingSpinner';
-import Button from '../components/Button';
-import Card from '../components/Card';
-import QuestionSkeleton from '../components/QuestionSkeleton';
-import AnswerSkeleton from '../components/AnswerSkeleton';
-import { toast } from 'sonner';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchUserQuestions, fetchUserAnswers, deleteQuestion, deleteAnswer } from '../store/dataSlice';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  MessageSquare,
+  HelpCircle,
+  Edit2,
+  Trash2,
+  ThumbsUp,
+  Clock,
+  BookOpen,
+  ChevronRight,
+  Loader2,
+} from "lucide-react";
+import LoadingSpinner from "../components/LoadingSpinner";
+import Button from "../components/Button";
+import Card from "../components/Card";
+import QuestionSkeleton from "../components/QuestionSkeleton";
+import AnswerSkeleton from "../components/AnswerSkeleton";
+import { toast } from "sonner";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  fetchUserQuestions,
+  fetchUserAnswers,
+  deleteQuestion,
+  deleteAnswer,
+} from "../store/dataSlice";
 
 const MyQuestions = () => {
   const navigate = useNavigate();
@@ -16,7 +31,7 @@ const MyQuestions = () => {
   const [error, setError] = useState(null);
   const [hasFetched, setHasFetched] = useState(false);
   const [deletingItems, setDeletingItems] = useState(new Set()); // Track which items are being deleted
-  
+
   const userData = useSelector((state) => state?.auth?.user);
   const userQuestions = useSelector((state) => state?.data.userQuestions);
   const userAnswers = useSelector((state) => state?.data.userAnswers);
@@ -25,23 +40,24 @@ const MyQuestions = () => {
 
   const handleDelete = async (type, id) => {
     const itemKey = `${type}-${id}`;
-    
+
     // Add item to deleting set
-    setDeletingItems(prev => new Set(prev).add(itemKey));
-    
+    setDeletingItems((prev) => new Set(prev).add(itemKey));
+
     try {
-      if (type === 'question') {
+      if (type === "question") {
         await dispatch(deleteQuestion(id)).unwrap();
-        toast.success('Question and its answers deleted successfully!');
-      } else { // type === 'answer'
+        toast.success("Question and its answers deleted successfully!");
+      } else {
+        // type === 'answer'
         await dispatch(deleteAnswer(id)).unwrap();
-        toast.success('Answer deleted successfully!');
+        toast.success("Answer deleted successfully!");
       }
     } catch (error) {
       toast.error(error || `Failed to delete ${type}.`);
     } finally {
       // Remove item from deleting set
-      setDeletingItems(prev => {
+      setDeletingItems((prev) => {
         const newSet = new Set(prev);
         newSet.delete(itemKey);
         return newSet;
@@ -60,12 +76,12 @@ const MyQuestions = () => {
           setHasFetched(true);
           await Promise.all([
             dispatch(fetchUserQuestions()).unwrap(),
-            dispatch(fetchUserAnswers()).unwrap()
+            dispatch(fetchUserAnswers()).unwrap(),
           ]);
         }
       } catch (err) {
-        setError('Failed to fetch your content. Please try again later.');
-        console.error('Error:', err);
+        setError("Failed to fetch your content. Please try again later.");
+        console.error("Error:", err);
         setHasFetched(false); // Reset fetch state on error
       }
     };
@@ -76,11 +92,11 @@ const MyQuestions = () => {
   }, [userData, loadingQuestions, loadingAnswers, hasFetched, dispatch]);
 
   const formatText = (text) => {
-    if (!text) return '';
+    if (!text) return "";
     return text
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
   };
 
   const formatTimeAgo = (dateString) => {
@@ -88,9 +104,11 @@ const MyQuestions = () => {
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
 
-    if (diffInSeconds < 60) return 'just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 60) return "just now";
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
     return `${Math.floor(diffInSeconds / 86400)} days ago`;
   };
 
@@ -112,8 +130,12 @@ const MyQuestions = () => {
     <div className="min-h-screen from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 md:p-8 lg:mt-20">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl sm:text-4xl font-bold text-blue-900 dark:text-blue-300 lg:mb-2">My Content</h1>
-          <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-base">Manage your questions and answers</p>
+          <h1 className="text-2xl sm:text-4xl font-bold text-blue-900 dark:text-blue-300 lg:mb-2">
+            My Content
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-base">
+            Manage your questions and answers
+          </p>
         </div>
 
         {/* My Questions Section (moved to top) */}
@@ -123,10 +145,13 @@ const MyQuestions = () => {
               <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-lg">
                 <HelpCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-white">My Questions</h2>
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-white">
+                My Questions
+              </h2>
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
-              {userQuestions?.length || 0} {userQuestions?.length === 1 ? 'question' : 'questions'}
+              {userQuestions?.length || 0}{" "}
+              {userQuestions?.length === 1 ? "question" : "questions"}
             </div>
           </div>
 
@@ -141,12 +166,16 @@ const MyQuestions = () => {
               <div className="bg-indigo-50 dark:bg-indigo-900/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <HelpCircle className="w-8 h-8 text-indigo-500 dark:text-indigo-400" />
               </div>
-              <h3 className="text-lg sm:text-xl font-medium text-gray-800 dark:text-white mb-2">No questions yet</h3>
-              <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base mb-4">You haven't asked any questions yet</p>
+              <h3 className="text-lg sm:text-xl font-medium text-gray-800 dark:text-white mb-2">
+                No questions yet
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base mb-4">
+                You haven't asked any questions yet
+              </p>
               <Button
                 variant="primary"
                 size="md"
-                onClick={() => navigate('/ask-question')}
+                onClick={() => navigate("/ask-question")}
                 className="px-6 py-2.5"
               >
                 Ask Question
@@ -158,18 +187,20 @@ const MyQuestions = () => {
                 <Card
                   key={question._id}
                   id={question._id}
-                  collegeName={formatText(question.collegeName) || 'Your College'}
+                  collegeName={
+                    formatText(question.collegeName) || "Your College"
+                  }
                   img={question.photoUrl}
                   imgId={question.photoId}
-                  branch={formatText(question.branch) || 'Your Branch'}
-                  collegeYear={question.collegeYear || 'Any Year'}
-                  topic={formatText(question.topic) || 'General'}
+                  branch={formatText(question.branch) || "Your Branch"}
+                  collegeYear={question.collegeYear || "Any Year"}
+                  topic={formatText(question.topic) || "General"}
                   noOfAnswers={question.noOfAnswers || 0}
                   postedOn={formatTimeAgo(question.createdAt)}
                   postedBy={question.postedBy?._id}
                   showAnswerButton={false}
                   onDelete={handleDelete}
-                  isDeleting={isDeleting('question', question._id)}
+                  isDeleting={isDeleting("question", question._id)}
                   className="transform hover:scale-[1.02] transition-all duration-200"
                 />
               ))}
@@ -184,10 +215,13 @@ const MyQuestions = () => {
               <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
                 <MessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-white">My Answers</h2>
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-white">
+                My Answers
+              </h2>
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
-              {userAnswers?.length || 0} {userAnswers?.length === 1 ? 'answer' : 'answers'}
+              {userAnswers?.length || 0}{" "}
+              {userAnswers?.length === 1 ? "answer" : "answers"}
             </div>
           </div>
 
@@ -202,12 +236,16 @@ const MyQuestions = () => {
               <div className="bg-blue-50 dark:bg-blue-900/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <MessageSquare className="w-8 h-8 text-blue-500 dark:text-blue-400" />
               </div>
-              <h3 className="text-lg sm:text-xl font-medium text-gray-800 dark:text-white mb-2">No answers yet</h3>
-              <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base mb-4">You haven't answered any questions yet</p>
+              <h3 className="text-lg sm:text-xl font-medium text-gray-800 dark:text-white mb-2">
+                No answers yet
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base mb-4">
+                You haven't answered any questions yet
+              </p>
               <Button
                 variant="primary"
                 size="md"
-                onClick={() => navigate('/home')}
+                onClick={() => navigate("/home")}
                 className="px-6 py-2.5"
               >
                 Browse Questions
@@ -221,17 +259,21 @@ const MyQuestions = () => {
                   id={answer.questionId?._id}
                   answerId={answer._id}
                   type="answer"
-                  collegeName={answer.questionId?.collegeName || 'Unknown College'}
+                  collegeName={
+                    answer.questionId?.collegeName || "Unknown College"
+                  }
                   img={answer.photoUrl}
                   imgId={answer.photoId}
-                  branch={formatText(answer.questionId?.branch) || 'Unknown Branch'}
-                  topic={answer.questionId?.text || 'Question not found'}
+                  branch={
+                    formatText(answer.questionId?.branch) || "Unknown Branch"
+                  }
+                  topic={answer.questionId?.text || "Question not found"}
                   noOfAnswers={answer.upvotes || 0}
                   postedOn={formatTimeAgo(answer.createdAt)}
                   postedBy={answer.postedBy?._id}
                   showAnswerButton={false}
                   onDelete={handleDelete}
-                  isDeleting={isDeleting('answer', answer._id)}
+                  isDeleting={isDeleting("answer", answer._id)}
                   className="transform hover:scale-[1.02] transition-all duration-200"
                 />
               ))}
@@ -243,4 +285,4 @@ const MyQuestions = () => {
   );
 };
 
-export default MyQuestions; 
+export default MyQuestions;

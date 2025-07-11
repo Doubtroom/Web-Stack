@@ -1,12 +1,22 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React from "react";
+import { useSelector } from "react-redux";
 
-const Button = ({ text, loadingText, onClick, variant = "primary", fullWidth = false, className = "", isLoading, disabled, type }) => {
+const Button = ({
+  text,
+  loadingText,
+  onClick,
+  variant = "primary",
+  fullWidth = false,
+  className = "",
+  isLoading,
+  disabled,
+  type,
+}) => {
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
-  
+
   const variants = {
-    primary: isDarkMode 
-      ? "bg-blue-600 hover:bg-blue-700 text-white" 
+    primary: isDarkMode
+      ? "bg-blue-600 hover:bg-blue-700 text-white"
       : "bg-blue-500 hover:bg-blue-600 text-white",
     secondary: isDarkMode
       ? "bg-gray-800 hover:bg-gray-700 text-white border border-gray-700"
@@ -20,7 +30,7 @@ const Button = ({ text, loadingText, onClick, variant = "primary", fullWidth = f
       onClick={onClick}
       className={`py-3 px-4 rounded-md font-medium transition-colors duration-200 
         ${variants[variant]} 
-        ${fullWidth ? 'w-full' : ''}
+        ${fullWidth ? "w-full" : ""}
         ${className}
         ${isLoading ? (isDarkMode ? "bg-blue-800" : "bg-blue-700") : ""}
         `}

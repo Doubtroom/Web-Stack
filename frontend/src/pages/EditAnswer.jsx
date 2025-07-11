@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Upload, X, ArrowLeft } from 'lucide-react';
-import { answerServices } from '../services/data.services';
-import LoadingSpinner from '../components/LoadingSpinner';
-import Button from '../components/Button';
-import { toast } from 'sonner';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Upload, X, ArrowLeft } from "lucide-react";
+import { answerServices } from "../services/data.services";
+import LoadingSpinner from "../components/LoadingSpinner";
+import Button from "../components/Button";
+import { toast } from "sonner";
 
 const EditAnswer = () => {
   const { id } = useParams();
@@ -12,8 +12,8 @@ const EditAnswer = () => {
   const [loading, setLoading] = useState(false);
   const [answer, setAnswer] = useState(null);
   const [formData, setFormData] = useState({
-    text: '',
-    photo: null
+    text: "",
+    photo: null,
   });
   const [previewUrl, setPreviewUrl] = useState(null);
   const [removePhoto, setRemovePhoto] = useState(false);
@@ -26,15 +26,15 @@ const EditAnswer = () => {
         if (answerData) {
           setAnswer(answerData);
           setFormData({
-            text: answerData.text || '',
-            photo: null
+            text: answerData.text || "",
+            photo: null,
           });
           setPreviewUrl(answerData.photoUrl || null);
         }
       } catch (error) {
-        console.error('Error fetching answer:', error);
-        toast.error('Failed to fetch answer details');
-        navigate('/my-questions');
+        console.error("Error fetching answer:", error);
+        toast.error("Failed to fetch answer details");
+        navigate("/my-questions");
       }
     };
 
@@ -50,18 +50,18 @@ const EditAnswer = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        photo: file
+        photo: file,
       }));
       // Create preview URL
       const reader = new FileReader();
@@ -74,34 +74,34 @@ const EditAnswer = () => {
 
   const handleRemovePhoto = () => {
     setPreviewUrl(null);
-    setFormData(prev => ({ ...prev, photo: null }));
+    setFormData((prev) => ({ ...prev, photo: null }));
     setRemovePhoto(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.text.trim()) {
-      toast.error('Please enter your answer');
+      toast.error("Please enter your answer");
       return;
     }
 
     setLoading(true);
     try {
       const data = new FormData();
-      data.append('text', formData.text.trim());
+      data.append("text", formData.text.trim());
 
       if (formData.photo) {
-        data.append('photo', formData.photo);
+        data.append("photo", formData.photo);
       } else if (removePhoto) {
-        data.append('removePhoto', 'true');
+        data.append("removePhoto", "true");
       }
 
       await answerServices.updateAnswer(id, data);
-      toast.success('Answer updated successfully!');
-      navigate('/my-questions');
+      toast.success("Answer updated successfully!");
+      navigate("/my-questions");
     } catch (error) {
-      console.error('Error updating answer:', error);
-      toast.error('Failed to update answer. Please try again.');
+      console.error("Error updating answer:", error);
+      toast.error("Failed to update answer. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -114,10 +114,10 @@ const EditAnswer = () => {
   if (!answer) {
     return null;
   }
-  const handleCancel=(e)=>{
-    e.preventDefault()
-    navigate('/my-questions')
-  }
+  const handleCancel = (e) => {
+    e.preventDefault();
+    navigate("/my-questions");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 lg:pt-24">
@@ -125,19 +125,24 @@ const EditAnswer = () => {
         <Button
           variant="ghost"
           className="mb-6 text-gray-700 dark:text-gray-200 dark:hover:text-white hover:text-gray-700"
-          onClick={() => navigate('/my-questions')}
+          onClick={() => navigate("/my-questions")}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to My Content
         </Button>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8">
-          <h2 className="text-2xl font-bold text-[#173f67] dark:text-white mb-6">Edit Answer</h2>
-          
+          <h2 className="text-2xl font-bold text-[#173f67] dark:text-white mb-6">
+            Edit Answer
+          </h2>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Answer Text */}
             <div>
-              <label htmlFor="text" className="block text-sm font-medium text-[#173f67] dark:text-gray-200 mb-2">
+              <label
+                htmlFor="text"
+                className="block text-sm font-medium text-[#173f67] dark:text-gray-200 mb-2"
+              >
                 Answer
               </label>
               <textarea
@@ -165,13 +170,13 @@ const EditAnswer = () => {
                     className="w-full h-48 object-cover rounded-lg"
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
-                    <label 
-                      htmlFor="photo-upload" 
+                    <label
+                      htmlFor="photo-upload"
                       className="text-white font-semibold cursor-pointer px-4 py-2 bg-black/50 rounded-md hover:bg-black/70"
                     >
                       Change Photo
                     </label>
-                    <button 
+                    <button
                       type="button"
                       onClick={handleRemovePhoto}
                       className="text-white font-semibold cursor-pointer px-4 py-2 bg-red-600/80 rounded-md hover:bg-red-700/80 ml-4"
@@ -192,9 +197,12 @@ const EditAnswer = () => {
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
                     <Upload className="w-8 h-8 text-[#173f67] dark:text-gray-200 mb-2" />
                     <p className="text-sm text-gray-600 dark:text-gray-300">
-                      <span className="font-semibold">Click to upload</span> or drag and drop
+                      <span className="font-semibold">Click to upload</span> or
+                      drag and drop
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">PNG, JPG or JPEG (MAX. 5MB)</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      PNG, JPG or JPEG (MAX. 5MB)
+                    </p>
                   </div>
                   <input
                     type="file"
@@ -215,10 +223,7 @@ const EditAnswer = () => {
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                variant="primary"
-              >
+              <Button type="submit" variant="primary">
                 Update Answer
               </Button>
             </div>
@@ -229,4 +234,4 @@ const EditAnswer = () => {
   );
 };
 
-export default EditAnswer; 
+export default EditAnswer;

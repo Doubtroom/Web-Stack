@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const QuestionCardSkeleton = () => {
   return (
@@ -39,4 +39,4 @@ const QuestionCardSkeleton = () => {
   );
 };
 
-export default QuestionCardSkeleton; 
+export default QuestionCardSkeleton;

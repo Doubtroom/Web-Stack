@@ -1,13 +1,20 @@
-import express from "express"
-import {verifyAuthentication, verifyToken} from "../middleware/authMiddleware.js"
-import { getUser, authStatus, updateFeatures } from "../controllers/authController.js";
+import express from "express";
+import {
+  verifyAuthentication,
+  verifyToken,
+} from "../middleware/authMiddleware.js";
+import {
+  getUser,
+  authStatus,
+  updateFeatures,
+} from "../controllers/authController.js";
 
-const router=express.Router()
+const router = express.Router();
 
-router.get('/', verifyAuthentication, getUser)
+router.get("/", verifyAuthentication, getUser);
 
-router.get('/verify', authStatus);
+router.get("/verify", authStatus);
 
-router.post('/features', verifyToken, updateFeatures)
+router.post("/features", verifyToken, updateFeatures);
 
-export default router
+export default router;

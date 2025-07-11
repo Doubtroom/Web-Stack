@@ -1,8 +1,8 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { flashcardServices } from '../services/data.services';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { flashcardServices } from "../services/data.services";
 
 export const fetchFlashcardStatuses = createAsyncThunk(
-  'flashcardStatus/fetchAll',
+  "flashcardStatus/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
       const response = await flashcardServices.getAll();
@@ -10,11 +10,11 @@ export const fetchFlashcardStatuses = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
-  }
+  },
 );
 
 const flashcardStatusSlice = createSlice({
-  name: 'flashcardStatus',
+  name: "flashcardStatus",
   initialState: {
     flashcards: [],
     loading: false,
@@ -38,4 +38,4 @@ const flashcardStatusSlice = createSlice({
   },
 });
 
-export default flashcardStatusSlice.reducer; 
+export default flashcardStatusSlice.reducer;

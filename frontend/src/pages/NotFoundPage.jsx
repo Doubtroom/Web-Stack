@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { BookOpen, Home, HelpCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { Link } from "react-router-dom";
+import { BookOpen, Home, HelpCircle } from "lucide-react";
+import { motion } from "framer-motion";
 
 const NotFoundPage = () => {
   return (
@@ -15,29 +15,31 @@ const NotFoundPage = () => {
         >
           <div className="absolute -top-20 left-1/2 transform -translate-x-1/2">
             <motion.div
-              animate={{ 
+              animate={{
                 rotate: [0, 10, -10, 0],
-                y: [0, -10, 0]
+                y: [0, -10, 0],
               }}
-              transition={{ 
+              transition={{
                 duration: 2,
                 repeat: Infinity,
-                repeatType: "reverse"
+                repeatType: "reverse",
               }}
             >
               <BookOpen className="w-24 h-24 text-blue-500 dark:text-blue-400 opacity-20" />
             </motion.div>
           </div>
-          
-          <h1 className="text-9xl font-bold text-blue-500 dark:text-blue-400 mb-4">404</h1>
+
+          <h1 className="text-9xl font-bold text-blue-500 dark:text-blue-400 mb-4">
+            404
+          </h1>
           <h2 className="text-3xl font-semibold text-gray-800 dark:text-white mb-6">
             Oops! Page Not Found
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-            Looks like this page went on a study break and never came back! 
+            Looks like this page went on a study break and never came back!
             Don't worry, we've got plenty of other questions to explore.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/"
@@ -53,4 +55,4 @@ const NotFoundPage = () => {
   );
 };
 
-export default NotFoundPage; 
+export default NotFoundPage;

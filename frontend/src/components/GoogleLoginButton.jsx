@@ -1,14 +1,13 @@
-import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect } from "react";
+import { useSelector } from "react-redux";
 
 const GoogleLoginButton = ({ onClick, disabled }) => {
-
   const baseClasses =
-    'w-full flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium border transition-colors duration-200';
+    "w-full flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium border transition-colors duration-200";
   const lightThemeClasses =
-    'bg-white hover:bg-gray-100 text-gray-800 border-gray-300';
+    "bg-white hover:bg-gray-100 text-gray-800 border-gray-300";
   const darkThemeClasses =
-    'bg-gray-900 hover:bg-gray-800 text-white border-gray-700';
+    "bg-gray-900 hover:bg-gray-800 text-white border-gray-700";
 
   const buttonClasses = `${baseClasses} ${
     isDarkMode ? darkThemeClasses : lightThemeClasses

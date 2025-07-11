@@ -1,7 +1,7 @@
-import React from 'react';
-import { AlertTriangle } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from "react";
+import { AlertTriangle } from "lucide-react";
+import { useSelector } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ConfirmationDialog = ({ isOpen, onClose, onConfirm, title, message }) => {
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
@@ -26,28 +26,36 @@ const ConfirmationDialog = ({ isOpen, onClose, onConfirm, title, message }) => {
             transition={{ duration: 0.15 }}
             onClick={(e) => e.stopPropagation()}
             className={`w-full max-w-md mx-4 rounded-lg shadow-xl ${
-              isDarkMode ? 'bg-gray-800' : 'bg-white'
+              isDarkMode ? "bg-gray-800" : "bg-white"
             }`}
           >
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className={`p-2 rounded-full ${
-                  isDarkMode ? 'bg-red-900/30' : 'bg-red-100'
-                }`}>
-                  <AlertTriangle className={`w-6 h-6 ${
-                    isDarkMode ? 'text-red-400' : 'text-red-600'
-                  }`} />
+                <div
+                  className={`p-2 rounded-full ${
+                    isDarkMode ? "bg-red-900/30" : "bg-red-100"
+                  }`}
+                >
+                  <AlertTriangle
+                    className={`w-6 h-6 ${
+                      isDarkMode ? "text-red-400" : "text-red-600"
+                    }`}
+                  />
                 </div>
-                <h3 className={`text-lg font-semibold ${
-                  isDarkMode ? 'text-white' : 'text-gray-900'
-                }`}>
+                <h3
+                  className={`text-lg font-semibold ${
+                    isDarkMode ? "text-white" : "text-gray-900"
+                  }`}
+                >
                   {title}
                 </h3>
               </div>
-              
-              <p className={`mb-6 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>
+
+              <p
+                className={`mb-6 ${
+                  isDarkMode ? "text-gray-300" : "text-gray-600"
+                }`}
+              >
                 {message}
               </p>
 
@@ -55,9 +63,9 @@ const ConfirmationDialog = ({ isOpen, onClose, onConfirm, title, message }) => {
                 <button
                   onClick={onClose}
                   className={`px-4 py-2 rounded-md text-sm font-medium ${
-                    isDarkMode 
-                      ? 'text-gray-300 hover:bg-gray-700' 
-                      : 'text-gray-700 hover:bg-gray-100'
+                    isDarkMode
+                      ? "text-gray-300 hover:bg-gray-700"
+                      : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
                   Cancel
@@ -68,9 +76,9 @@ const ConfirmationDialog = ({ isOpen, onClose, onConfirm, title, message }) => {
                     onClose();
                   }}
                   className={`px-4 py-2 rounded-md text-sm font-medium ${
-                    isDarkMode 
-                      ? 'bg-red-600 text-white hover:bg-red-700' 
-                      : 'bg-red-600 text-white hover:bg-red-700'
+                    isDarkMode
+                      ? "bg-red-600 text-white hover:bg-red-700"
+                      : "bg-red-600 text-white hover:bg-red-700"
                   }`}
                 >
                   Delete
@@ -84,4 +92,4 @@ const ConfirmationDialog = ({ isOpen, onClose, onConfirm, title, message }) => {
   );
 };
 
-export default ConfirmationDialog; 
+export default ConfirmationDialog;

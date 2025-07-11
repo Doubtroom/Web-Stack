@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, HelpCircle, Clock, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { questionServices } from '../services/data.services';
-import { toast } from 'sonner';
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect, useRef } from "react";
+import { Search, HelpCircle, Clock, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { questionServices } from "../services/data.services";
+import { toast } from "sonner";
+import { useSelector } from "react-redux";
 
 const SearchBar = ({ isMobile = false, onClose, isOpen, onSearchComplete }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -20,7 +20,7 @@ const SearchBar = ({ isMobile = false, onClose, isOpen, onSearchComplete }) => {
       e.stopPropagation();
     }
     setShowDropdown(false);
-    setSearchTerm('');
+    setSearchTerm("");
     setResults([]);
     if (onClose) {
       onClose();
@@ -31,7 +31,7 @@ const SearchBar = ({ isMobile = false, onClose, isOpen, onSearchComplete }) => {
   useEffect(() => {
     if (!isOpen) {
       setShowDropdown(false);
-      setSearchTerm('');
+      setSearchTerm("");
       setResults([]);
     }
   }, [isOpen]);
@@ -44,8 +44,9 @@ const SearchBar = ({ isMobile = false, onClose, isOpen, onSearchComplete }) => {
     };
 
     if (showDropdown || isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [showDropdown, isOpen]);
 
@@ -58,17 +59,19 @@ const SearchBar = ({ isMobile = false, onClose, isOpen, onSearchComplete }) => {
 
       setIsLoading(true);
       try {
-        const response = await questionServices.getFilteredQuestions({ search: searchTerm });
-        const formattedResults = response.data.questions.map(q => ({
+        const response = await questionServices.getFilteredQuestions({
+          search: searchTerm,
+        });
+        const formattedResults = response.data.questions.map((q) => ({
           ...q,
-          id: q._id
+          id: q._id,
         }));
 
         setResults(formattedResults);
         setShowDropdown(true);
       } catch (error) {
-        console.error('Search error:', error);
-        toast.error('Failed to perform search');
+        console.error("Search error:", error);
+        toast.error("Failed to perform search");
       } finally {
         setIsLoading(false);
       }
@@ -111,33 +114,42 @@ const SearchBar = ({ isMobile = false, onClose, isOpen, onSearchComplete }) => {
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
 
-    if (diffInSeconds < 60) return 'just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 60) return "just now";
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
     return `${Math.floor(diffInSeconds / 86400)} days ago`;
   };
 
   const highlightMatch = (text, searchTerm) => {
     if (!searchTerm.trim()) return text;
-    const regex = new RegExp(`(${searchTerm})`, 'gi');
-    return text.split(regex).map((part, i) => 
+    const regex = new RegExp(`(${searchTerm})`, "gi");
+    return text.split(regex).map((part, i) =>
       regex.test(part) ? (
-        <span key={i} className={`${isDarkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-800'} px-1 rounded`}>
+        <span
+          key={i}
+          className={`${isDarkMode ? "bg-blue-900/50 text-blue-300" : "bg-blue-100 text-blue-800"} px-1 rounded`}
+        >
           {part}
         </span>
-      ) : part
+      ) : (
+        part
+      ),
     );
   };
 
   return (
-    <div 
-      className={`relative ${isMobile ? 'w-full mt-10' : 'w-80'}`} 
+    <div
+      className={`relative ${isMobile ? "w-full mt-10" : "w-80"}`}
       ref={searchRef}
       onClick={(e) => e.stopPropagation()}
     >
       <form onSubmit={handleSubmit} className="relative flex">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-          <Search className={`w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+          <Search
+            className={`w-4 h-4 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}
+          />
         </div>
         <input
           type="text"
@@ -151,17 +163,17 @@ const SearchBar = ({ isMobile = false, onClose, isOpen, onSearchComplete }) => {
           }}
           className={`w-full py-2 pl-10 pr-12 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#173f67] ${
             isDarkMode
-              ? 'bg-gray-700 text-white placeholder-gray-400'
-              : 'bg-gray-100 text-gray-900 placeholder-gray-500'
-          } ${isMobile ? 'py-3 text-base' : ''}`}
+              ? "bg-gray-700 text-white placeholder-gray-400"
+              : "bg-gray-100 text-gray-900 placeholder-gray-500"
+          } ${isMobile ? "py-3 text-base" : ""}`}
           placeholder="Search by question, topic, or branch..."
         />
         <button
           type="submit"
           className={`absolute inset-y-0 right-0 flex items-center pr-3 ${
             isDarkMode
-              ? 'text-blue-400 hover:text-blue-300'
-              : 'text-[#173f67] hover:text-[#122f4d]'
+              ? "text-blue-400 hover:text-blue-300"
+              : "text-[#173f67] hover:text-[#122f4d]"
           }`}
         >
           <ArrowRight className="w-4 h-4" />
@@ -170,18 +182,20 @@ const SearchBar = ({ isMobile = false, onClose, isOpen, onSearchComplete }) => {
 
       {/* Search Results Dropdown */}
       {showDropdown && (searchTerm.trim() || isLoading) && (
-        <div 
-          className={`absolute ${isMobile ? 'top-full left-0 right-0' : 'top-full left-0'} w-full mt-2 rounded-lg shadow-lg border max-h-96 overflow-y-auto ${
+        <div
+          className={`absolute ${isMobile ? "top-full left-0 right-0" : "top-full left-0"} w-full mt-2 rounded-lg shadow-lg border max-h-96 overflow-y-auto ${
             isDarkMode
-              ? 'bg-gray-800 border-gray-700'
-              : 'bg-white border-gray-200'
+              ? "bg-gray-800 border-gray-700"
+              : "bg-white border-gray-200"
           }`}
           onClick={(e) => e.stopPropagation()}
         >
           {isLoading ? (
-            <div className={`p-4 text-center ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>
+            <div
+              className={`p-4 text-center ${
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
               Searching...
             </div>
           ) : results.length > 0 ? (
@@ -192,52 +206,62 @@ const SearchBar = ({ isMobile = false, onClose, isOpen, onSearchComplete }) => {
                   onClick={(e) => handleResultClick(e, result)}
                   className={`px-4 py-3 cursor-pointer border-b last:border-b-0 ${
                     isDarkMode
-                      ? 'hover:bg-gray-700 border-gray-700'
-                      : 'hover:bg-gray-50 border-gray-100'
+                      ? "hover:bg-gray-700 border-gray-700"
+                      : "hover:bg-gray-50 border-gray-100"
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className="mt-1">
-                      <HelpCircle className={`w-4 h-4 ${
-                        isDarkMode ? 'text-blue-400' : 'text-[#173f67]'
-                      }`} />
+                      <HelpCircle
+                        className={`w-4 h-4 ${
+                          isDarkMode ? "text-blue-400" : "text-[#173f67]"
+                        }`}
+                      />
                     </div>
                     <div className="flex-1">
                       {/* Question Text */}
                       <div className="mb-2">
-                        <p className={`text-sm line-clamp-2 ${
-                          isDarkMode ? 'text-gray-200' : 'text-gray-900'
-                        }`}>
+                        <p
+                          className={`text-sm line-clamp-2 ${
+                            isDarkMode ? "text-gray-200" : "text-gray-900"
+                          }`}
+                        >
                           {highlightMatch(result.text, searchTerm)}
                         </p>
                       </div>
-                      
+
                       {/* Topic and Branch */}
                       <div className="flex items-center gap-2 text-xs mb-1 flex-wrap">
                         {result.topic && (
-                          <span className={`px-2 py-0.5 rounded-full ${
-                            isDarkMode 
-                              ? 'bg-blue-900/30 text-blue-300' 
-                              : 'bg-blue-100 text-blue-800'
-                          }`}>
+                          <span
+                            className={`px-2 py-0.5 rounded-full ${
+                              isDarkMode
+                                ? "bg-blue-900/30 text-blue-300"
+                                : "bg-blue-100 text-blue-800"
+                            }`}
+                          >
                             Topic: {highlightMatch(result.topic, searchTerm)}
                           </span>
                         )}
                         {result.branch && (
-                          <span className={`px-2 py-0.5 rounded-full ${
-                            isDarkMode 
-                              ? 'bg-gray-700 text-gray-300' 
-                              : 'bg-gray-100 text-gray-700'
-                          }`}>
+                          <span
+                            className={`px-2 py-0.5 rounded-full ${
+                              isDarkMode
+                                ? "bg-gray-700 text-gray-300"
+                                : "bg-gray-100 text-gray-700"
+                            }`}
+                          >
                             Branch: {highlightMatch(result.branch, searchTerm)}
                           </span>
                         )}
                       </div>
 
                       {/* College and Time */}
-                      <div className={`flex items-center justify-between text-xs ${
-                        isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                      }`}>
+                      <div
+                        className={`flex items-center justify-between text-xs ${
+                          isDarkMode ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
                         <span>{result.college}</span>
                         <div className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
@@ -250,9 +274,11 @@ const SearchBar = ({ isMobile = false, onClose, isOpen, onSearchComplete }) => {
               ))}
             </div>
           ) : (
-            <div className={`p-4 text-center ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>
+            <div
+              className={`p-4 text-center ${
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
               No questions found
             </div>
           )}

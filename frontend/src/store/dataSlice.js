@@ -1,20 +1,20 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { 
-  questionServices, 
-  answerServices, 
-  commentServices, 
-  reportServices, 
-  customerCareServices 
-} from '../services/data.services';
-import { API_ENDPOINTS, API_BASE_URL } from '../config/api.config';
-import axios from 'axios';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  questionServices,
+  answerServices,
+  commentServices,
+  reportServices,
+  customerCareServices,
+} from "../services/data.services";
+import { API_ENDPOINTS, API_BASE_URL } from "../config/api.config";
+import axios from "axios";
 
 // Create axios instance with base URL
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    "Content-Type": "application/json",
+  },
 });
 
 // Remove the question cache
@@ -28,141 +28,165 @@ const upvoteState = new Map();
 
 // Async thunks for Questions
 export const fetchQuestions = createAsyncThunk(
-  'data/fetchQuestions',
+  "data/fetchQuestions",
   async (filters, { rejectWithValue }) => {
     try {
       const response = await questionServices.getFilteredQuestions(filters);
       return {
         questions: response.data.questions,
         pagination: response.data.pagination,
-        filters: response.data.filters
+        filters: response.data.filters,
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch questions');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch questions",
+      );
     }
-  }
+  },
 );
 
 export const createQuestion = createAsyncThunk(
-  'data/createQuestion',
+  "data/createQuestion",
   async (formData, { rejectWithValue }) => {
     try {
       const response = await questionServices.createQuestion(formData);
       return response.data.question;
     } catch (error) {
-      console.error('Error in createQuestion:', error.response?.data || error);
-      return rejectWithValue(error.response?.data?.message || 'Failed to create question');
+      console.error("Error in createQuestion:", error.response?.data || error);
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to create question",
+      );
     }
-  }
+  },
 );
 
 export const fetchUserQuestions = createAsyncThunk(
-  'data/fetchUserQuestions',
+  "data/fetchUserQuestions",
   async (_, { rejectWithValue }) => {
     try {
       const response = await questionServices.getUserQuestions();
       return response.data.questions;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch user questions');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch user questions",
+      );
     }
-  }
+  },
 );
 
 export const fetchQuestionById = createAsyncThunk(
-  'data/fetchQuestionById',
+  "data/fetchQuestionById",
   async (questionId, { rejectWithValue }) => {
     try {
-      const response = await api.get(API_ENDPOINTS.QUESTIONS.GET_ONE(questionId));
+      const response = await api.get(
+        API_ENDPOINTS.QUESTIONS.GET_ONE(questionId),
+      );
       return response.data.question;
     } catch (error) {
-      console.error('Error fetching question:', error);
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch question');
+      console.error("Error fetching question:", error);
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch question",
+      );
     }
-  }
+  },
 );
 
 // Async thunks for Answers
 export const fetchAnswers = createAsyncThunk(
-  'data/fetchAnswers',
+  "data/fetchAnswers",
   async ({ questionId, cursor = null }, { rejectWithValue }) => {
     try {
-      const response = await answerServices.getAnswersByQuestion(questionId, { cursor });
+      const response = await answerServices.getAnswersByQuestion(questionId, {
+        cursor,
+      });
       return {
         answers: response.data.answers,
         hasMore: response.data.hasMore,
-        nextCursor: response.data.nextCursor
+        nextCursor: response.data.nextCursor,
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch answers');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch answers",
+      );
     }
-  }
+  },
 );
 
 export const createAnswer = createAsyncThunk(
-  'data/createAnswer',
+  "data/createAnswer",
   async ({ questionId, formData }, { rejectWithValue }) => {
     try {
       const response = await answerServices.createAnswer(questionId, formData);
       return response.data.answer;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to create answer');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to create answer",
+      );
     }
-  }
+  },
 );
 
 export const fetchUserAnswers = createAsyncThunk(
-  'data/fetchUserAnswers',
+  "data/fetchUserAnswers",
   async (_, { rejectWithValue }) => {
     try {
       const response = await answerServices.getUserAnswers();
       return response.data.answers;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch user answers');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch user answers",
+      );
     }
-  }
+  },
 );
 
 export const fetchAnswerById = createAsyncThunk(
-  'data/fetchAnswerById',
-  async ({ answerId}, { rejectWithValue }) => {
+  "data/fetchAnswerById",
+  async ({ answerId }, { rejectWithValue }) => {
     try {
       const response = await answerServices.getAnswer(answerId);
       return {
         answer: response.data.answer,
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch answer');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch answer",
+      );
     }
-  }
+  },
 );
 
 // Async thunks for Comments
 export const fetchComments = createAsyncThunk(
-  'data/fetchComments',
+  "data/fetchComments",
   async (answerId, { rejectWithValue }) => {
     try {
       const response = await commentServices.getCommentsByAnswer(answerId);
       return response.data.comments;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch comments');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch comments",
+      );
     }
-  }
+  },
 );
 
 export const createComment = createAsyncThunk(
-  'data/createComment',
+  "data/createComment",
   async ({ answerId, data }, { rejectWithValue }) => {
     try {
       const response = await commentServices.createComment(answerId, data);
       return response.data.comment;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to create comment');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to create comment",
+      );
     }
-  }
+  },
 );
 
 export const fetchHomeQuestions = createAsyncThunk(
-  'data/fetchHomeQuestions',
+  "data/fetchHomeQuestions",
   async ({ page, limit, branch = null }, { rejectWithValue }) => {
     try {
       let response;
@@ -170,119 +194,133 @@ export const fetchHomeQuestions = createAsyncThunk(
         response = await questionServices.getFilteredQuestions({
           page,
           limit,
-          branch
+          branch,
         });
       } else {
         response = await questionServices.getAllQuestions({
           page,
-          limit
+          limit,
         });
       }
 
       if (!response?.data) {
-        throw new Error('No response received from server');
+        throw new Error("No response received from server");
       }
 
       return {
         questions: response.data.questions,
-        pagination: response.data.pagination
+        pagination: response.data.pagination,
       };
     } catch (error) {
-      console.error('Error fetching home questions:', error);
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch questions');
+      console.error("Error fetching home questions:", error);
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch questions",
+      );
     }
-  }
+  },
 );
 
 export const upvoteAnswer = createAsyncThunk(
-  'data/upvoteAnswer',
+  "data/upvoteAnswer",
   async ({ answerId, userId }, { rejectWithValue }) => {
     // Check if there's already a request in progress for this answer-user combination
     const key = `${answerId}-${userId}`;
     if (upvoteState.has(key)) {
-      throw new Error('Request already in progress');
+      throw new Error("Request already in progress");
     }
 
     try {
       // Mark this combination as in progress
       upvoteState.set(key, true);
-      
+
       const response = await answerServices.upvoteAnswer(answerId);
-      
+
       // Clear the state
       upvoteState.delete(key);
-      
+
       return {
         answer: response.data.answer,
         userId,
-        answerId
+        answerId,
       };
     } catch (error) {
       // Clear the state on error
       upvoteState.delete(key);
-      return rejectWithValue(error.response?.data?.message || 'Failed to update upvote');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update upvote",
+      );
     }
-  }
+  },
 );
 
 export const deleteComment = createAsyncThunk(
-  'data/deleteComment',
+  "data/deleteComment",
   async (commentId, { rejectWithValue }) => {
     try {
       await commentServices.deleteComment(commentId);
       return commentId;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to delete comment');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to delete comment",
+      );
     }
-  }
+  },
 );
 
 export const updateComment = createAsyncThunk(
-  'data/updateComment',
+  "data/updateComment",
   async ({ commentId, text }, { rejectWithValue }) => {
     try {
       const response = await commentServices.updateComment(commentId, { text });
       return response.data.comment;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update comment');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update comment",
+      );
     }
-  }
+  },
 );
 
 export const upvoteComment = createAsyncThunk(
-  'data/upvoteComment',
+  "data/upvoteComment",
   async ({ commentId }, { rejectWithValue }) => {
     try {
       const response = await commentServices.upvoteComment(commentId);
       return response.data.comment;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to upvote comment');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to upvote comment",
+      );
     }
-  }
+  },
 );
 
 export const deleteQuestion = createAsyncThunk(
-  'data/deleteQuestion',
+  "data/deleteQuestion",
   async (questionId, { rejectWithValue }) => {
     try {
       await questionServices.deleteQuestion(questionId);
       return questionId;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to delete question');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to delete question",
+      );
     }
-  }
+  },
 );
 
 export const deleteAnswer = createAsyncThunk(
-  'data/deleteAnswer',
+  "data/deleteAnswer",
   async (answerId, { rejectWithValue }) => {
     try {
       await answerServices.deleteAnswer(answerId);
       return answerId;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to delete answer');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to delete answer",
+      );
     }
-  }
+  },
 );
 
 // Simple upvote action - no debouncing, just immediate API call
@@ -290,7 +328,7 @@ export const simpleUpvote = (answerId, userId) => async (dispatch) => {
   try {
     await dispatch(upvoteAnswer({ answerId, userId })).unwrap();
   } catch (error) {
-    if (error !== 'Request already in progress') {
+    if (error !== "Request already in progress") {
       throw error;
     }
   }
@@ -319,7 +357,7 @@ const initialState = {
     totalItems: 0,
     itemsPerPage: 9,
     hasNextPage: false,
-    hasPrevPage: false
+    hasPrevPage: false,
   },
   pagination: {
     currentPage: 1,
@@ -327,23 +365,23 @@ const initialState = {
     totalItems: 0,
     itemsPerPage: 9,
     hasNextPage: false,
-    hasPrevPage: false
+    hasPrevPage: false,
   },
   filters: {
-    branch: 'all',
-    topic: 'all',
-    search: '',
-    collegeName: 'all'
+    branch: "all",
+    topic: "all",
+    search: "",
+    collegeName: "all",
   },
   answersPagination: {
     hasMore: false,
-    nextCursor: null
+    nextCursor: null,
   },
-  currentAnswer: null
+  currentAnswer: null,
 };
 
 const dataSlice = createSlice({
-  name: 'data',
+  name: "data",
   initialState,
   reducers: {
     clearData: (state) => {
@@ -429,7 +467,7 @@ const dataSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       // Answers
       .addCase(fetchAnswers.pending, (state) => {
         state.loading = true;
@@ -444,7 +482,7 @@ const dataSlice = createSlice({
         }
         state.answersPagination = {
           hasMore: action.payload.hasMore,
-          nextCursor: action.payload.nextCursor
+          nextCursor: action.payload.nextCursor,
         };
         state.error = null;
       })
@@ -478,7 +516,7 @@ const dataSlice = createSlice({
         state.loadingAnswers = false;
         state.error = action.payload;
       })
-      
+
       // Comments
       .addCase(fetchComments.pending, (state) => {
         state.loading = true;
@@ -536,15 +574,18 @@ const dataSlice = createSlice({
       })
       .addCase(upvoteAnswer.pending, (state, action) => {
         const { answerId, userId } = action.meta.arg;
-        
+
         // Find the answer to update
         const answersToUpdate = [];
         const answerInList = state.answers.find((a) => a._id === answerId);
         if (answerInList) {
-          answersToUpdate.push({ answer: answerInList, type: 'list' });
+          answersToUpdate.push({ answer: answerInList, type: "list" });
         }
         if (state.currentAnswer && state.currentAnswer._id === answerId) {
-          answersToUpdate.push({ answer: state.currentAnswer, type: 'current' });
+          answersToUpdate.push({
+            answer: state.currentAnswer,
+            type: "current",
+          });
         }
 
         // Apply optimistic update
@@ -554,10 +595,10 @@ const dataSlice = createSlice({
             if (!answer._originalUpvoteState) {
               answer._originalUpvoteState = {
                 upvotes: answer.upvotes,
-                upvotedBy: [...answer.upvotedBy]
+                upvotedBy: [...answer.upvotedBy],
               };
             }
-            
+
             const isUpvoted = answer.upvotedBy.includes(userId);
             if (isUpvoted) {
               // Remove upvote
@@ -576,17 +617,17 @@ const dataSlice = createSlice({
       })
       .addCase(upvoteAnswer.fulfilled, (state, action) => {
         const { answer: updatedAnswer, userId, answerId } = action.payload;
-        
+
         // Update answers list
         const answerIndex = state.answers.findIndex(
-          (answer) => answer._id === answerId
+          (answer) => answer._id === answerId,
         );
         if (answerIndex !== -1) {
           // Remove optimistic state and apply server response
           delete state.answers[answerIndex]._originalUpvoteState;
           state.answers[answerIndex] = updatedAnswer;
         }
-        
+
         // Update current answer if it's the same
         if (state.currentAnswer && state.currentAnswer._id === answerId) {
           delete state.currentAnswer._originalUpvoteState;
@@ -600,10 +641,13 @@ const dataSlice = createSlice({
         const answersToRevert = [];
         const answerInList = state.answers.find((a) => a._id === answerId);
         if (answerInList) {
-          answersToRevert.push({ answer: answerInList, type: 'list' });
+          answersToRevert.push({ answer: answerInList, type: "list" });
         }
         if (state.currentAnswer && state.currentAnswer._id === answerId) {
-          answersToRevert.push({ answer: state.currentAnswer, type: 'current' });
+          answersToRevert.push({
+            answer: state.currentAnswer,
+            type: "current",
+          });
         }
 
         answersToRevert.forEach(({ answer, type }) => {
@@ -614,7 +658,7 @@ const dataSlice = createSlice({
             delete answer._originalUpvoteState;
           }
         });
-        
+
         state.error = action.payload;
       })
       .addCase(updateComment.pending, (state, action) => {
@@ -623,7 +667,9 @@ const dataSlice = createSlice({
       .addCase(updateComment.fulfilled, (state, action) => {
         state.updatingCommentId = null;
         const updatedComment = action.payload;
-        const index = state.comments.findIndex(c => c._id === updatedComment._id);
+        const index = state.comments.findIndex(
+          (c) => c._id === updatedComment._id,
+        );
         if (index !== -1) {
           state.comments[index] = updatedComment;
         }
@@ -637,7 +683,7 @@ const dataSlice = createSlice({
       .addCase(deleteComment.fulfilled, (state, action) => {
         state.deletingCommentId = null;
         state.comments = state.comments.filter(
-          (comment) => comment._id !== action.payload
+          (comment) => comment._id !== action.payload,
         );
       })
       .addCase(deleteComment.rejected, (state, action) => {
@@ -660,7 +706,7 @@ const dataSlice = createSlice({
       .addCase(upvoteComment.fulfilled, (state, action) => {
         const updatedComment = action.payload;
         const commentIndex = state.comments.findIndex(
-          (c) => c._id === updatedComment._id
+          (c) => c._id === updatedComment._id,
         );
         if (commentIndex !== -1) {
           state.comments[commentIndex] = updatedComment;
@@ -671,10 +717,9 @@ const dataSlice = createSlice({
         const comment = state.comments.find((c) => c._id === commentId);
         if (comment) {
           const upvotedIndex = comment.upvotedBy.indexOf(userId);
-           if (upvotedIndex === -1) {
+          if (upvotedIndex === -1) {
             const userIndex = comment.upvotedBy.indexOf(userId);
-            if(userIndex >-1)
-            {
+            if (userIndex > -1) {
               comment.upvotedBy.splice(userIndex, 1);
               comment.upvotes -= 1;
             }
@@ -686,22 +731,28 @@ const dataSlice = createSlice({
         state.error = action.payload;
       })
       .addCase(deleteQuestion.fulfilled, (state, action) => {
-        state.userQuestions = state.userQuestions.filter(q => q._id !== action.payload);
-        state.questions = state.questions.filter(q => q._id !== action.payload);
+        state.userQuestions = state.userQuestions.filter(
+          (q) => q._id !== action.payload,
+        );
+        state.questions = state.questions.filter(
+          (q) => q._id !== action.payload,
+        );
       })
       .addCase(deleteAnswer.fulfilled, (state, action) => {
-        state.userAnswers = state.userAnswers.filter(a => a._id !== action.payload);
-        state.answers = state.answers.filter(a => a._id !== action.payload);
+        state.userAnswers = state.userAnswers.filter(
+          (a) => a._id !== action.payload,
+        );
+        state.answers = state.answers.filter((a) => a._id !== action.payload);
       });
-  }
+  },
 });
 
-export const { 
-  clearData, 
-  clearError, 
+export const {
+  clearData,
+  clearError,
   setFilters,
   clearCurrentQuestion,
   clearAnswers,
-  clearCurrentAnswer
+  clearCurrentAnswer,
 } = dataSlice.actions;
-export default dataSlice.reducer; 
+export default dataSlice.reducer;

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import FlashCard from './FlashCard';
-import { flashcardServices } from '../services/data.services';
-import LoadingSpinner from './LoadingSpinner';
-import { Button, Modal } from 'antd';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import FlashCard from "./FlashCard";
+import { flashcardServices } from "../services/data.services";
+import LoadingSpinner from "./LoadingSpinner";
+import { Button, Modal } from "antd";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
 
 const FlashCardContainer = () => {
   const [cards, setCards] = useState([]);
@@ -15,7 +15,6 @@ const FlashCardContainer = () => {
   const [error, setError] = useState(null);
   const [showNextDuePrompt, setShowNextDuePrompt] = useState(false);
   const [nextDueIndex, setNextDueIndex] = useState(null);
-
 
   useEffect(() => {
     const fetchFlashcards = async () => {
@@ -47,17 +46,21 @@ const FlashCardContainer = () => {
   }, [params.cardIndex, cards.length]);
 
   const handleRateCard = (questionId, newDifficulty) => {
-    setCards(currentCards =>
-      currentCards.map(card =>
-        card._id === questionId ? { ...card, difficulty: newDifficulty } : card
-      )
+    setCards((currentCards) =>
+      currentCards.map((card) =>
+        card._id === questionId ? { ...card, difficulty: newDifficulty } : card,
+      ),
     );
 
     // After rating, check for next due card
     setTimeout(() => {
       const now = new Date();
-      const nextDue = cards.findIndex((card, idx) =>
-        idx !== currentIndex && card.nextReviewAt && new Date(card.nextReviewAt) <= now && card.difficulty === null
+      const nextDue = cards.findIndex(
+        (card, idx) =>
+          idx !== currentIndex &&
+          card.nextReviewAt &&
+          new Date(card.nextReviewAt) <= now &&
+          card.difficulty === null,
       );
       if (nextDue !== -1) {
         setNextDueIndex(nextDue);
@@ -74,19 +77,26 @@ const FlashCardContainer = () => {
   }, [currentIndex, cards.length, navigate]);
 
   if (loading) {
-    return <div className="flex justify-center items-center h-[calc(100vh-200px)]"><LoadingSpinner /></div>;
+    return (
+      <div className="flex justify-center items-center h-[calc(100vh-200px)]">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   if (error) {
     return <div className="text-center text-red-500 mt-10 p-4">{error}</div>;
   }
-  
+
   if (cards.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] text-center p-4">
-        <h2 className="text-black text-2xl font-semibold dark:text-white">No Flashcards Available</h2>
+        <h2 className="text-black text-2xl font-semibold dark:text-white">
+          No Flashcards Available
+        </h2>
         <p className="text-gray-500 dark:text-gray-400 mt-2 max-w-md">
-          It looks like you don't have any questions with answers yet. Go ahead and answer some of your questions to create flashcards!
+          It looks like you don't have any questions with answers yet. Go ahead
+          and answer some of your questions to create flashcards!
         </p>
       </div>
     );
@@ -108,29 +118,38 @@ const FlashCardContainer = () => {
         cancelText="Stay Here"
         centered
       >
-        <div className="text-lg font-semibold mb-2">Another flashcard is due for review!</div>
-        <div className="text-gray-600 dark:text-gray-300">Would you like to jump to the next card due for review?</div>
+        <div className="text-lg font-semibold mb-2">
+          Another flashcard is due for review!
+        </div>
+        <div className="text-gray-600 dark:text-gray-300">
+          Would you like to jump to the next card due for review?
+        </div>
       </Modal>
       <div className="w-full max-w-2xl text-center mb-6">
-        <h1 className="text-2xl sm:text-4xl font-bold text-blue-900 dark:text-blue-300 lg:mb-2">Review Your Flashcards</h1>
-        <p className="text-gray-600 dark:text-gray-300">You have {cards.length} flashcard{cards.length === 1 ? '' : 's'} to review.</p>
+        <h1 className="text-2xl sm:text-4xl font-bold text-blue-900 dark:text-blue-300 lg:mb-2">
+          Review Your Flashcards
+        </h1>
+        <p className="text-gray-600 dark:text-gray-300">
+          You have {cards.length} flashcard{cards.length === 1 ? "" : "s"} to
+          review.
+        </p>
       </div>
-      
+
       <div className="relative w-full max-w-lg h-[30rem] sm:h-[26rem] overflow-hidden">
         {cards.map((card, index) => {
           const offset = index - currentIndex;
           let transform;
           let opacity = 0;
-          
+
           if (offset === 0) {
-            transform = 'translateX(0%) rotate(0deg)';
+            transform = "translateX(0%) rotate(0deg)";
             opacity = 1;
           } else if (offset < 0) {
             // Discarded to the left
-            transform = 'translateX(-110%) rotate(-10deg)';
+            transform = "translateX(-110%) rotate(-10deg)";
           } else {
             // Waiting on the right
-            transform = 'translateX(110%) rotate(10deg)';
+            transform = "translateX(110%) rotate(10deg)";
           }
 
           return (
@@ -158,9 +177,9 @@ const FlashCardContainer = () => {
       </div>
 
       <div className="flex items-center gap-4 mt-6">
-        <Button 
+        <Button
           icon={<ArrowLeft size={16} />}
-          onClick={() => setCurrentIndex(i => Math.max(i - 1, 0))}
+          onClick={() => setCurrentIndex((i) => Math.max(i - 1, 0))}
           disabled={currentIndex === 0}
           size="large"
           className="!bg-indigo-600 hover:!bg-indigo-700 !text-white !font-semibold !border-indigo-600 disabled:!bg-gray-400 dark:disabled:!bg-gray-600 disabled:!cursor-not-allowed disabled:!text-gray-100 dark:disabled:!text-gray-400"
@@ -170,9 +189,11 @@ const FlashCardContainer = () => {
         <span className="text-gray-600 dark:text-gray-300 font-semibold text-lg">
           {currentIndex + 1} / {cards.length}
         </span>
-        <Button 
+        <Button
           icon={<ArrowRight size={16} />}
-          onClick={() => setCurrentIndex(i => Math.min(i + 1, cards.length - 1))}
+          onClick={() =>
+            setCurrentIndex((i) => Math.min(i + 1, cards.length - 1))
+          }
           disabled={currentIndex >= cards.length - 1}
           size="large"
           className="!bg-indigo-600 hover:!bg-indigo-700 !text-white !font-semibold !border-indigo-600 disabled:!bg-gray-400 dark:disabled:!bg-gray-600 disabled:!cursor-not-allowed disabled:!text-gray-100 dark:disabled:!text-gray-400"
@@ -184,4 +205,4 @@ const FlashCardContainer = () => {
   );
 };
 
-export default FlashCardContainer; 
+export default FlashCardContainer;

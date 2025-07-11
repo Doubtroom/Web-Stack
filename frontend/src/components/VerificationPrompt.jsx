@@ -1,6 +1,6 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle } from 'lucide-react';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { AlertCircle } from "lucide-react";
 
 const VerificationPrompt = ({ isOpen, onClose, onVerify, onNewAccount }) => {
   return (
@@ -26,9 +26,10 @@ const VerificationPrompt = ({ isOpen, onClose, onVerify, onNewAccount }) => {
                 Account Not Verified
               </h3>
             </div>
-            
+
             <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Your account is not verified. Please choose one of the following options:
+              Your account is not verified. Please choose one of the following
+              options:
             </p>
 
             <div className="space-y-3">
@@ -38,7 +39,7 @@ const VerificationPrompt = ({ isOpen, onClose, onVerify, onNewAccount }) => {
               >
                 Verify with OTP
               </button>
-              
+
               <button
                 onClick={onNewAccount}
                 className="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
@@ -60,4 +61,4 @@ const VerificationPrompt = ({ isOpen, onClose, onVerify, onNewAccount }) => {
   );
 };
 
-export default VerificationPrompt; 
+export default VerificationPrompt;

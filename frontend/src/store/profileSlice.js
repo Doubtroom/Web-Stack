@@ -1,18 +1,19 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    profileCompleted: localStorage.getItem('profileCompleted') === 'true' || false
+  profileCompleted:
+    localStorage.getItem("profileCompleted") === "true" || false,
 };
 
 const profileSlice = createSlice({
-    name: 'profile',
-    initialState,
-    reducers: {
-        updateProfileCompletion: (state, action) => {
-            state.profileCompleted = action.payload;
-        }
-    }
+  name: "profile",
+  initialState,
+  reducers: {
+    updateProfileCompletion: (state, action) => {
+      state.profileCompleted = action.payload;
+    },
+  },
 });
 
 export const { updateProfileCompletion } = profileSlice.actions;
-export default profileSlice.reducer; 
+export default profileSlice.reducer;

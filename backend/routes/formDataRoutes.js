@@ -1,9 +1,13 @@
-import express from 'express'
+import express from "express";
 const router = express.Router();
-import { getColleges, getBranches, getStudyTypes } from '../controllers/formDataController.js'
+import {
+  getColleges,
+  getBranches,
+  getStudyTypes,
+} from "../controllers/formDataController.js";
 
-router.get('/colleges', getColleges);
-router.get('/branches', getBranches);
-router.get('/study-types', getStudyTypes);
+router.get("/colleges", getColleges);
+router.get("/branches", getBranches);
+router.get("/study-types", getStudyTypes);
 
-export default router; 
+export default router;

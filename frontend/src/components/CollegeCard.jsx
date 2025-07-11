@@ -1,70 +1,87 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { MessageSquare, Lightbulb, Clock } from 'lucide-react';
-import Button from './Button';
-import placeholder from '../assets/placeholder.png';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { MessageSquare, Lightbulb, Clock } from "lucide-react";
+import Button from "./Button";
+import placeholder from "../assets/placeholder.png";
 
-const CollegeCard = ({ id, collegeName, img, branch, topic, noOfAnswers, postedOn }) => {
+const CollegeCard = ({
+  id,
+  collegeName,
+  img,
+  branch,
+  topic,
+  noOfAnswers,
+  postedOn,
+}) => {
   const navigate = useNavigate();
 
   const formatBranchName = (branch) => {
-    if (!branch) return '';
+    if (!branch) return "";
     return branch
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
   };
 
   const getTimeAgo = (timestamp) => {
     // Handle both Firestore timestamps and string timestamps
-    const date = typeof timestamp === 'object' && timestamp.toDate 
-      ? timestamp.toDate() 
-      : new Date(timestamp);
-    
+    const date =
+      typeof timestamp === "object" && timestamp.toDate
+        ? timestamp.toDate()
+        : new Date(timestamp);
+
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
-    
+
     if (diffInSeconds < 60) {
-      return 'just now';
+      return "just now";
     }
-    
+
     const diffInMinutes = Math.floor(diffInSeconds / 60);
     if (diffInMinutes < 60) {
-      return `${diffInMinutes} min${diffInMinutes === 1 ? '' : 's'} ago`;
+      return `${diffInMinutes} min${diffInMinutes === 1 ? "" : "s"} ago`;
     }
-    
+
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) {
-      return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
+      return `${diffInHours} hour${diffInHours === 1 ? "" : "s"} ago`;
     }
-    
+
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) {
-      return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
+      return `${diffInDays} day${diffInDays === 1 ? "" : "s"} ago`;
     }
-    
+
     return date.toLocaleDateString();
   };
 
   const handleCardClick = () => {
-    navigate(`/question/${id}`, { state: { fromPage: window.location.search } });
+    navigate(`/question/${id}`, {
+      state: { fromPage: window.location.search },
+    });
   };
 
   const handleAnswerClick = (e) => {
     e.stopPropagation();
-    navigate(`/question/${id}/answer`, { state: { fromPage: window.location.search } });
+    navigate(`/question/${id}/answer`, {
+      state: { fromPage: window.location.search },
+    });
   };
 
   return (
-    <div 
+    <div
       onClick={handleCardClick}
       className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-[0_8px_32px_rgba(0,0,0,0.22)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.28)] transition-all duration-300 cursor-pointer group"
     >
       <div className="p-5 border-b border-gray-100 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="min-w-[200px]">
-            <h2 className="text-[#173f67] dark:text-blue-400 font-bold text-xl mb-1 line-clamp-2 min-h-[3rem]">{collegeName}</h2>
-            <p className="text-gray-600 dark:text-gray-300 text-sm">{formatBranchName(branch)}</p>
+            <h2 className="text-[#173f67] dark:text-blue-400 font-bold text-xl mb-1 line-clamp-2 min-h-[3rem]">
+              {collegeName}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
+              {formatBranchName(branch)}
+            </p>
           </div>
         </div>
       </div>
@@ -85,9 +102,11 @@ const CollegeCard = ({ id, collegeName, img, branch, topic, noOfAnswers, postedO
 
       {/* Content Section */}
       <div className="p-5">
-        <div className='flex flex-col gap-2'>
+        <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-gray-900 dark:text-white font-semibold text-lg whitespace-nowrap overflow-hidden">{topic}</h3>
+            <h3 className="text-gray-900 dark:text-white font-semibold text-lg whitespace-nowrap overflow-hidden">
+              {topic}
+            </h3>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
@@ -100,7 +119,7 @@ const CollegeCard = ({ id, collegeName, img, branch, topic, noOfAnswers, postedO
           </div>
         </div>
         <div className="flex items-center justify-start mt-4">
-          <Button 
+          <Button
             onClick={handleAnswerClick}
             variant="ghost"
             size="sm"
