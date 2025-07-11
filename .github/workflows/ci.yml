@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        dir: [backend, frontend]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ${{ matrix.dir }}
+
+      - name: Lint (Backend)
+        if: ${{ matrix.dir == 'backend' }}
+        run: npm run lint
+        working-directory: ${{ matrix.dir }}
+
+      - name: Format (Backend)
+        if: ${{ matrix.dir == 'backend' }}
+        run: npm run format -- --check
+        working-directory: ${{ matrix.dir }}
+
+      - name: Format (Frontend)
+        if: ${{ matrix.dir == 'frontend' }}
+        run: npm run format -- --check
+        working-directory: ${{ matrix.dir }}
+
+      - name: Build (Frontend)
+        if: ${{ matrix.dir == 'frontend' }}
+        run: npm run build
+        working-directory: ${{ matrix.dir }}
+
+      - name: Security Audit (npm audit)
+        run: npm audit --audit-level=high || true
+        working-directory: ${{ matrix.dir }}
+
+      - name: Run tests
+        run: npm test
+        working-directory: ${{ matrix.dir }}
