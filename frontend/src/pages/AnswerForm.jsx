@@ -6,11 +6,16 @@ import { createAnswer, fetchQuestionById } from "../store/dataSlice";
 import { questionServices } from "../services/data.services";
 import { toast } from "sonner";
 import Button from "../components/Button";
+import { useStreakActivity } from "../hooks/useStreakActivity";
 
 const AnswerForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  
+  // Streak activity hook
+  const { triggerStreakUpdate } = useStreakActivity();
+  
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [question, setQuestion] = useState(null);
@@ -112,6 +117,9 @@ const AnswerForm = () => {
       dispatch(createAnswer({ formData: data, questionId: id }))
         .unwrap()
         .then(() => {
+          // Update streak when answer is successfully posted
+          triggerStreakUpdate();
+          
           toast.success("Answer posted successfully!");
           dispatch(fetchQuestionById(id));
           window.scrollTo(0, 0);

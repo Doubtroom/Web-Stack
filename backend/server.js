@@ -7,6 +7,8 @@ import authRoutes from "./routes/authRoutes.js";
 import dataRoutes from "./routes/dataRoutes.js";
 import formDataRoutes from "./routes/formDataRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import streakRoutes from "./routes/streakRoutes.js";
+import { scheduleStreakResetJob } from "./utils/streakResetJob.js";
 import {
   formDataLimiter,
   authLimiter,
@@ -39,6 +41,7 @@ app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/user", userLimiter, userRoutes);
 app.use("/api/data", internalLimiter, dataRoutes);
 app.use("/api/form-data", formDataLimiter, formDataRoutes);
+app.use("/api/streak", internalLimiter, streakRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI, {
@@ -48,6 +51,9 @@ mongoose
     app.listen(process.env.PORT, () => {
       console.log(`Server is running on port ${process.env.PORT}`);
     });
+    
+    // Schedule streak reset job
+    scheduleStreakResetJob();
   })
   .catch((err) => {
     console.log(err);
