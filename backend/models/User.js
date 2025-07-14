@@ -32,6 +32,11 @@ const userSchema = new mongoose.Schema({
     type: Object,
     default: { flashcards: true },
   },
+  starDustPoints: { type: Number, default: 0 },
+  currentStreak: { type: Number, default: 0 },
+  longestStreak: { type: Number, default: 0 },
+  lastStreakDate: { type: Date, default: null }
+
 });
 
 // Add a pre-save middleware to ensure passwordRecoveryDone exists
