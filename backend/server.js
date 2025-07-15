@@ -35,10 +35,14 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Routes with specific rate limiters
-app.use("/api/auth", authLimiter, authRoutes);
-app.use("/api/user", userLimiter, userRoutes);
-app.use("/api/data", internalLimiter, dataRoutes);
-app.use("/api/form-data", formDataLimiter, formDataRoutes);
+// app.use("/api/auth", authLimiter, authRoutes);
+app.use("/api/auth", authRoutes);
+// app.use("/api/user", userLimiter, userRoutes);
+app.use("/api/user", userRoutes);
+// app.use("/api/data", internalLimiter, dataRoutes);
+app.use("/api/data", dataRoutes);
+// app.use("/api/form-data", formDataLimiter, formDataRoutes);
+app.use("/api/form-data", formDataRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI, {
