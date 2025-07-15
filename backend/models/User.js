@@ -32,13 +32,12 @@ const userSchema = new mongoose.Schema({
     type: Object,
     default: { flashcards: true },
   },
-  // Streak related fields
-  streak: {
-    currentStreak: { type: Number, default: 0 },
-    longestStreak: { type: Number, default: 0 },
-    lastActivityDate: { type: Date, default: null },
-    lastStreakUpdate: { type: Date, default: null },
-  },
+
+  starDustPoints: { type: Number, default: 0 },
+  currentStreak: { type: Number, default: 0 },
+  longestStreak: { type: Number, default: 0 },
+  lastStreakDate: { type: Date, default: null }
+
 });
 
 // Add a pre-save middleware to ensure passwordRecoveryDone exists

@@ -6,16 +6,16 @@ let serverConfig = {
   port: 3001,
 };
 
-if (process.env.NODE_ENV === "development") {
+// if (process.env.VITE_NODE_ENV === "development") {
   try {
     serverConfig.https = {
-      key: fs.readFileSync("./cert/localhost-key.pem"),
-      cert: fs.readFileSync("./cert/localhost-cert.pem"),
+      key: fs.readFileSync("./cert/localhost.key"),
+      cert: fs.readFileSync("./cert/localhost.crt"),
     };
   } catch (e) {
     serverConfig.https = undefined;
   }
-}
+// }
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -28,4 +28,4 @@ export default defineConfig({
     include: [],
     exclude: ["axios", "react-zoom-pan-pinch", "firebase", "appwrite"],
   },
-});
+});	
