@@ -45,6 +45,8 @@ app.use("/api/data", dataRoutes);
 // app.use("/api/form-data", formDataLimiter, formDataRoutes);
 app.use("/api/form-data", formDataRoutes);
 
+app.use("/api/data/streak", streakRoutes);
+
 mongoose
   .connect(process.env.MONGO_URI, {
     dbName: "org-db",

@@ -9,8 +9,8 @@ let serverConfig = {
 // if (process.env.VITE_NODE_ENV === "development") {
   try {
     serverConfig.https = {
-      key: fs.readFileSync("./cert/localhost.key"),
-      cert: fs.readFileSync("./cert/localhost.crt"),
+      key: fs.readFileSync("./cert/localhost-key.pem"),
+      cert: fs.readFileSync("./cert/localhost.pem"),
     };
   } catch (e) {
     serverConfig.https = undefined;

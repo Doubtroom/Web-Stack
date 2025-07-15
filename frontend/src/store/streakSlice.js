@@ -9,7 +9,7 @@ export const fetchStreak = createAsyncThunk(
       const response = await streakServices.getStreak();
       return response.streak;
     } catch (error) {
-      return rejectWithValue(error);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -21,7 +21,7 @@ export const updateStreak = createAsyncThunk(
       const response = await streakServices.updateStreak();
       return response.streak;
     } catch (error) {
-      return rejectWithValue(error);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -31,8 +31,10 @@ const streakSlice = createSlice({
   initialState: {
     currentStreak: 0,
     longestStreak: 0,
-    lastActivityDate: null,
-    lastStreakUpdate: null,
+    lastActiveDate: null,
+    longestStreakStartDate: null,
+    longestStreakEndDate: null,
+    updatedAt: null,
     loading: false,
     error: null,
   },
@@ -40,42 +42,50 @@ const streakSlice = createSlice({
     clearStreakError: (state) => {
       state.error = null;
     },
-    resetStreak: (state) => {
+    resetStreakState: (state) => {
       state.currentStreak = 0;
       state.longestStreak = 0;
-      state.lastActivityDate = null;
-      state.lastStreakUpdate = null;
+      state.lastActiveDate = null;
+      state.longestStreakStartDate = null;
+      state.longestStreakEndDate = null;
+      state.updatedAt = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Fetch streak
+      // fetchStreak
       .addCase(fetchStreak.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchStreak.fulfilled, (state, action) => {
+        const s = action.payload;
         state.loading = false;
-        state.currentStreak = action.payload.currentStreak;
-        state.longestStreak = action.payload.longestStreak;
-        state.lastActivityDate = action.payload.lastActivityDate;
-        state.lastStreakUpdate = action.payload.lastStreakUpdate;
+        state.currentStreak = s.currentStreak;
+        state.longestStreak = s.longestStreak;
+        state.lastActiveDate = s.lastActiveDate;
+        state.longestStreakStartDate = s.longestStreakStartDate;
+        state.longestStreakEndDate = s.longestStreakEndDate;
+        state.updatedAt = s.updatedAt;
       })
       .addCase(fetchStreak.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      // Update streak
+      // updateStreak
       .addCase(updateStreak.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(updateStreak.fulfilled, (state, action) => {
+        const s = action.payload;
         state.loading = false;
-        state.currentStreak = action.payload.currentStreak;
-        state.longestStreak = action.payload.longestStreak;
-        state.lastActivityDate = action.payload.lastActivityDate;
-        state.lastStreakUpdate = action.payload.lastStreakUpdate;
+        state.currentStreak = s.currentStreak;
+        state.longestStreak = s.longestStreak;
+        state.lastActiveDate = s.lastActiveDate;
+        state.longestStreakStartDate = s.longestStreakStartDate;
+        state.longestStreakEndDate = s.longestStreakEndDate;
+        state.updatedAt = s.updatedAt;
       })
       .addCase(updateStreak.rejected, (state, action) => {
         state.loading = false;
@@ -84,5 +94,5 @@ const streakSlice = createSlice({
   },
 });
 
-export const { clearStreakError, resetStreak } = streakSlice.actions;
-export default streakSlice.reducer; 
+export const { clearStreakError, resetStreakState } = streakSlice.actions;
+export default streakSlice.reducer;

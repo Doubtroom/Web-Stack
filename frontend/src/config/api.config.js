@@ -69,4 +69,8 @@ export const API_ENDPOINTS = {
     UPSERT_STATUS: "data/flashcards/status",
     GET_ALL: "data/flashcards",
   },
+    STREAK: {
+    GET: "/streak",
+    UPDATE: "/streak/update",
+  },
 };

@@ -19,7 +19,6 @@ import QuestionCardSkeleton from "../components/QuestionCardSkeleton";
 import HomeSkeleton from "../components/HomeSkeleton";
 import PromotionCard from "../components/PromotionCard";
 import promotions from "../config/promotion.config.js";
-import { useStreakActivity } from "../hooks/useStreakActivity";
 
 const ITEMS_PER_PAGE = 9;
 
@@ -33,9 +32,6 @@ const Home = () => {
     (state) => state.data,
   );
   const isMounted = useRef(true);
-
-  // Streak activity hook
-  const { triggerStreakUpdate } = useStreakActivity();
 
   // State management
   const [showMyBranch, setShowMyBranch] = useState(false);

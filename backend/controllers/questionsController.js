@@ -37,6 +37,47 @@ export const createQuestion = async (req, res) => {
       postedBy: req.user.id,
     });
 
+    // --- STREAK LOGIC STARTS HERE ---
+    const userId = req.user.id;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let streak = await Streak.findOne({ userId });
+
+    if (!streak) {
+      streak = new Streak({
+        userId,
+        currentStreak: 1,
+        currentStreakStartDate: today,
+        lastActiveDate: today,
+        longestStreak: 1,
+        longestStreakStartDate: today,
+        longestStreakEndDate: today,
+      });
+    } else {
+      const lastActive = new Date(streak.lastActiveDate || 0);
+      lastActive.setHours(0, 0, 0, 0);
+      const dayDiff = Math.floor((today - lastActive) / (1000 * 60 * 60 * 24));
+
+      if (dayDiff === 1) {
+        streak.currentStreak += 1;
+        streak.lastActiveDate = today;
+        if (streak.currentStreak > streak.longestStreak) {
+          streak.longestStreak = streak.currentStreak;
+          streak.longestStreakStartDate = streak.currentStreakStartDate;
+          streak.longestStreakEndDate = today;
+        }
+      } else if (dayDiff > 1) {
+        streak.currentStreak = 1;
+        streak.currentStreakStartDate = today;
+        streak.lastActiveDate = today;
+      }
+    }
+
+    streak.updatedAt = new Date();
+    await streak.save();
+    // --- STREAK LOGIC ENDS HERE ---
+
     res
       .status(201)
       .json({ message: "Successfully created Question", question });

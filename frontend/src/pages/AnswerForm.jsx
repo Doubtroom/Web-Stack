@@ -6,15 +6,11 @@ import { createAnswer, fetchQuestionById } from "../store/dataSlice";
 import { questionServices } from "../services/data.services";
 import { toast } from "sonner";
 import Button from "../components/Button";
-import { useStreakActivity } from "../hooks/useStreakActivity";
 
 const AnswerForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
-  // Streak activity hook
-  const { triggerStreakUpdate } = useStreakActivity();
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);

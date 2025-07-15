@@ -26,8 +26,6 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { useSelector, useDispatch } from "react-redux";
 import { createQuestion } from "../store/dataSlice";
 import { questionServices } from "../services/data.services";
-import { useStreakActivity } from "../hooks/useStreakActivity";
-
 // Styled components
 const StyledPaper = styled(Paper)(({ theme, isDarkMode }) => ({
   padding: theme.spacing(4),
@@ -214,9 +212,6 @@ const AskQuestion = () => {
   // Get user data from localStorage
   const userData = useSelector((state) => state?.auth?.user);
   
-  // Streak activity hook
-  const { triggerStreakUpdate } = useStreakActivity();
-
   // Form state
   const [formData, setFormData] = useState({
     question: "",
