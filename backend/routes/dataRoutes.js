@@ -82,7 +82,7 @@ router.post("/flashcards/status", verifyToken, upsertFlashcardStatus);
 router.get("/flashcards", verifyToken, getFlashcards);
 
 
-router.get("/", verifyToken, getStreak);
-router.post("/update", verifyToken, updateStreak);
+router.get("/streak", verifyToken, getStreak);
+router.post("/streak/update", verifyToken, updateStreak);
 
 export default router;
