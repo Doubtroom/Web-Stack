@@ -23,7 +23,7 @@ app.set("trust proxy", 1);
 // Middleware
 app.use(
   cors({
-    origin: [process.env.CLIENT_URL, "https://localhost:3001"],
+    origin: [process.env.CLIENT_URL, "https://localhost:3001","http://localhost:3001"],
     credentials: true, // This is important for cookies
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
