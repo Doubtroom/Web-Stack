@@ -31,9 +31,15 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
-      // Redirect to login on authentication error
-      window.location.href = "/login";
+    if (
+      error.response?.status === 401 &&
+      window.location.pathname !== "/login"
+    ) {
+      if (import.meta.env.MODE === 'production') {
+        window.location.href = "/login";
+      } else {
+        console.warn("401 Unauthorized - skipping redirect in dev mode.");
+      }
     }
     return Promise.reject(error);
   },
