@@ -2,7 +2,6 @@ import Answers from "../models/Answers.js";
 import Questions from "../models/Questions.js";
 import cloudinary from "../utils/cloudinary.js";
 import Streak from "../models/Streaks.js";
-import User from "../models/User.js";
 
 export const createAnswer = async (req, res) => {
   try {

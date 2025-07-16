@@ -9,7 +9,8 @@
     "start": "node server.js",
     "seed": "node scripts/seed.js",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "mkcert": "mkdir cert 2> NUL & mkcert -key-file cert/localhost.key -cert-file cert/localhost.crt localhost"
   },
   "author": "",
   "license": "ISC",

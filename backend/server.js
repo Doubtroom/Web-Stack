@@ -7,14 +7,13 @@ import authRoutes from "./routes/authRoutes.js";
 import dataRoutes from "./routes/dataRoutes.js";
 import formDataRoutes from "./routes/formDataRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
-import streakRoutes from "./routes/streakRoutes.js";
 import { scheduleStreakResetJob } from "./utils/streakResetJob.js";
-import {
-  formDataLimiter,
-  authLimiter,
-  userLimiter,
-  internalLimiter,
-} from "./middleware/rateLimiterMiddleware.js";
+// import {
+//   formDataLimiter,
+//   authLimiter,
+//   userLimiter,
+//   internalLimiter,
+// } from "./middleware/rateLimiterMiddleware.js";
 
 dotenv.config();
 const app = express();
@@ -45,7 +44,6 @@ app.use("/api/data", dataRoutes);
 // app.use("/api/form-data", formDataLimiter, formDataRoutes);
 app.use("/api/form-data", formDataRoutes);
 
-app.use("/api/data/streak", streakRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI, {
