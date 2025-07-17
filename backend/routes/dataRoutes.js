@@ -40,6 +40,7 @@ import {
   upsertFlashcardStatus,
   getFlashcards,
 } from "../controllers/flashcardController.js";
+import { updateStreak, getStreak } from "../controllers/streakController.js";
 
 const router = express.Router();
 
@@ -50,7 +51,6 @@ router.get("/questions", verifyToken, getAllQuestions);
 router.get("/questions/:id", verifyToken, getQuestion);
 router.patch("/questions/:id", verifyToken, upload, updateQuestion);
 router.delete("/questions/:id", verifyToken, deleteQuestion);
-
 router.get(
   "/questions/:questionId/answers",
   verifyToken,
@@ -80,5 +80,6 @@ router.get("/customer-care/user", verifyToken, getUserCustomerCareRequests);
 
 router.post("/flashcards/status", verifyToken, upsertFlashcardStatus);
 router.get("/flashcards", verifyToken, getFlashcards);
+
 
 export default router;

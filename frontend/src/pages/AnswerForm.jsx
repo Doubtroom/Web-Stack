@@ -11,6 +11,7 @@ const AnswerForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [question, setQuestion] = useState(null);
@@ -112,6 +113,9 @@ const AnswerForm = () => {
       dispatch(createAnswer({ formData: data, questionId: id }))
         .unwrap()
         .then(() => {
+          // Update streak when answer is successfully posted
+          triggerStreakUpdate();
+          
           toast.success("Answer posted successfully!");
           dispatch(fetchQuestionById(id));
           window.scrollTo(0, 0);

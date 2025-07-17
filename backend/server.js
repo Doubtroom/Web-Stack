@@ -7,12 +7,14 @@ import authRoutes from "./routes/authRoutes.js";
 import dataRoutes from "./routes/dataRoutes.js";
 import formDataRoutes from "./routes/formDataRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
-import {
-  formDataLimiter,
-  authLimiter,
-  userLimiter,
-  internalLimiter,
-} from "./middleware/rateLimiterMiddleware.js";
+import streakRoutes from "./routes/streakRoutes.js";
+import { scheduleStreakResetJob } from "./utils/streakResetJob.js";
+// import {
+//   formDataLimiter,
+//   authLimiter,
+//   userLimiter,
+//   internalLimiter,
+// } from "./middleware/rateLimiterMiddleware.js";
 
 dotenv.config();
 const app = express();
@@ -34,7 +36,6 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes with specific rate limiters
 // app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/auth", authRoutes);
 // app.use("/api/user", userLimiter, userRoutes);
@@ -43,6 +44,8 @@ app.use("/api/user", userRoutes);
 app.use("/api/data", dataRoutes);
 // app.use("/api/form-data", formDataLimiter, formDataRoutes);
 app.use("/api/form-data", formDataRoutes);
+app.use("/api/streak", streakRoutes);
+
 
 mongoose
   .connect(process.env.MONGO_URI, {
@@ -52,6 +55,9 @@ mongoose
     app.listen(process.env.PORT, () => {
       console.log(`Server is running on port ${process.env.PORT}`);
     });
+    
+    // Schedule streak reset job
+    scheduleStreakResetJob();
   })
   .catch((err) => {
     console.log(err);
