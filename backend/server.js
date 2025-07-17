@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes.js";
 import dataRoutes from "./routes/dataRoutes.js";
 import formDataRoutes from "./routes/formDataRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import streakRoutes from "./routes/streakRoutes.js";
 import { scheduleStreakResetJob } from "./utils/streakResetJob.js";
 // import {
 //   formDataLimiter,
@@ -43,6 +44,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/data", dataRoutes);
 // app.use("/api/form-data", formDataLimiter, formDataRoutes);
 app.use("/api/form-data", formDataRoutes);
+app.use("/api/streak", streakRoutes);
 
 
 mongoose

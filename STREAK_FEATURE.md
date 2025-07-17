@@ -1,60 +1,59 @@
 # Daily Streak Feature Implementation
 
 ## Overview
-The Daily Streak feature has been successfully implemented in the Doubtroom application. This feature tracks user activity and maintains a daily streak counter that resets after 24 hours of inactivity.
+The Daily Streak feature tracks user activity and maintains a daily streak counter that resets after 24 hours of inactivity. All streak logic is now handled centrally in the backend, ensuring consistency and maintainability.
 
 ## Features Implemented
 
 ### 1. Backend Implementation
 
-#### Database Schema Updates✅
-- **User Model** (`backend/models/User.js`): Added streak-related fields:
+#### Database Schema Updates ✅
+- **Streaks Model** (`backend/models/Streaks.js`):
   - `currentStreak`: Current daily streak count
   - `longestStreak`: Longest streak achieved
-  - `lastActivityDate`: Last activity timestamp
-  - `lastStreakUpdate`: Last streak update timestamp
+  - `lastActiveDate`: Last activity timestamp
+  - `currentStreakStartDate`, `longestStreakStartDate`, `longestStreakEndDate`, `updatedAt`
+- **User Model**: No longer contains streak fields (removed to prevent data drift and confusion).
 
-#### API Endpoints✅
+#### API Endpoints ✅
 - **GET** `/api/streak`: Get user's current streak data
 - **POST** `/api/streak/update`: Update user's streak (called on activity)
+- **POST** `/api/streak/reset/:userId`: Admin-only manual reset for a user's streak
 
-#### Controllers✅
-- **`streakController.js`**: Handles streak logic including:
+#### Controllers ✅
+- **`streakController.js`**: Handles all streak logic including:
   - Daily streak calculation
   - Consecutive day tracking
   - Streak reset after inactivity
   - Longest streak tracking
+  - **Centralized activity type tracking**: All valid activity types are defined in `STREAK_ACTIVITY_TYPES`. To add a new activity, update this constant only.
+- **Other Controllers**: Must call the `/api/streak/update` endpoint for streak updates. No direct Streak model updates are allowed outside the streak controller and the scheduled reset job.
 
-#### Automated Reset Job✅-not needed
+#### Automated Reset Job ✅
 - **`streakResetJob.js`**: Scheduled job that runs every hour to reset streaks for inactive users
-- Automatically resets streaks for users inactive for more than 24 hours
+- Only updates the Streaks model (no longer touches the User model)
+- Logs user IDs whose streaks were reset (placeholder for future notifications)
 
 ### 2. Frontend Implementation
 
-#### Redux State Management✅
+#### Redux State Management ✅
 - **`streakSlice.js`**: Manages streak state with actions:
   - `fetchStreak`: Get user's streak data
-  - `updateStreak`: Update streak on activity
+  - `updateStreak`: Update streak on activity (calls backend API)
   - `resetStreak`: Reset streak state
+  - Handles optimistic UI and error feedback
+  - Resets streak state on logout
 
-#### UI Components✅
+#### UI Components ✅
 - **`StreakIcon.jsx`**: Displays streak icon with count badge
-  - Shows current streak number
-  - Interactive tooltip with streak details
-  - Hover animations
+  - Shows current streak number (or zero, with tooltip)
+  - Interactive tooltip with streak details and error state
+  - Manual refresh supported via prop
   - Positioned near profile icon in navbar
 
-#### Activity Tracking✅removed as it is upated in contrllers
-- **`useStreakActivity.js`**: Custom hook that:
-  - Automatically updates streak on page visits
-  - Checks for daily activity
-  - Triggers streak updates on user actions
-
-#### Integration Points
-Streak updates are triggered on:
-- **Home page visits**: Daily activity check
-- **Question submission**: When user posts a question
-- **Answer submission**: When user posts an answer
+#### Activity Tracking ✅
+- **Integration Points**: Streak updates are triggered by calling the backend API after user activities (e.g., question/answer submission). No direct frontend-only tracking or custom hook is used as the source of truth.
+- **How to Add New Activities**: Update the `STREAK_ACTIVITY_TYPES` constant in the backend. All controllers and frontend code should reference this for valid activity types.
 
 ### 3. Visual Design
 
@@ -62,7 +61,7 @@ Streak updates are triggered on:
 - **Location**: Next to profile icon in navbar (both desktop and mobile)
 - **Design**: Circular icon with streak count badge
 - **Animation**: Pulse animation for active streaks
-- **Tooltip**: Shows current and longest streak on hover
+- **Tooltip**: Shows current and longest streak on hover, and error state if fetch fails
 
 #### Responsive Design
 - Works on both desktop and mobile layouts
@@ -75,16 +74,19 @@ Streak updates are triggered on:
 2. **Consecutive Days**: If user was active yesterday, increment streak
 3. **Gap Detection**: If more than 1 day gap, reset streak to 1
 4. **Longest Streak**: Automatically updates if current streak exceeds previous best
+5. **Centralized Activity Types**: All valid activities are defined in `STREAK_ACTIVITY_TYPES` in the backend. Update this list to add new activities.
 
 ### Reset Mechanism
 - **Scheduled Job**: Runs every hour to check for inactive users
 - **24-hour Rule**: Users inactive for more than 24 hours have their streak reset
 - **Database Query**: Finds users with last activity > 24 hours ago
+- **Only Streaks Model Updated**: User model is not touched
 
 ### Activity Tracking
-- **Automatic Updates**: Streak updates on key user actions
+- **API-Driven Updates**: All streak updates are triggered by backend API calls after user activities
 - **Daily Limits**: Only one streak update per day per user
 - **Real-time Updates**: Immediate UI updates when streak changes
+- **No Direct Model Updates in Controllers**: All updates go through the streak controller
 
 ## Usage
 
@@ -94,9 +96,10 @@ Streak updates are triggered on:
 3. **Track Progress**: See both current and longest streaks
 
 ### For Developers
-1. **Add Activity Tracking**: Import `useStreakActivity` hook in new pages
-2. **Manual Updates**: Call `triggerStreakUpdate()` on user actions
+1. **Add Activity Tracking**: Call the `/api/streak/update` endpoint after new user activities
+2. **Manual Updates**: Use the streak API for all streak changes
 3. **Custom Integration**: Use streak services for custom implementations
+4. **Add New Activity Types**: Update `STREAK_ACTIVITY_TYPES` in the backend
 
 ## Configuration
 
@@ -105,7 +108,7 @@ No additional environment variables required - uses existing database and server
 
 ### Customization Options
 - **Reset Interval**: Modify `streakResetJob.js` for different reset schedules
-- **Activity Types**: Add more activity triggers in the hook
+- **Activity Types**: Add more activity triggers in `STREAK_ACTIVITY_TYPES`
 - **UI Styling**: Customize `StreakIcon.jsx` for different visual designs
 
 ## Testing
@@ -120,6 +123,7 @@ No additional environment variables required - uses existing database and server
 - Backend: API endpoints for streak operations
 - Frontend: Redux state management and UI components
 - Integration: End-to-end user flow testing
+- **Edge Cases**: See `backend/tests/streak.test.js` for test scaffolds covering daylight saving, leap years, timezones, double activity, and inactivity reset
 
 ## Future Enhancements
 
@@ -139,23 +143,19 @@ No additional environment variables required - uses existing database and server
 ## Files Modified/Created
 
 ### Backend
-- `models/User.js` - Added streak fields
-- `controllers/streakController.js` - New streak logic
-- `routes/streakRoutes.js` - New API routes
+- `models/Streaks.js` - Streak data (User.js no longer contains streak fields)
+- `controllers/streakController.js` - Centralized streak logic and activity types
+- `routes/streakRoutes.js` - Streak API routes
 - `utils/streakResetJob.js` - Scheduled reset job
-- `server.js` - Added streak routes and job scheduling
+- `server.js` - Registers streak routes and job scheduling
+- `tests/streak.test.js` - Edge case test scaffold
 
 ### Frontend
 - `store/streakSlice.js` - Redux state management
 - `services/streak.services.js` - API service calls
 - `components/StreakIcon.jsx` - UI component
-- `hooks/useStreakActivity.js` - Activity tracking hook
-- `components/Navbar.jsx` - Added streak icon
-- `pages/Home.jsx` - Added activity tracking
-- `pages/AskQuestion.jsx` - Added streak updates
-- `pages/AnswerForm.jsx` - Added streak updates
 - `store/store.js` - Added streak reducer
 
 ## Conclusion
 
-The Daily Streak feature has been successfully implemented with a complete backend and frontend solution. The feature provides user engagement through gamification while maintaining data integrity and performance. The implementation is scalable and can be easily extended with additional features in the future. 
+The Daily Streak feature is now robust, maintainable, and consistent across backend and frontend. All streak logic is centralized in the backend, with a single source of truth for activity types and no redundant data storage. The implementation is scalable and can be easily extended with additional features in the future. 

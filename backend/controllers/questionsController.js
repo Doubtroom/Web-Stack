@@ -2,6 +2,9 @@ import Questions from "../models/Questions.js";
 import Answers from "../models/Answers.js";
 import cloudinary from "../utils/cloudinary.js";
 import FlashcardStatus from "../models/FlashcardStatus.js";
+import axios from "axios";
+import { STREAK_ACTIVITY_TYPES } from "./streakController.js"; // Use this for new streak activities
+// When adding a new activity that should count toward streaks, add it to STREAK_ACTIVITY_TYPES in streakController.js
 
 export const createQuestion = async (req, res) => {
   try {
@@ -18,10 +21,8 @@ export const createQuestion = async (req, res) => {
             else resolve(result);
           },
         );
-
         uploadStream.end(req.file.buffer);
       });
-
       const result = await uploadPromise;
       photoUrl = result.secure_url;
       photoId = result.public_id;
@@ -37,55 +38,24 @@ export const createQuestion = async (req, res) => {
       postedBy: req.user.id,
     });
 
-    // --- STREAK LOGIC STARTS HERE ---
-    const userId = req.user.id;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    let streak = await Streak.findOne({ userId });
-
-    if (!streak) {
-      streak = new Streak({
-        userId,
-        currentStreak: 1,
-        currentStreakStartDate: today,
-        lastActiveDate: today,
-        longestStreak: 1,
-        longestStreakStartDate: today,
-        longestStreakEndDate: today,
-      });
-    } else {
-      const lastActive = new Date(streak.lastActiveDate || 0);
-      lastActive.setHours(0, 0, 0, 0);
-      const dayDiff = Math.floor((today - lastActive) / (1000 * 60 * 60 * 24));
-
-      if (dayDiff === 1) {
-        streak.currentStreak += 1;
-        streak.lastActiveDate = today;
-        if (streak.currentStreak > streak.longestStreak) {
-          streak.longestStreak = streak.currentStreak;
-          streak.longestStreakStartDate = streak.currentStreakStartDate;
-          streak.longestStreakEndDate = today;
-        }
-      } else if (dayDiff > 1) {
-        streak.currentStreak = 1;
-        streak.currentStreakStartDate = today;
-        streak.lastActiveDate = today;
-      }
+    // --- STREAK LOGIC MOVED TO API CALL ---
+    try {
+      await axios.post(
+        `${req.protocol}://${req.get("host")}/api/streak/update`,
+        { activityType: "question" },
+        { headers: { Authorization: req.headers.authorization } }
+      );
+    } catch (streakErr) {
+      // Rollback question creation if streak update fails
+      await Questions.findByIdAndDelete(question._id);
+      return res.status(500).json({ message: "Streak update failed", error: streakErr?.response?.data?.message || streakErr.message });
     }
+    // --- END STREAK LOGIC ---
 
-    streak.updatedAt = new Date();
-    await streak.save();
-    // --- STREAK LOGIC ENDS HERE ---
-
-    res
-      .status(201)
-      .json({ message: "Successfully created Question", question });
+    res.status(201).json({ message: "Successfully created Question", question });
   } catch (error) {
     console.error("Error creating question:", error);
-    res
-      .status(500)
-      .json({ message: "Error creating question", error: error.message });
+    res.status(500).json({ message: "Error creating question", error: error.message });
   }
 };
 

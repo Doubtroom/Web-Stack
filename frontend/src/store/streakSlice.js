@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { streakServices } from "../services/streak.services";
+import { logout } from "./authSlice";
 
 // Async thunks
 export const fetchStreak = createAsyncThunk(
@@ -37,6 +38,8 @@ const streakSlice = createSlice({
     updatedAt: null,
     loading: false,
     error: null,
+    // For optimistic UI rollback
+    _prev: null,
   },
   reducers: {
     clearStreakError: (state) => {
@@ -49,6 +52,7 @@ const streakSlice = createSlice({
       state.longestStreakStartDate = null;
       state.longestStreakEndDate = null;
       state.updatedAt = null;
+      state._prev = null;
     },
   },
   extraReducers: (builder) => {
@@ -67,6 +71,7 @@ const streakSlice = createSlice({
         state.longestStreakStartDate = s.longestStreakStartDate;
         state.longestStreakEndDate = s.longestStreakEndDate;
         state.updatedAt = s.updatedAt;
+        state._prev = null;
       })
       .addCase(fetchStreak.rejected, (state, action) => {
         state.loading = false;
@@ -76,6 +81,17 @@ const streakSlice = createSlice({
       .addCase(updateStreak.pending, (state) => {
         state.loading = true;
         state.error = null;
+        // Optimistic UI: save previous state and increment
+        state._prev = {
+          currentStreak: state.currentStreak,
+          longestStreak: state.longestStreak,
+          lastActiveDate: state.lastActiveDate,
+          longestStreakStartDate: state.longestStreakStartDate,
+          longestStreakEndDate: state.longestStreakEndDate,
+          updatedAt: state.updatedAt,
+        };
+        state.currentStreak += 1;
+        state.lastActiveDate = new Date().toISOString();
       })
       .addCase(updateStreak.fulfilled, (state, action) => {
         const s = action.payload;
@@ -86,13 +102,36 @@ const streakSlice = createSlice({
         state.longestStreakStartDate = s.longestStreakStartDate;
         state.longestStreakEndDate = s.longestStreakEndDate;
         state.updatedAt = s.updatedAt;
+        state._prev = null;
       })
       .addCase(updateStreak.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        // Rollback optimistic update
+        if (state._prev) {
+          state.currentStreak = state._prev.currentStreak;
+          state.longestStreak = state._prev.longestStreak;
+          state.lastActiveDate = state._prev.lastActiveDate;
+          state.longestStreakStartDate = state._prev.longestStreakStartDate;
+          state.longestStreakEndDate = state._prev.longestStreakEndDate;
+          state.updatedAt = state._prev.updatedAt;
+          state._prev = null;
+        }
+      })
+      // Reset streak state on logout
+      .addCase(logout.fulfilled, (state) => {
+        state.currentStreak = 0;
+        state.longestStreak = 0;
+        state.lastActiveDate = null;
+        state.longestStreakStartDate = null;
+        state.longestStreakEndDate = null;
+        state.updatedAt = null;
+        state._prev = null;
+        state.error = null;
       });
   },
 });
 
+// UI should display error from state.streak.error (e.g., toast/snackbar)
 export const { clearStreakError, resetStreakState } = streakSlice.actions;
 export default streakSlice.reducer;

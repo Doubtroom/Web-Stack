@@ -5,8 +5,23 @@ import { API_ENDPOINTS } from "../config/api.config";
 
 export const streakServices = {
   // Get user's streak data
-  getStreak: () => apiClient.get(API_ENDPOINTS.STREAK.GET),
+  getStreak: async () => {
+    try {
+      return await apiClient.get(API_ENDPOINTS.STREAK.GET);
+    } catch (error) {
+      throw error.response?.data || { message: error.message };
+    }
+  },
 
   // Update user's streak (called when user performs an activity)
-  updateStreak: () => apiClient.post(API_ENDPOINTS.STREAK.UPDATE),
+  updateStreak: async (activityType) => {
+    try {
+      return await apiClient.post(
+        API_ENDPOINTS.STREAK.UPDATE,
+        activityType ? { activityType } : {}
+      );
+    } catch (error) {
+      throw error.response?.data || { message: error.message };
+    }
+  },
 };
