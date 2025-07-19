@@ -10,10 +10,11 @@ import {
   Menu,
   X,
   Layers,
+  Sparkles
 } from "lucide-react";
 import SearchBar from "./SearchBar";
 import NavItem from "./NavItem";
-import { NavLink } from "react-router-dom";
+import { NavLink,Link } from "react-router-dom";
 import Logo from "../assets/logoWhite.png";
 import { motion, AnimatePresence } from "framer-motion";
 import SliderSwitch from "../components/SliderSwitch";
@@ -21,6 +22,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store/authSlice";
+import PointsButton from "./PointsButton";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -193,9 +195,10 @@ const Navbar = () => {
           </div>
         </div>
 
+        <PointsButton />
+
         {/* Desktop Menu */}
         <div className="hidden lg:flex items-center space-x-6">
-          <SliderSwitch />
           <NavItem
             to="/home"
             icon={<Home className="w-4 h-4" />}
@@ -237,7 +240,6 @@ const Navbar = () => {
 
         {/* Mobile Menu Items */}
         <div className="lg:hidden flex items-center gap-4 sm:gap-4">
-          <SliderSwitch />
           <div className="relative" ref={mobileMenuRef}>
             <button
               onClick={() => setIsOpen(!isOpen)}

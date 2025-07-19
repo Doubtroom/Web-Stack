@@ -1,6 +1,7 @@
 import Answers from "../models/Answers.js";
 import Questions from "../models/Questions.js";
 import cloudinary from "../utils/cloudinary.js";
+import { updateStarDust } from "./starDustController.js";
 
 export const createAnswer = async (req, res) => {
   try {
@@ -51,6 +52,18 @@ export const createAnswer = async (req, res) => {
     });
 
     await Questions.findByIdAndUpdate(questionId, { $inc: { noOfAnswers: 1 } });
+
+    // Award +3 StarDust for answering a doubt
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    await updateStarDust({
+      userId: req.user.id,
+      points: 3,
+      action: "postAnswers",
+      relatedId: answer._id,
+      refModel: "Answers",
+      date: today,
+    });
 
     res.status(201).json({
       message: "Successfully created answer",
@@ -193,6 +206,18 @@ export const deleteAnswer = async (req, res) => {
       $inc: { noOfAnswers: -1 },
     });
 
+    // Subtract points for deleting an answer
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    await updateStarDust({
+      userId: answer.postedBy,
+      points: -3,
+      action: "deleteAnswers",
+      relatedId: answerId,
+      refModel: "Answers",
+      date: today,
+    });
+
     res.json({
       message: "Answer deleted successfully",
     });
@@ -320,7 +345,8 @@ export const upvoteAnswer = async (req, res) => {
     );
 
     let updatedAnswer;
-
+    let starDustChange = 0;
+    let direction = null;
     if (upvotedIndex === -1) {
       // User has not upvoted yet, so upvote
       updatedAnswer = await Answers.findOneAndUpdate(
@@ -334,6 +360,9 @@ export const upvoteAnswer = async (req, res) => {
           runValidators: true,
         },
       ).populate("postedBy", "displayName collegeName role _id");
+      // Award +1 StarDust to answer author
+      starDustChange = 1;
+      direction = "in";
     } else {
       // User has already upvoted, so remove upvote
       updatedAnswer = await Answers.findOneAndUpdate(
@@ -347,12 +376,28 @@ export const upvoteAnswer = async (req, res) => {
           runValidators: true,
         },
       ).populate("postedBy", "displayName collegeName role _id");
+      // Remove 1 StarDust from answer author
+      starDustChange = -1;
+      direction = "out";
     }
 
     // Ensure upvotes count is never negative
     if (updatedAnswer.upvotes < 0) {
       updatedAnswer.upvotes = 0;
       await updatedAnswer.save();
+    }
+    // Only update StarDust if the upvoter is not the answer author
+    if (userId !== String(answer.postedBy)) {
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      await updateStarDust({
+        userId: answer.postedBy,
+        points: starDustChange,
+        action: starDustChange > 0 ? "upvote" : "lostUpvote",
+        relatedId: answerId,
+        refModel: "Answers",
+        date: today,
+      });
     }
 
     res.json({

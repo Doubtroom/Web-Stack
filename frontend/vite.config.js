@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import path from 'path';
 
 let serverConfig = {
   port: 3001,
@@ -8,6 +9,11 @@ let serverConfig = {
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
   server: serverConfig,
   build: {
     sourcemap: false, // Disable source maps in production

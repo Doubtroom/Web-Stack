@@ -8,6 +8,7 @@ import {
 } from "../services/data.services";
 import { API_ENDPOINTS, API_BASE_URL } from "../config/api.config";
 import axios from "axios";
+import { incrementStarDustPoints, fetchStarDustInfo } from "./starDustSlice";
 
 // Create axios instance with base URL
 const api = axios.create({
@@ -47,9 +48,12 @@ export const fetchQuestions = createAsyncThunk(
 
 export const createQuestion = createAsyncThunk(
   "data/createQuestion",
-  async (formData, { rejectWithValue }) => {
+  async (formData, { rejectWithValue, dispatch }) => {
     try {
       const response = await questionServices.createQuestion(formData);
+      // Instantly update points in Redux
+      dispatch(incrementStarDustPoints(2));
+      await dispatch(fetchStarDustInfo());
       return response.data.question;
     } catch (error) {
       console.error("Error in createQuestion:", error.response?.data || error);
@@ -114,9 +118,12 @@ export const fetchAnswers = createAsyncThunk(
 
 export const createAnswer = createAsyncThunk(
   "data/createAnswer",
-  async ({ questionId, formData }, { rejectWithValue }) => {
+  async ({ questionId, formData }, { rejectWithValue, dispatch }) => {
     try {
       const response = await answerServices.createAnswer(questionId, formData);
+      // Instantly update points in Redux
+      dispatch(incrementStarDustPoints(3));
+      await dispatch(fetchStarDustInfo());
       return response.data.answer;
     } catch (error) {
       return rejectWithValue(
@@ -297,9 +304,12 @@ export const upvoteComment = createAsyncThunk(
 
 export const deleteQuestion = createAsyncThunk(
   "data/deleteQuestion",
-  async (questionId, { rejectWithValue }) => {
+  async (questionId, { rejectWithValue, dispatch }) => {
     try {
       await questionServices.deleteQuestion(questionId);
+      // Instantly decrement points in Redux
+      dispatch(incrementStarDustPoints(-2));
+      await dispatch(fetchStarDustInfo());
       return questionId;
     } catch (error) {
       return rejectWithValue(
@@ -311,9 +321,12 @@ export const deleteQuestion = createAsyncThunk(
 
 export const deleteAnswer = createAsyncThunk(
   "data/deleteAnswer",
-  async (answerId, { rejectWithValue }) => {
+  async (answerId, { rejectWithValue, dispatch }) => {
     try {
       await answerServices.deleteAnswer(answerId);
+      // Instantly decrement points in Redux
+      dispatch(incrementStarDustPoints(-3));
+      await dispatch(fetchStarDustInfo());
       return answerId;
     } catch (error) {
       return rejectWithValue(

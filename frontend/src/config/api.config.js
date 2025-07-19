@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
     GET_USER: "/user",
     UPDATE_FEATURES: "/user/features",
     VERIFY_USER: "/user/verify",
+    GET_USER_STARDUST_INFO:"/user/stardust-info"
   },
 
   QUESTIONS: {
