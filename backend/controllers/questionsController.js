@@ -2,6 +2,7 @@ import Questions from "../models/Questions.js";
 import Answers from "../models/Answers.js";
 import cloudinary from "../utils/cloudinary.js";
 import FlashcardStatus from "../models/FlashcardStatus.js";
+import { updateStarDust } from "./starDustController.js";
 
 export const createQuestion = async (req, res) => {
   try {
@@ -35,6 +36,18 @@ export const createQuestion = async (req, res) => {
       photoUrl,
       photoId,
       postedBy: req.user.id,
+    });
+
+    // Award +2 StarDust for posting a doubt
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    await updateStarDust({
+      userId: req.user.id,
+      points: 2,
+      action: "postQuestions",
+      relatedId: question._id,
+      refModel: "Questions",
+      date: today,
     });
 
     res
@@ -275,6 +288,18 @@ export const deleteQuestion = async (req, res) => {
 
     // Delete the question itself
     await question.deleteOne();
+
+    // Subtract points for deleting a question
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    await updateStarDust({
+      userId: question.postedBy,
+      points: -2,
+      action: "deleteQuestions",
+      relatedId: questionId,
+      refModel: "Questions",
+      date: today,
+    });
 
     res.json({
       message: "Question and associated answers deleted successfully",

@@ -34,7 +34,7 @@ const EditAnswer = () => {
       } catch (error) {
         console.error("Error fetching answer:", error);
         toast.error("Failed to fetch answer details");
-        navigate("/my-questions");
+        navigate("/my-content");
       }
     };
 

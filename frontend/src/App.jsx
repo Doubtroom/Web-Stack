@@ -19,6 +19,7 @@ import LandingPage from "./pages/LandingPage";
 import MyQuestions from "./pages/MyContent";
 import MyCollege from "./pages/MyCollege";
 import Profile from "./pages/Profile";
+import PersonalDetails from "./pages/PersonalDetails";
 import SearchResults from "./pages/SearchResults";
 import ContactUs from "./pages/ContactUs";
 import { Toaster } from "sonner";
@@ -35,6 +36,9 @@ import ProfileCompletionDialog from "./components/ProfileCompletionDialog";
 import FlashCardsPage from "./pages/FlashCardsPage";
 import Promotion from "./pages/Promotion";
 import ChangePassword from "./pages/ChangePasswordPage.jsx";
+import Appearance from "./pages/Appearance";
+import Features from "./pages/Features";
+import Redeem from "./pages/Redeem";
 
 (function deleteStaleLocalStorage() {
   let removed = false;
@@ -178,6 +182,9 @@ function App() {
               </Route>
               <Route path="my-college" element={<MyCollege />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="profile/personal-details" element={<PersonalDetails />} />
+              <Route path="profile/appearance" element={<Appearance />} />
+              <Route path="profile/features" element={<Features />} />
               <Route path="search/:query" element={<SearchResults />} />
               <Route
                 path="customer-support"
@@ -185,6 +192,7 @@ function App() {
               />
               <Route path="contact" element={<ContactUs />} />
               <Route path="promotion" element={<Promotion />} />
+              <Route path="redeem" element={<Redeem />} />
             </Route>
           </Route>
 
@@ -207,12 +215,8 @@ function App() {
         position="top-center"
         richColors
         theme={isDarkMode ? "dark" : "light"}
-        toastOptions={{
-          style: {
-            background: isDarkMode ? "#1f2937" : "#ffffff",
-            color: isDarkMode ? "#ffffff" : "#000000",
-          },
-        }}
+        // toastOptions={{
+        // }}
       />
     </div>
   );

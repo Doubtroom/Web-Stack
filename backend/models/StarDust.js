@@ -14,7 +14,7 @@ const starDustSchema = new mongoose.Schema({
 
   action: {
     type: String,
-    enum: ['Answers', 'Questions', 'upvote', 'downvote', 'admin_adjust', 'login'], // 'upvote', 'downvote', 'admin_adjust', 'login' not defined
+    enum: ['postAnswers', 'postQuestions', 'upvote', 'lostUpvote','deleteAnswers','deleteQuestions','admin_adjust', 'login'], // 'upvote', 'lostUpvote', 'admin_adjust', 'login' not defined
     required: true
   }, // Reason for earning/losing points
 
@@ -26,20 +26,31 @@ const starDustSchema = new mongoose.Schema({
 
   relatedId: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true
+    required: false
   }, // The object related to the action
 
   refModel: {
     type: String,
-    enum: ['Questions', 'Answers', 'Comments', 'Streaks', 'Upvotes'],
-    required: true
+    enum: ['Questions', 'Answers', 'Comments', 'Streaks', 'Upvotes','User'],
+    required: false
   }, // Which model relatedId refers to
+
+  date: {
+    type: Date,
+    required: true,
+  },
 
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
+
+// Partial unique index: only enforce uniqueness for daily login actions
+starDustSchema.index(
+  { userId: 1, action: 1, date: 1 },
+  { unique: true, partialFilterExpression: { action: "login" } }
+);
 
 const StarDust = mongoose.model("StarDust", starDustSchema);
 

@@ -17,6 +17,7 @@ import Card from "../components/Card";
 import QuestionSkeleton from "../components/QuestionSkeleton";
 import AnswerSkeleton from "../components/AnswerSkeleton";
 import { toast } from "sonner";
+import SpaceToast from "../components/SpaceToast";
 import { useSelector, useDispatch } from "react-redux";
 import {
   fetchUserQuestions,
@@ -47,11 +48,15 @@ const MyQuestions = () => {
     try {
       if (type === "question") {
         await dispatch(deleteQuestion(id)).unwrap();
-        toast.success("Question and its answers deleted successfully!");
+        toast.custom((t) => (
+          <SpaceToast amount={-2} action="deleteQuestions" />
+        ));
       } else {
         // type === 'answer'
         await dispatch(deleteAnswer(id)).unwrap();
-        toast.success("Answer deleted successfully!");
+        toast.custom((t) => (
+          <SpaceToast amount={-3} action="deleteAnswers" />
+        ));
       }
     } catch (error) {
       toast.error(error || `Failed to delete ${type}.`);
@@ -267,7 +272,7 @@ const MyQuestions = () => {
                   branch={
                     formatText(answer.questionId?.branch) || "Unknown Branch"
                   }
-                  topic={answer.questionId?.text || "Question not found"}
+                  topic={answer.questionId?.text || "...."}
                   noOfAnswers={answer.upvotes || 0}
                   postedOn={formatTimeAgo(answer.createdAt)}
                   postedBy={answer.postedBy?._id}

@@ -1,13 +1,25 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { authService } from "../services/auth.services.js";
+import { incrementStarDustPoints } from "./starDustSlice";
 
 // Async thunks
 export const login = createAsyncThunk(
   "auth/login",
-  async (credentials, { rejectWithValue }) => {
+  async (credentials, { dispatch, rejectWithValue }) => {
     try {
       const response = await authService.login(credentials);
-      return response.data;
+      
+      // After successful login, check for daily login award
+      let dailyLoginAwarded = false;
+      if (response.data.isAuthenticated && response.data.user?.isVerified) {
+        const verifyResponse = await authService.verifyUser();
+        dailyLoginAwarded = verifyResponse.data.dailyLoginAwarded;
+        if (dailyLoginAwarded) {
+          dispatch(incrementStarDustPoints(1));
+        }
+      }
+      
+      return { ...response.data, dailyLoginAwarded };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || "Login failed");
     }
@@ -33,10 +45,21 @@ export const signup = createAsyncThunk(
 
 export const googleLogin = createAsyncThunk(
   "auth/google-login",
-  async (token, { rejectWithValue }) => {
+  async (token, { dispatch, rejectWithValue }) => {
     try {
       const response = await authService.googleLogin(token);
-      return response.data;
+      
+      // After successful Google login, check for daily login award
+      let dailyLoginAwarded = false;
+      if (response.data.isAuthenticated && response.data.user?.isVerified) {
+        const verifyResponse = await authService.verifyUser();
+        dailyLoginAwarded = verifyResponse.data.dailyLoginAwarded;
+        if (dailyLoginAwarded) {
+          dispatch(incrementStarDustPoints(1));
+        }
+      }
+      
+      return { ...response.data, dailyLoginAwarded };
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Google login failed",
@@ -153,6 +176,23 @@ export const resetPassword = createAsyncThunk(
       );
     }
   },
+);
+
+// Thunk to verify user and handle daily login points
+export const verifyUserAndHandlePoints = createAsyncThunk(
+  "auth/verifyUserAndHandlePoints",
+  async ({ willFetchStarDustInfo = false } = {}, { dispatch, rejectWithValue }) => {
+    try {
+      const response = await authService.verifyUser();
+      // If daily login was awarded and we are NOT about to fetch points, increment instantly
+      if (response.data.dailyLoginAwarded && !willFetchStarDustInfo) {
+        dispatch(incrementStarDustPoints(1));
+      }
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
 );
 
 const authSlice = createSlice({

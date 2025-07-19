@@ -1,10 +1,12 @@
-import React,{useEffect,useState} from "react";
+import React,{useEffect} from "react";
 import { Sparkles } from "lucide-react";
 import PointsTooltip from "./PointsTooltip";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchStarDustInfo } from "../store/starDustSlice";
 
 // Custom hook to detect desktop with hover support
 function useIsDesktopWithHover() {
-  const [isDesktop, setIsDesktop] = useState(true);
+  const [isDesktop, setIsDesktop] = React.useState(true);
   useEffect(() => {
     if (typeof window !== 'undefined' && window.matchMedia) {
       setIsDesktop(window.matchMedia('(hover: hover) and (pointer: fine)').matches);
@@ -14,11 +16,11 @@ function useIsDesktopWithHover() {
 }
 
 const PointsButton = () => {
-  const points = 118;
-  const transactions = [
-    { desc: 'Redeemed for Avatar', amount: -20 },
-    { desc: 'Daily Login Bonus', amount: +10 },
-  ];
+  const dispatch = useDispatch();
+  const { points, transactions, loading } = useSelector(state => state.starDust);
+  useEffect(() => {
+    dispatch(fetchStarDustInfo());
+  }, [dispatch]);
   const isDesktop = useIsDesktopWithHover();
 
   // Button content
@@ -33,7 +35,7 @@ const PointsButton = () => {
           className="w-4 h-4 text-[#4485CE] drop-shadow-[0_0_4px_rgba(68,133,206,0.7)] sm:w-5 sm:h-5 sm:drop-shadow-[0_0_6px_rgba(68,133,206,0.7)]"
         />
         <span className="text-sm font-semibold dark:text-gray-100 text-slate-800 drop-shadow-[0_0_2px_rgba(68,133,206,0.3)] sm:text-base">
-          {points}
+          {loading ? "..." : points}
         </span>
         <span className="text-[9px] leading-tight text-gray-400 dark:text-gray-500 font-medium ml-0.5 sm:text-[10px] sm:ml-1">
           SDP

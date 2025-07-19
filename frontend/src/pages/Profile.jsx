@@ -2,25 +2,19 @@ import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   User,
-  Calendar,
-  Building2,
-  GraduationCap,
-  Phone,
-  Briefcase,
-  Mail,
-  Edit2,
-  Save,
-  X,
-  Camera,
+  Settings,
+  Award,
+  BarChart3,
+  Paintbrush,
+  Bolt
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { logout, updateProfile } from "../store/authSlice";
+import { logout } from "../store/authSlice";
 import { motion, AnimatePresence } from "framer-motion";
-import { Switch } from "antd";
 import { userServices } from "../services/data.services";
 import LogoutLoader from "../components/LogoutLoader";
-import SliderSwitch from "../components/SliderSwitch";
+import ProfileTab from "../components/ProfileTab";
 
 const Profile = () => {
   const userProfile = useSelector((state) => state?.auth?.user);
@@ -70,7 +64,12 @@ const Profile = () => {
         setFeatures(userProfile?.features || { flashcards: true });
       } catch (error) {
         console.error("Error fetching user data:", error);
-        toast.error("Failed to load profile data");
+        toast.error("Failed to load profile data",{
+          style: { 
+            background: isDarkMode ? "#1f2937" : "#ffffff",
+            color: isDarkMode ? "#ffffff" : "#000000"
+          }
+        });
       } finally {
         setLoading(false);
       }
@@ -84,11 +83,21 @@ const Profile = () => {
     try {
       const result = await dispatch(logout()).unwrap();
       if (result) {
-        toast.success("Logged out successfully!");
+        toast.success("Logged out successfully!",{
+          style: { 
+            background: isDarkMode ? "#1f2937" : "#ffffff",
+            color: isDarkMode ? "#ffffff" : "#000000"
+          }
+        });
         navigate("/landing", { state: { fromLogout: true }, replace: true });
       }
     } catch (error) {
-      toast.error(error || "Logout failed. Please try again.");
+      toast.error(error || "Logout failed. Please try again.",{
+        style: { 
+          background: isDarkMode ? "#1f2937" : "#ffffff",
+          color: isDarkMode ? "#ffffff" : "#000000"
+        }
+      });
     } finally {
       setShowLogoutConfirm(false);
     }
@@ -108,26 +117,13 @@ const Profile = () => {
       // Optionally show a toast for success
     } catch (error) {
       setFeatures(features); // revert
-      toast.error("Failed to update features");
+      toast.error("Failed to update features",{
+        style: { 
+          background: isDarkMode ? "#1f2937" : "#ffffff",
+          color: isDarkMode ? "#ffffff" : "#000000"
+        }
+      });
     }
-  };
-
-  const formatBranchName = (branch) => {
-    if (!branch) return "";
-    return branch
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "Not available";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
   };
 
   if (loading) {
@@ -221,159 +217,40 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Appearance Section */}
-        <div className="w-full flex flex-col gap-2 sm:gap-4 mt-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-200 mt-8 mb-2 sm:mb-4 flex items-center gap-2">
-            <span>Appearance</span>
-          </h2>
-          <div className={`rounded-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? "bg-blue-900/60" : "bg-blue-50"}`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold text-blue-900 dark:text-blue-200">
-                  Dark Mode
-                </div>
-                <div className="text-sm text-blue-800 dark:text-blue-300 opacity-80">
-                  Toggle between light and dark themes for a comfortable viewing experience.
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <SliderSwitch />
-                <span className={`text-sm font-medium ${isDarkMode ? 'text-blue-200' : 'text-blue-800'}`}>{isDarkMode ? 'Dark' : 'Light'}</span>
-              </div>
-            </div>
+        {/* Settings Section */}
+        <h2 className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-200 mt-10 mb-4 sm:mb-6 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <Bolt className="w-5 h-5 text-white" />
           </div>
-        </div>
-
-        {/* Features Section */}
-        <div className="w-full flex flex-col gap-2 sm:gap-4 mt-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-200 mt-8 mb-2 sm:mb-4 flex items-center gap-2">
-            <span>Features</span>
-          </h2>
-          <div
-            className={`rounded-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? "bg-blue-900/60" : "bg-blue-50"}`}
-          >
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-semibold text-blue-900 dark:text-blue-200">
-                    FlashCards
-                  </div>
-                  <div className="text-sm text-blue-800 dark:text-blue-300 opacity-80">
-                    Enable active recall and spaced repetition for better
-                    learning
-                  </div>
-                </div>
-                <Switch
-                  checked={features.flashcards}
-                  onChange={() => handleFeatureToggle("flashcards")}
-                  className={isDarkMode ? "bg-blue-900" : "bg-blue-200"}
-                />
-              </div>
-              {/* Add more features here as needed */}
-            </div>
-          </div>
-        </div>
-
-        {/* Personal Details Section */}
-        <h2 className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-200 mt-10 mb-2 sm:mb-4 flex items-center gap-2">
-          <span>Personal Details</span>
+          <span>Settings</span>
         </h2>
-        <div
-          className={`rounded-xl shadow-lg p-0 sm:p-0 overflow-hidden ${isDarkMode ? "bg-blue-900/60" : "bg-blue-50"}`}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-0 sm:gap-0">
-            <div className="divide-y divide-blue-200 dark:divide-blue-800">
-              <div className="p-4 sm:p-6 bg-transparent">
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    Email
-                  </span>
-                </div>
-                <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                  {userData?.email || "Not available"}
-                </p>
-              </div>
-              <div className="p-4 sm:p-6 bg-transparent">
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    College
-                  </span>
-                </div>
-                <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                  {userData?.collegeName || "Not available"}
-                </p>
-              </div>
-              <div className="p-4 sm:p-6 bg-transparent">
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    Branch
-                  </span>
-                </div>
-                <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                  {formatBranchName(userData?.branch) || "Not available"}
-                </p>
-              </div>
-              <div className="p-4 sm:p-6 bg-transparent">
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    Role
-                  </span>
-                </div>
-                <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                  {userData?.role || "Not available"}
-                </p>
-              </div>
-            </div>
-            <div className="divide-y divide-blue-200 dark:divide-blue-800">
-              <div className="p-4 sm:p-6 bg-transparent">
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    Study Type
-                  </span>
-                </div>
-                <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                  {userData?.studyType || "Not available"}
-                </p>
-              </div>
-              <div className="p-4 sm:p-6 bg-transparent">
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    Phone
-                  </span>
-                </div>
-                <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                  {userData?.phone || "Not available"}
-                </p>
-              </div>
-              <div className="p-4 sm:p-6 bg-transparent">
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    Gender
-                  </span>
-                </div>
-                <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                  {userData?.gender || "Not available"}
-                </p>
-              </div>
-              <div className="p-4 sm:p-6 bg-transparent">
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    Date of Birth
-                  </span>
-                </div>
-                <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                  {formatDate(userData?.dob) || "Not available"}
-                </p>
-              </div>
-            </div>
+        
+        <div className={`rounded-2xl shadow-xl overflow-hidden border border-blue-100 dark:border-blue-900/30 ${isDarkMode ? "bg-gradient-to-br from-gray-800/80 to-gray-900/80" : "bg-gradient-to-br from-white to-blue-50/50"}`}>
+          <div className="space-y-0">
+            <ProfileTab
+              icon={<Paintbrush className="w-6 h-6 text-blue-700 dark:text-blue-200" />}
+              title="Appearance"
+              description="Customize the look and feel of your experience."
+              onClick={() => navigate("/profile/appearance")}
+              rounded="rounded-t-xl"
+              borderBottom={true}
+            />
+            <ProfileTab
+              icon={<Award className="w-6 h-6 text-blue-700 dark:text-blue-200" />}
+              title="Features"
+              description="Enable or disable platform features."
+              onClick={() => navigate("/profile/features")}
+              borderBottom={true}
+            />
+            <ProfileTab
+              icon={<User className="w-6 h-6 text-blue-700 dark:text-blue-200" />}
+              title="Personal Details"
+              description="Manage your profile information and preferences"
+              onClick={() => navigate("/profile/personal-details")}
+              rounded="rounded-b-xl"
+              borderBottom={false}
+            />
+
           </div>
         </div>
       </div>

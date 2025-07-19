@@ -51,4 +51,8 @@ export const authService = {
   verifyUser: async () => {
     return apiClient.get(API_ENDPOINTS.USER.VERIFY_USER);
   },
+  getStarDustInfo:async()=>{
+    const res= await apiClient.get(API_ENDPOINTS.USER.GET_USER_STARDUST_INFO)
+    return res;
+  }
 };

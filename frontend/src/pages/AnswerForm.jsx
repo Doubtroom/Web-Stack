@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { createAnswer, fetchQuestionById } from "../store/dataSlice";
 import { questionServices } from "../services/data.services";
 import { toast } from "sonner";
+import SpaceToast from "../components/SpaceToast";
 import Button from "../components/Button";
 
 const AnswerForm = () => {
@@ -112,7 +113,9 @@ const AnswerForm = () => {
       dispatch(createAnswer({ formData: data, questionId: id }))
         .unwrap()
         .then(() => {
-          toast.success("Answer posted successfully!");
+          toast.custom((t) => (
+            <SpaceToast amount={3} action="postAnswers" />
+          ));
           dispatch(fetchQuestionById(id));
           window.scrollTo(0, 0);
           navigate(`/question/${id}`);

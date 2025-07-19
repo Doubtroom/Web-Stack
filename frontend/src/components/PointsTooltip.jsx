@@ -54,9 +54,31 @@ const PointsTooltip = ({ points, transactions, children, onlyClick }) => {
   };
 
   const baseTooltip =
-    "z-50 absolute top-full left-1/2 -translate-x-1/2 mt-2.5 min-w-[220px] bg-white dark:bg-black border border-[#4485CE] rounded-xl shadow-lg px-4 py-3 text-[#232946] dark:text-white transition-all duration-200 ease-out";
+    "z-50 absolute top-full left-1/2 -translate-x-1/2 mt-2.5 min-w-[220px] bg-white dark:bg-black-radial border border-[#4485CE] rounded-xl shadow-lg px-4 py-3 text-[#232946] dark:text-white transition-all duration-200 ease-out";
   const showAnim = "opacity-100 scale-100 pointer-events-auto";
   const hideAnim = "opacity-0 scale-95 pointer-events-none";
+
+  const getTransactionDesc = (tx) => {
+    switch (tx.action) {
+      case "postedAnswers":
+        return "Answered a question";
+      case "postedQuestions":
+        return "Posted a question";
+      case "login":
+        return "Daily login";
+      case "upvote":
+        return "Received an upvote";
+      case "lostUpvote":
+          return "Lost an upvote";
+      case "deletedAnswers":
+        return "Deleted a Answer";
+      case "deletedQuestions":
+        return "Deleted a question";
+      // Add more cases as needed
+      default:
+        return tx.action;
+    }
+  };
 
   return (
     <div className="relative flex flex-col items-center">
@@ -100,9 +122,9 @@ const PointsTooltip = ({ points, transactions, children, onlyClick }) => {
         <ul className="text-xs dark:text-white text-[#232946] space-y-1 mb-3">
           {transactions.map((tx, idx) => (
             <li key={idx} className="flex justify-between items-center">
-              <span>{tx.desc}</span>
-              <span className={tx.amount > 0 ? 'text-green-500 font-bold' : 'text-red-400 font-bold'}>
-                {tx.amount > 0 ? '+' : ''}{tx.amount}
+              <span>{getTransactionDesc(tx)}</span>
+              <span className={tx.direction === "in" ? 'text-green-500 font-bold': 'text-red-400 font-bold'}>
+                {tx.direction === "in" ? '+' : '-'}{tx.points}
               </span>
             </li>
           ))}
