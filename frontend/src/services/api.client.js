@@ -1,6 +1,5 @@
 import axios from "axios";
 import { API_BASE_URL } from "../config/api.config";
-import { createNavigateTo } from "../lib/utils";
 
 axios.defaults.withCredentials = true;
 
@@ -29,7 +28,6 @@ apiClient.interceptors.request.use(
   },
 );
 
-const navigateTo = createNavigateTo();
 
 apiClient.interceptors.response.use(
   (response) => response,
