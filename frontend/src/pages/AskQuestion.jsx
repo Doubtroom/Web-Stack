@@ -26,7 +26,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { useSelector, useDispatch } from "react-redux";
 import { createQuestion } from "../store/dataSlice";
 import { questionServices } from "../services/data.services";
-
+import { updateStreak } from "../store/streakSlice";
 // Styled components
 const StyledPaper = styled(Paper)(({ theme, isDarkMode }) => ({
   padding: theme.spacing(4),
@@ -212,7 +212,7 @@ const AskQuestion = () => {
 
   // Get user data from localStorage
   const userData = useSelector((state) => state?.auth?.user);
-
+  
   // Form state
   const [formData, setFormData] = useState({
     question: "",
@@ -498,6 +498,9 @@ const AskQuestion = () => {
       // Use Redux action to create question
       const resultAction = await dispatch(createQuestion(finalQuestionData));
       if (createQuestion.fulfilled.match(resultAction)) {
+        // Update streak when question is successfully submitted
+        dispatch(updateStreak("question"));
+        
         setFormData({
           question: "",
           topic: "",

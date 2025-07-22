@@ -352,7 +352,6 @@ export const getUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    // console.log('User from database:', user); // Debug log
 
     // If user has firebaseId, it's a Firebase account, otherwise it's a MongoDB account
     const isFirebaseUser = !!user.firebaseId;
@@ -427,11 +426,8 @@ export const authStatus = async (req, res) => {
           refreshToken,
           process.env.REFRESH_TOKEN_SECRET,
         );
-        console.log("Decoded token:", decoded);
-
         // Find user and check if refresh token matches
         const user = await User.findById(decoded.id);
-        console.log("User lookup result:", user);
 
         if (!user || !user.refreshToken) {
           return res.status(401).json({

@@ -32,10 +32,12 @@ const userSchema = new mongoose.Schema({
     type: Object,
     default: { flashcards: true },
   },
-  starDustPoints: { type: Number, default: 0 },
-  currentStreak: { type: Number, default: 0 },
-  longestStreak: { type: Number, default: 0 },
-  lastStreakDate: { type: Date, default: null }
+  starDustPoints:{ type:Number, default:0,min:0},
+  streak:{
+    currentStreak: { type: Number, default: 0 },
+    longestStreak: { type: Number, default: 0 },
+    lastStreakDate:{ type:Date,default: Date.now}
+  }
 
 });
 

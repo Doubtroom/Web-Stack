@@ -17,10 +17,12 @@ import { NavLink } from "react-router-dom";
 import Logo from "../assets/logoWhite.png";
 import { motion, AnimatePresence } from "framer-motion";
 import SliderSwitch from "../components/SliderSwitch";
+import StreakIcon from "./StreakIcon";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store/authSlice";
+import { useMediaQuery } from "react-responsive";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -33,7 +35,10 @@ const Navbar = () => {
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
   const searchRef = useRef(null);
   const mobileMenuRef = useRef(null);
-  const user = useSelector((state) => state.auth.user);
+  const isDesktopOrLaptop = useMediaQuery({
+    query: "(min-width: 1024px)",
+  });
+  // const user = useSelector((state) => state.auth.user);
 
   const handleLogoutClick = () => {
     setShowLogoutConfirm(true);
@@ -217,6 +222,8 @@ const Navbar = () => {
             label="My College"
           />
 
+          {isDesktopOrLaptop && <StreakIcon className="mr-2" />}
+
           <NavLink
             to="/profile"
             className={({ isActive }) =>
@@ -238,6 +245,7 @@ const Navbar = () => {
         {/* Mobile Menu Items */}
         <div className="lg:hidden flex items-center gap-4 sm:gap-4">
           <SliderSwitch />
+          {!isDesktopOrLaptop && <StreakIcon className="mr-2" />}
           <div className="relative" ref={mobileMenuRef}>
             <button
               onClick={() => setIsOpen(!isOpen)}

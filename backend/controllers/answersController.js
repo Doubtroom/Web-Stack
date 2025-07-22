@@ -1,6 +1,8 @@
 import Answers from "../models/Answers.js";
 import Questions from "../models/Questions.js";
 import cloudinary from "../utils/cloudinary.js";
+import { STREAK_ACTIVITY_TYPES,updateUserStreak } from "./streakController.js"; // Use this for new streak activities
+// When adding a new activity that should count toward streaks, add it to STREAK_ACTIVITY_TYPES in streakController.js
 
 export const createAnswer = async (req, res) => {
   try {
@@ -25,10 +27,8 @@ export const createAnswer = async (req, res) => {
               }
             },
           );
-
           uploadStream.end(req.file.buffer);
         });
-
         const result = await uploadPromise;
         photoUrl = result.secure_url;
         photoId = result.public_id;
@@ -51,6 +51,24 @@ export const createAnswer = async (req, res) => {
     });
 
     await Questions.findByIdAndUpdate(questionId, { $inc: { noOfAnswers: 1 } });
+
+    // --- STREAK LOGIC MOVED TO DIRECT FUNCTION CALL ---
+    try {
+      const timezoneOffset = Number(req.body.timezoneOffset) || 0;
+      const streakResult = await updateUserStreak(req.user.id, "answer", timezoneOffset);
+      if (!streakResult.success) {
+        // Rollback answer creation if streak update fails
+        await Answers.findByIdAndDelete(answer._id);
+        await Questions.findByIdAndUpdate(questionId, { $inc: { noOfAnswers: -1 } });
+        return res.status(500).json({ message: "Streak update failed", error: streakResult.message });
+      }
+    } catch (streakErr) {
+      // Rollback answer creation if streak update throws
+      await Answers.findByIdAndDelete(answer._id);
+      await Questions.findByIdAndUpdate(questionId, { $inc: { noOfAnswers: -1 } });
+      return res.status(500).json({ message: "Streak update failed", error: streakErr.message });
+    }
+    // --- END STREAK LOGIC ---
 
     res.status(201).json({
       message: "Successfully created answer",
