@@ -7,11 +7,13 @@ import { questionServices } from "../services/data.services";
 import { toast } from "sonner";
 import SpaceToast from "../components/SpaceToast";
 import Button from "../components/Button";
+// import {updateStreak} from '../store/streakSlice.js'
 
 const AnswerForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [question, setQuestion] = useState(null);
@@ -113,6 +115,7 @@ const AnswerForm = () => {
       dispatch(createAnswer({ formData: data, questionId: id }))
         .unwrap()
         .then(() => {
+          dispatch(updateStreak("answer"));
           toast.custom((t) => (
             <SpaceToast amount={3} action="postAnswers" />
           ));

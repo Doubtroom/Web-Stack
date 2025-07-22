@@ -3,6 +3,8 @@ import Answers from "../models/Answers.js";
 import cloudinary from "../utils/cloudinary.js";
 import FlashcardStatus from "../models/FlashcardStatus.js";
 import { updateStarDust } from "./starDustController.js";
+import { STREAK_ACTIVITY_TYPES, updateUserStreak } from "./streakController.js"; // Use this for new streak activities
+// When adding a new activity that should count toward streaks, add it to STREAK_ACTIVITY_TYPES in streakController.js
 
 export const createQuestion = async (req, res) => {
   try {
@@ -19,10 +21,8 @@ export const createQuestion = async (req, res) => {
             else resolve(result);
           },
         );
-
         uploadStream.end(req.file.buffer);
       });
-
       const result = await uploadPromise;
       photoUrl = result.secure_url;
       photoId = result.public_id;
@@ -38,26 +38,41 @@ export const createQuestion = async (req, res) => {
       postedBy: req.user.id,
     });
 
-    // Award +2 StarDust for posting a doubt
+    // --- STREAK LOGIC FIRST ---
+    try {
+      const timezoneOffset = Number(req.body.timezoneOffset) || 0;
+      const streakResult = await updateUserStreak(req.user.id, "question", timezoneOffset);
+      if (!streakResult.success) {
+        // Rollback question creation if streak update fails
+        await Questions.findByIdAndDelete(question._id);
+        return res.status(500).json({ message: "Streak update failed", error: streakResult.message });
+      }
+    } catch (streakErr) {
+      // Rollback question creation if streak update throws
+      await Questions.findByIdAndDelete(question._id);
+      return res.status(500).json({ message: "Streak update failed", error: streakErr.message });
+    }
+    // --- END STREAK LOGIC ---
+
+    // --- STAR DUST LOGIC (FIRE-AND-FORGET) ---
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
-    await updateStarDust({
+    updateStarDust({
       userId: req.user.id,
       points: 2,
       action: "postQuestions",
       relatedId: question._id,
       refModel: "Questions",
       date: today,
+    }).catch((err) => {
+      console.error("StarDust update failed:", err);
     });
+    // --- END STAR DUST LOGIC ---
 
-    res
-      .status(201)
-      .json({ message: "Successfully created Question", question });
+    res.status(201).json({ message: "Successfully created Question", question });
   } catch (error) {
     console.error("Error creating question:", error);
-    res
-      .status(500)
-      .json({ message: "Error creating question", error: error.message });
+    res.status(500).json({ message: "Error creating question", error: error.message });
   }
 };
 

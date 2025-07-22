@@ -4,6 +4,7 @@ import authReducer from "./authSlice.js";
 import dataReducer from "./dataSlice.js";
 import flashcardStatusReducer from "./flashcardStatusSlice.js";
 import starDustReducer from "./starDustSlice.js";
+import streakReducer from "./streakSlice.js";
 
 export const store = configureStore({
   reducer: {
@@ -12,5 +13,6 @@ export const store = configureStore({
     data: dataReducer,
     flashcardStatus: flashcardStatusReducer,
     starDust: starDustReducer,
+    streak: streakReducer,
   },
 });

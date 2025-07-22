@@ -28,19 +28,11 @@ apiClient.interceptors.request.use(
   },
 );
 
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (
-      error.response?.status === 401 &&
-      window.location.pathname !== "/login"
-    ) {
-      if (import.meta.env.MODE === 'production') {
-        window.location.href = "/login";
-      } else {
-        console.warn("401 Unauthorized - skipping redirect in dev mode.");
-      }
-    }
+    // No navigation here; let AuthLayout handle 401s
     return Promise.reject(error);
   },
 );

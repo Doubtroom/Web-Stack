@@ -18,11 +18,13 @@ import { NavLink,Link } from "react-router-dom";
 import Logo from "../assets/logoWhite.png";
 import { motion, AnimatePresence } from "framer-motion";
 import SliderSwitch from "../components/SliderSwitch";
+import StreakIcon from "./StreakIcon";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store/authSlice";
 import PointsButton from "./PointsButton";
+import { useMediaQuery } from "react-responsive";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -35,7 +37,10 @@ const Navbar = () => {
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
   const searchRef = useRef(null);
   const mobileMenuRef = useRef(null);
-  const user = useSelector((state) => state.auth.user);
+  const isDesktopOrLaptop = useMediaQuery({
+    query: "(min-width: 1024px)",
+  });
+  // const user = useSelector((state) => state.auth.user);
 
   const handleLogoutClick = () => {
     setShowLogoutConfirm(true);
@@ -198,27 +203,33 @@ const Navbar = () => {
         <PointsButton />
 
         {/* Desktop Menu */}
-        <div className="hidden lg:flex items-center space-x-6">
+        <div className="hidden lg:flex items-center space-x-2 xl:space-x-3 2xl:space-x-6 3xl:space-x-10">
           <NavItem
             to="/home"
             icon={<Home className="w-4 h-4" />}
-            label="Home"
+            label={<span className="text-sm">Home</span>}
+            className="px-2 py-1"
           />
           <NavItem
             to="/my-content"
             icon={<HelpCircle className="w-4 h-4" />}
-            label="My Content"
+            label={<span className="text-sm">My Content</span>}
+            className="px-2 py-1"
           />
           <NavItem
             to="/flashcards"
             icon={<Layers className="w-4 h-4" />}
-            label="Flashcards"
+            label={<span className="text-sm">Flashcards</span>}
+            className="px-2 py-1"
           />
           <NavItem
             to="/my-college"
             icon={<School className="w-4 h-4" />}
-            label="My College"
+            label={<span className="text-sm">My College</span>}
+            className="px-2 py-1"
           />
+
+          {isDesktopOrLaptop && <StreakIcon className="mr-2" />}
 
           <NavLink
             to="/profile"
@@ -240,6 +251,7 @@ const Navbar = () => {
 
         {/* Mobile Menu Items */}
         <div className="lg:hidden flex items-center gap-4 sm:gap-4">
+          {!isDesktopOrLaptop && <StreakIcon className="mr-2" />}
           <div className="relative" ref={mobileMenuRef}>
             <button
               onClick={() => setIsOpen(!isOpen)}

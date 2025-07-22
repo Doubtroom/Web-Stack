@@ -9,12 +9,14 @@
     "start": "node server.js",
     "seed": "node scripts/seed.js",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "mkcert": "mkdir cert 2> NUL & mkcert -key-file cert/localhost.key -cert-file cert/localhost.crt localhost"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "axios": "^1.6.7",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.3",
@@ -27,7 +29,8 @@
     "google-auth-library": "^9.15.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.0",
-    "multer": "^2.0.0",
+    "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
     "nodemailer": "^6.10.0",
     "nodemon": "^3.1.9"
   },

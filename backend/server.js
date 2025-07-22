@@ -7,12 +7,14 @@ import authRoutes from "./routes/authRoutes.js";
 import dataRoutes from "./routes/dataRoutes.js";
 import formDataRoutes from "./routes/formDataRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
-import {
-  formDataLimiter,
-  authLimiter,
-  userLimiter,
-  internalLimiter,
-} from "./middleware/rateLimiterMiddleware.js";
+import cron from "node-cron";
+import { resetInactiveStreaks } from "./controllers/streakController.js";
+// import {
+//   formDataLimiter,
+//   authLimiter,
+//   userLimiter,
+//   internalLimiter,
+// } from "./middleware/rateLimiterMiddleware.js";
 
 dotenv.config();
 const app = express();
@@ -34,7 +36,6 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes with specific rate limiters
 // app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/auth", authRoutes);
 // app.use("/api/user", userLimiter, userRoutes);
@@ -44,6 +45,7 @@ app.use("/api/data", dataRoutes);
 // app.use("/api/form-data", formDataLimiter, formDataRoutes);
 app.use("/api/form-data", formDataRoutes);
 
+
 mongoose
   .connect(process.env.MONGO_URI, {
     dbName: "org-db",
@@ -52,6 +54,14 @@ mongoose
     app.listen(process.env.PORT, () => {
       console.log(`Server is running on port ${process.env.PORT}`);
     });
+    
+    // Schedule streak reset job to run every day at midnight UTC
+    cron.schedule("0 0 * * *", async () => {
+      console.log("[CRON] Running daily streak reset job...");
+      await resetInactiveStreaks();
+      console.log("[CRON] Streak reset job completed.");
+    });
+    console.log("[CRON] Streak reset job scheduled for midnight UTC daily.");
   })
   .catch((err) => {
     console.log(err);
