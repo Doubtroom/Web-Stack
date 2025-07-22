@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Home, HelpCircle, School, Grid, Layers } from "lucide-react";
+import { Home, HelpCircle, School, Grid, Layers, Trophy } from "lucide-react";
 
 function MobileBottomNavbar() {
   return (
@@ -32,6 +32,20 @@ function MobileBottomNavbar() {
         >
           <HelpCircle className="w-5 h-5" />
           <span className="text-xs mt-1">My Content</span>
+        </NavLink>
+
+        <NavLink
+          to="/leaderboard"
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center flex-1 py-2 ${
+              isActive
+                ? "text-[#16588E] dark:text-blue-400"
+                : "text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+            }`
+          }
+        >
+          <Trophy className="w-5 h-5" />
+          <span className="text-xs mt-1">Leaderboard</span>
         </NavLink>
 
         <NavLink

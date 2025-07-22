@@ -10,6 +10,8 @@ import {
   Menu,
   X,
   Layers,
+  BarChart3,
+  Trophy,
 } from "lucide-react";
 import SearchBar from "./SearchBar";
 import NavItem from "./NavItem";
@@ -206,6 +208,11 @@ const Navbar = () => {
             to="/my-content"
             icon={<HelpCircle className="w-4 h-4" />}
             label="My Content"
+          />
+          <NavItem
+            to="/leaderboard"
+            icon={<Trophy className="w-4 h-4" />}
+            label="Leaderboard"
           />
           <NavItem
             to="/flashcards"
