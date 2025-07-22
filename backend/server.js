@@ -8,6 +8,8 @@ import dataRoutes from "./routes/dataRoutes.js";
 import formDataRoutes from "./routes/formDataRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import streakRoutes from "./routes/streakRoutes.js";
+import leaderboardRoutes from "./routes/leaderboardRoutes.js";
+import leaderboardResetJob from "./utils/leaderboardResetJob.js";
 import { scheduleStreakResetJob } from "./utils/streakResetJob.js";
 // import {
 //   formDataLimiter,
@@ -45,6 +47,7 @@ app.use("/api/data", dataRoutes);
 // app.use("/api/form-data", formDataLimiter, formDataRoutes);
 app.use("/api/form-data", formDataRoutes);
 app.use("/api/streak", streakRoutes);
+app.use("/api/leaderboard", leaderboardRoutes);
 
 
 mongoose
@@ -58,6 +61,7 @@ mongoose
     
     // Schedule streak reset job
     scheduleStreakResetJob();
+    leaderboardResetJob.start();
   })
   .catch((err) => {
     console.log(err);
