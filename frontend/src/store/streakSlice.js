@@ -2,13 +2,35 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { streakServices } from "../services/streak.services";
 import { logout } from "./authSlice";
 
-// Async thunks
+// Default streak state matching backend
+const defaultStreak = {
+  currentStreak: 0,
+  longestStreak: 0,
+  lastActiveDate: null,
+  currentStreakStartDate: null,
+  longestStreakStartDate: null,
+  longestStreakEndDate: null,
+  updatedAt: null,
+};
+
+// Helper to check if lastActiveDate is today
+function isToday(dateString) {
+  if (!dateString) return false;
+  const today = new Date();
+  const date = new Date(dateString);
+  return (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate()
+  );
+}
+
 export const fetchStreak = createAsyncThunk(
   "streak/fetchStreak",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await streakServices.getStreak();
-      return response.streak;
+      const streak = await streakServices.getStreak();
+      return streak;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -17,10 +39,10 @@ export const fetchStreak = createAsyncThunk(
 
 export const updateStreak = createAsyncThunk(
   "streak/updateStreak",
-  async (_, { rejectWithValue }) => {
+  async (activityType, { rejectWithValue }) => {
     try {
-      const response = await streakServices.updateStreak();
-      return response.streak;
+      const streak = await streakServices.updateStreak(activityType);
+      return streak;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -30,34 +52,22 @@ export const updateStreak = createAsyncThunk(
 const streakSlice = createSlice({
   name: "streak",
   initialState: {
-    currentStreak: 0,
-    longestStreak: 0,
-    lastActiveDate: null,
-    longestStreakStartDate: null,
-    longestStreakEndDate: null,
-    updatedAt: null,
+    ...defaultStreak,
     loading: false,
     error: null,
-    // For optimistic UI rollback
     _prev: null,
+    streakCompletedToday: false,
   },
   reducers: {
     clearStreakError: (state) => {
       state.error = null;
     },
     resetStreakState: (state) => {
-      state.currentStreak = 0;
-      state.longestStreak = 0;
-      state.lastActiveDate = null;
-      state.longestStreakStartDate = null;
-      state.longestStreakEndDate = null;
-      state.updatedAt = null;
-      state._prev = null;
+      Object.assign(state, defaultStreak, { _prev: null, error: null, streakCompletedToday: false });
     },
   },
   extraReducers: (builder) => {
     builder
-      // fetchStreak
       .addCase(fetchStreak.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -65,73 +75,66 @@ const streakSlice = createSlice({
       .addCase(fetchStreak.fulfilled, (state, action) => {
         const s = action.payload;
         state.loading = false;
-        state.currentStreak = s.currentStreak;
-        state.longestStreak = s.longestStreak;
-        state.lastActiveDate = s.lastActiveDate;
-        state.longestStreakStartDate = s.longestStreakStartDate;
-        state.longestStreakEndDate = s.longestStreakEndDate;
-        state.updatedAt = s.updatedAt;
+        if (s && typeof s === "object") {
+          state.currentStreak = s.currentStreak || 0;
+          state.longestStreak = s.longestStreak || 0;
+          state.lastActiveDate = s.lastActiveDate || null;
+          state.currentStreakStartDate = s.currentStreakStartDate || null;
+          state.longestStreakStartDate = s.longestStreakStartDate || null;
+          state.longestStreakEndDate = s.longestStreakEndDate || null;
+          state.updatedAt = s.updatedAt || null;
+          state.streakCompletedToday = isToday(s.lastActiveDate);
+        } else {
+          Object.assign(state, defaultStreak);
+          state.streakCompletedToday = false;
+        }
         state._prev = null;
       })
       .addCase(fetchStreak.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.streakCompletedToday = false;
       })
-      // updateStreak
       .addCase(updateStreak.pending, (state) => {
         state.loading = true;
         state.error = null;
-        // Optimistic UI: save previous state and increment
-        state._prev = {
-          currentStreak: state.currentStreak,
-          longestStreak: state.longestStreak,
-          lastActiveDate: state.lastActiveDate,
-          longestStreakStartDate: state.longestStreakStartDate,
-          longestStreakEndDate: state.longestStreakEndDate,
-          updatedAt: state.updatedAt,
-        };
+        state._prev = { ...state };
         state.currentStreak += 1;
         state.lastActiveDate = new Date().toISOString();
+        state.streakCompletedToday = true;
       })
       .addCase(updateStreak.fulfilled, (state, action) => {
         const s = action.payload;
         state.loading = false;
-        state.currentStreak = s.currentStreak;
-        state.longestStreak = s.longestStreak;
-        state.lastActiveDate = s.lastActiveDate;
-        state.longestStreakStartDate = s.longestStreakStartDate;
-        state.longestStreakEndDate = s.longestStreakEndDate;
-        state.updatedAt = s.updatedAt;
+        if (s && typeof s === "object") {
+          state.currentStreak = s.currentStreak || 0;
+          state.longestStreak = s.longestStreak || 0;
+          state.lastActiveDate = s.lastActiveDate || null;
+          state.currentStreakStartDate = s.currentStreakStartDate || null;
+          state.longestStreakStartDate = s.longestStreakStartDate || null;
+          state.longestStreakEndDate = s.longestStreakEndDate || null;
+          state.updatedAt = s.updatedAt || null;
+          state.streakCompletedToday = isToday(s.lastActiveDate);
+        } else {
+          Object.assign(state, defaultStreak);
+          state.streakCompletedToday = false;
+        }
         state._prev = null;
       })
       .addCase(updateStreak.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        // Rollback optimistic update
         if (state._prev) {
-          state.currentStreak = state._prev.currentStreak;
-          state.longestStreak = state._prev.longestStreak;
-          state.lastActiveDate = state._prev.lastActiveDate;
-          state.longestStreakStartDate = state._prev.longestStreakStartDate;
-          state.longestStreakEndDate = state._prev.longestStreakEndDate;
-          state.updatedAt = state._prev.updatedAt;
+          Object.assign(state, state._prev);
           state._prev = null;
         }
+        state.streakCompletedToday = false;
       })
-      // Reset streak state on logout
       .addCase(logout.fulfilled, (state) => {
-        state.currentStreak = 0;
-        state.longestStreak = 0;
-        state.lastActiveDate = null;
-        state.longestStreakStartDate = null;
-        state.longestStreakEndDate = null;
-        state.updatedAt = null;
-        state._prev = null;
-        state.error = null;
+        Object.assign(state, defaultStreak, { _prev: null, error: null, streakCompletedToday: false });
       });
   },
 });
 
-// UI should display error from state.streak.error (e.g., toast/snackbar)
 export const { clearStreakError, resetStreakState } = streakSlice.actions;
 export default streakSlice.reducer;

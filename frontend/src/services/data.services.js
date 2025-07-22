@@ -3,8 +3,13 @@ import { API_ENDPOINTS } from "../config/api.config";
 
 // Questions Services
 export const questionServices = {
-  createQuestion: (formData) =>
-    apiClient.post(API_ENDPOINTS.QUESTIONS.CREATE, formData),
+  createQuestion: (formData) => {
+    // Always append timezoneOffset
+    if (typeof window !== 'undefined' && formData instanceof FormData) {
+      formData.append('timezoneOffset', new Date().getTimezoneOffset());
+    }
+    return apiClient.post(API_ENDPOINTS.QUESTIONS.CREATE, formData);
+  },
   getQuestion: (id) => apiClient.get(API_ENDPOINTS.QUESTIONS.GET_ONE(id)),
   getAllQuestions: (params) =>
     apiClient.get(API_ENDPOINTS.QUESTIONS.GET_ALL, { params }),
@@ -19,8 +24,13 @@ export const questionServices = {
 
 // Answers Services
 export const answerServices = {
-  createAnswer: (questionId, formData) =>
-    apiClient.post(API_ENDPOINTS.ANSWERS.CREATE(questionId), formData),
+  createAnswer: (questionId, formData) => {
+    // Always append timezoneOffset
+    if (typeof window !== 'undefined' && formData instanceof FormData) {
+      formData.append('timezoneOffset', new Date().getTimezoneOffset());
+    }
+    return apiClient.post(API_ENDPOINTS.ANSWERS.CREATE(questionId), formData);
+  },
   getAnswersByQuestion: (questionId, { cursor = null } = {}) => {
     return apiClient.get(API_ENDPOINTS.ANSWERS.GET_BY_QUESTION(questionId), {
       params: {

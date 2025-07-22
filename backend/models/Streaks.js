@@ -5,17 +5,19 @@ const streakSchema = new mongoose.Schema({
 
   // Current Streak Info
   currentStreak: { type: Number, default: 0 },
-  currentStreakStartDate: { type: Date },     // when current streak started
-  lastActiveDate: { type: Date },             // last active day in current streak
+  currentStreakStartDate: { type: Date, default: Date.now },     // when current streak started
+  lastActiveDate: { type: Date, default: Date.now },             // last active day in current streak
 
   // Longest Streak Info
   longestStreak: { type: Number, default: 0 },
-  longestStreakStartDate: { type: Date }, // when longest streak started
-  longestStreakEndDate: { type: Date }, // when longest streak ended
+  longestStreakStartDate: { type: Date, default: Date.now }, // when longest streak started
+  longestStreakEndDate: { type: Date, default: Date.now }, // when longest streak ended
 
   // Timestamps
   updatedAt: { type: Date, default: Date.now }
 });
+
+streakSchema.index({ userId: 1 }, { unique: true });
 
 const Streak = mongoose.model("Streak", streakSchema);
 

@@ -1,8 +1,7 @@
 import Answers from "../models/Answers.js";
 import Questions from "../models/Questions.js";
 import cloudinary from "../utils/cloudinary.js";
-import axios from "axios";
-import { STREAK_ACTIVITY_TYPES } from "./streakController.js"; // Use this for new streak activities
+import { STREAK_ACTIVITY_TYPES,updateUserStreak } from "./streakController.js"; // Use this for new streak activities
 // When adding a new activity that should count toward streaks, add it to STREAK_ACTIVITY_TYPES in streakController.js
 
 export const createAnswer = async (req, res) => {
@@ -53,18 +52,21 @@ export const createAnswer = async (req, res) => {
 
     await Questions.findByIdAndUpdate(questionId, { $inc: { noOfAnswers: 1 } });
 
-    // --- STREAK LOGIC MOVED TO API CALL ---
+    // --- STREAK LOGIC MOVED TO DIRECT FUNCTION CALL ---
     try {
-      await axios.post(
-        `${req.protocol}://${req.get("host")}/api/streak/update`,
-        { activityType: "answer" },
-        { headers: { Authorization: req.headers.authorization } }
-      );
+      const timezoneOffset = Number(req.body.timezoneOffset) || 0;
+      const streakResult = await updateUserStreak(req.user.id, "answer", timezoneOffset);
+      if (!streakResult.success) {
+        // Rollback answer creation if streak update fails
+        await Answers.findByIdAndDelete(answer._id);
+        await Questions.findByIdAndUpdate(questionId, { $inc: { noOfAnswers: -1 } });
+        return res.status(500).json({ message: "Streak update failed", error: streakResult.message });
+      }
     } catch (streakErr) {
-      // Rollback answer creation if streak update fails
+      // Rollback answer creation if streak update throws
       await Answers.findByIdAndDelete(answer._id);
       await Questions.findByIdAndUpdate(questionId, { $inc: { noOfAnswers: -1 } });
-      return res.status(500).json({ message: "Streak update failed", error: streakErr?.response?.data?.message || streakErr.message });
+      return res.status(500).json({ message: "Streak update failed", error: streakErr.message });
     }
     // --- END STREAK LOGIC ---
 

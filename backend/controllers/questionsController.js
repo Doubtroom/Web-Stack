@@ -2,8 +2,7 @@ import Questions from "../models/Questions.js";
 import Answers from "../models/Answers.js";
 import cloudinary from "../utils/cloudinary.js";
 import FlashcardStatus from "../models/FlashcardStatus.js";
-import axios from "axios";
-import { STREAK_ACTIVITY_TYPES } from "./streakController.js"; // Use this for new streak activities
+import { STREAK_ACTIVITY_TYPES, updateUserStreak } from "./streakController.js"; // Use this for new streak activities
 // When adding a new activity that should count toward streaks, add it to STREAK_ACTIVITY_TYPES in streakController.js
 
 export const createQuestion = async (req, res) => {
@@ -38,17 +37,18 @@ export const createQuestion = async (req, res) => {
       postedBy: req.user.id,
     });
 
-    // --- STREAK LOGIC MOVED TO API CALL ---
     try {
-      await axios.post(
-        `${req.protocol}://${req.get("host")}/api/streak/update`,
-        { activityType: "question" },
-        { headers: { Authorization: req.headers.authorization } }
-      );
+      const timezoneOffset = Number(req.body.timezoneOffset) || 0;
+      const streakResult = await updateUserStreak(req.user.id, "question", timezoneOffset);
+      if (!streakResult.success) {
+        // Rollback question creation if streak update fails
+        await Questions.findByIdAndDelete(question._id);
+        return res.status(500).json({ message: "Streak update failed", error: streakResult.message });
+      }
     } catch (streakErr) {
-      // Rollback question creation if streak update fails
+      // Rollback question creation if streak update throws
       await Questions.findByIdAndDelete(question._id);
-      return res.status(500).json({ message: "Streak update failed", error: streakErr?.response?.data?.message || streakErr.message });
+      return res.status(500).json({ message: "Streak update failed", error: streakErr.message });
     }
     // --- END STREAK LOGIC ---
 

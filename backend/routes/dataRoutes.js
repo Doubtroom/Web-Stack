@@ -40,7 +40,7 @@ import {
   upsertFlashcardStatus,
   getFlashcards,
 } from "../controllers/flashcardController.js";
-import { updateStreak, getStreak } from "../controllers/streakController.js";
+import { updateStreak, getStreak, manualStreakReset } from "../controllers/streakController.js";
 
 const router = express.Router();
 
@@ -80,6 +80,15 @@ router.get("/customer-care/user", verifyToken, getUserCustomerCareRequests);
 
 router.post("/flashcards/status", verifyToken, upsertFlashcardStatus);
 router.get("/flashcards", verifyToken, getFlashcards);
+
+// GET current user's streak
+router.get("/streak", verifyToken, getStreak);
+
+// POST update streak
+router.post("/streak/update", verifyToken, updateStreak);
+
+// POST manual reset for a user (admin only)
+router.post("/streak/reset/:userId", verifyToken,manualStreakReset);
 
 
 export default router;

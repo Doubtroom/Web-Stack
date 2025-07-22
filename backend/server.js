@@ -7,8 +7,8 @@ import authRoutes from "./routes/authRoutes.js";
 import dataRoutes from "./routes/dataRoutes.js";
 import formDataRoutes from "./routes/formDataRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
-import streakRoutes from "./routes/streakRoutes.js";
-import { scheduleStreakResetJob } from "./utils/streakResetJob.js";
+import cron from "node-cron";
+import { resetInactiveStreaks } from "./controllers/streakController.js";
 // import {
 //   formDataLimiter,
 //   authLimiter,
@@ -44,7 +44,6 @@ app.use("/api/user", userRoutes);
 app.use("/api/data", dataRoutes);
 // app.use("/api/form-data", formDataLimiter, formDataRoutes);
 app.use("/api/form-data", formDataRoutes);
-app.use("/api/streak", streakRoutes);
 
 
 mongoose
@@ -56,8 +55,13 @@ mongoose
       console.log(`Server is running on port ${process.env.PORT}`);
     });
     
-    // Schedule streak reset job
-    scheduleStreakResetJob();
+    // Schedule streak reset job to run every day at midnight UTC
+    cron.schedule("0 0 * * *", async () => {
+      console.log("[CRON] Running daily streak reset job...");
+      await resetInactiveStreaks();
+      console.log("[CRON] Streak reset job completed.");
+    });
+    console.log("[CRON] Streak reset job scheduled for midnight UTC daily.");
   })
   .catch((err) => {
     console.log(err);

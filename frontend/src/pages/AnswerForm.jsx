@@ -6,6 +6,7 @@ import { createAnswer, fetchQuestionById } from "../store/dataSlice";
 import { questionServices } from "../services/data.services";
 import { toast } from "sonner";
 import Button from "../components/Button";
+import {updateStreak} from '../store/streakSlice.js'
 
 const AnswerForm = () => {
   const { id } = useParams();
@@ -113,8 +114,7 @@ const AnswerForm = () => {
       dispatch(createAnswer({ formData: data, questionId: id }))
         .unwrap()
         .then(() => {
-          // Update streak when answer is successfully posted
-          triggerStreakUpdate();
+          dispatch(updateStreak("answer"));
           
           toast.success("Answer posted successfully!");
           dispatch(fetchQuestionById(id));
