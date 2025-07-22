@@ -9,7 +9,7 @@ const starDustSchema = new mongoose.Schema({
 
   points: {
     type: Number,
-    default: 0
+    default: 0,
   },
 
   action: {
@@ -26,13 +26,13 @@ const starDustSchema = new mongoose.Schema({
 
   relatedId: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true
+    required: false
   }, // The object related to the action
 
   refModel: {
     type: String,
     enum: ['Questions', 'Answers', 'Comments', 'Streaks', 'Upvotes'],
-    required: true
+    required: false
   }, // Which model relatedId refers to
 
   createdAt: {

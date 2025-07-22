@@ -35,6 +35,7 @@ import ProfileCompletionDialog from "./components/ProfileCompletionDialog";
 import FlashCardsPage from "./pages/FlashCardsPage";
 import Promotion from "./pages/Promotion";
 import ChangePassword from "./pages/ChangePasswordPage.jsx";
+import Leaderboard from "./pages/Leaderboard";
 
 (function deleteStaleLocalStorage() {
   let removed = false;
@@ -185,6 +186,7 @@ function App() {
               />
               <Route path="contact" element={<ContactUs />} />
               <Route path="promotion" element={<Promotion />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
             </Route>
           </Route>
 

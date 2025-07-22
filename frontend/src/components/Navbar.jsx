@@ -10,6 +10,8 @@ import {
   Menu,
   X,
   Layers,
+  BarChart3,
+  Trophy,
 } from "lucide-react";
 import SearchBar from "./SearchBar";
 import NavItem from "./NavItem";
@@ -17,6 +19,7 @@ import { NavLink } from "react-router-dom";
 import Logo from "../assets/logoWhite.png";
 import { motion, AnimatePresence } from "framer-motion";
 import SliderSwitch from "../components/SliderSwitch";
+import StreakIcon from "./StreakIcon";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
@@ -207,6 +210,11 @@ const Navbar = () => {
             label="My Content"
           />
           <NavItem
+            to="/leaderboard"
+            icon={<Trophy className="w-4 h-4" />}
+            label="Leaderboard"
+          />
+          <NavItem
             to="/flashcards"
             icon={<Layers className="w-4 h-4" />}
             label="Flashcards"
@@ -216,6 +224,8 @@ const Navbar = () => {
             icon={<School className="w-4 h-4" />}
             label="My College"
           />
+
+          <StreakIcon className="mr-2" />
 
           <NavLink
             to="/profile"
@@ -238,6 +248,7 @@ const Navbar = () => {
         {/* Mobile Menu Items */}
         <div className="lg:hidden flex items-center gap-4 sm:gap-4">
           <SliderSwitch />
+          <StreakIcon className="mr-2" />
           <div className="relative" ref={mobileMenuRef}>
             <button
               onClick={() => setIsOpen(!isOpen)}
