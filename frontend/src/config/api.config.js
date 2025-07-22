@@ -73,4 +73,7 @@ export const API_ENDPOINTS = {
     GET: "data/streak",
     UPDATE: "data/streak/update",
   },
+  LEADERBOARD: {
+    GET: "/leaderboard",
+  },
 };
