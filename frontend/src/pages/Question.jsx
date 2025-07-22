@@ -9,7 +9,7 @@ import {
   MoreVertical,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAnswers, fetchQuestionById } from "../store/dataSlice";
+import { fetchAnswers, fetchQuestionById, deleteQuestion } from "../store/dataSlice";
 import LoadingSpinner from "../components/LoadingSpinner";
 import QuestionSkeleton from "../components/QuestionSkeleton";
 import Button from "../components/Button";
@@ -21,6 +21,7 @@ import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import AnswerSkeleton from "../components/AnswerSkeleton";
 import AnswerCard from "../components/AnswerCard";
 import { useSmartUpvote } from "../hooks/useSmartUpvote";
+import SpaceToast from "../components/SpaceToast";
 
 const Question = () => {
   const { id } = useParams();
@@ -120,8 +121,10 @@ const Question = () => {
 
   const handleDelete = async () => {
     try {
-      // TODO: Implement delete question action in dataSlice
-      toast.success("Question deleted successfully!");
+      await dispatch(deleteQuestion(id)).unwrap();
+      toast.custom((t) => (
+        <SpaceToast amount={-2} action="deleteQuestions" />
+      ));
       navigate("/my-questions");
     } catch (error) {
       console.error("Error deleting question:", error);

@@ -8,6 +8,8 @@ import LoadingSpinner from "../components/LoadingSpinner.jsx";
 import ProfileCompletionDialog from "../components/ProfileCompletionDialog.jsx";
 import config from "../config/config.js";
 import { authService } from "../services/auth.services.js";
+import { toast } from "sonner";
+import SpaceToast from "../components/SpaceToast";
 
 axios.defaults.withCredentials = true;
 
@@ -45,6 +47,12 @@ function Protected({ children, authentication = false }) {
       if (isAuthChecked) return;
       try {
         const response = await authService.verifyUser();
+
+        if (response.data.dailyLoginAwarded) {
+          toast.custom((t) => (
+            <SpaceToast amount={1} action="login" />
+          ));
+        }
 
         if (response.data.isAuthenticated) {
           dispatch(

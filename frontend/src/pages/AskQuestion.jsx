@@ -21,6 +21,7 @@ import { styled } from "@mui/material/styles";
 import { Upload, Trash2, HelpCircle, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import SpaceToast from "../components/SpaceToast";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useSelector, useDispatch } from "react-redux";
@@ -514,7 +515,9 @@ const AskQuestion = () => {
         setErrors({});
         setSelectedTopics([]);
 
-        toast.success("Question submitted successfully!");
+        toast.custom((t) => (
+          <SpaceToast amount={2} action="postQuestions" />
+        ));
         navigate("/my-content");
       } else {
         throw new Error(resultAction.payload || "Failed to submit question");

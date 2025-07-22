@@ -16,12 +16,13 @@ const defaultStreak = {
 // Helper to check if lastActiveDate is today
 function isToday(dateString) {
   if (!dateString) return false;
-  const today = new Date();
+  const now = new Date();
   const date = new Date(dateString);
+  // Compare UTC year, month, date
   return (
-    date.getFullYear() === today.getFullYear() &&
-    date.getMonth() === today.getMonth() &&
-    date.getDate() === today.getDate()
+    date.getUTCFullYear() === now.getUTCFullYear() &&
+    date.getUTCMonth() === now.getUTCMonth() &&
+    date.getUTCDate() === now.getUTCDate()
   );
 }
 

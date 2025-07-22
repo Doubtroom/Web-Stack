@@ -19,6 +19,7 @@ import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import GoogleLoginButton from "../components/GoogleLoginButton";
 import LottieLoader from "../components/LottieLoader";
 import { imageLinks } from "../config/assetConfig";
+import SpaceToast from "../components/SpaceToast";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -123,6 +124,13 @@ const LoginPage = () => {
         return;
       }
 
+      // Show SpaceToast for daily login if awarded
+      if (result.dailyLoginAwarded) {
+        toast.custom((t) => (
+          <SpaceToast amount={1} action="login" />
+        ));
+      }
+
       // Step 2: Fetch fresh user data
       setLoginState((prev) => ({ ...prev, step: "fetching" }));
       const userResult = await dispatch(fetchUser()).unwrap();
@@ -154,9 +162,19 @@ const LoginPage = () => {
         navigate("/complete-profile", { replace: true });
       }
 
-      toast.success("Logged in successfully!");
+      toast.success("Logged in successfully!",{
+        style: { 
+          background: isDarkMode ? "#1f2937" : "#ffffff",
+          color: isDarkMode ? "#ffffff" : "#000000"
+        }
+      });
     } catch (error) {
-      toast.error(error || "Login failed. Please try again.");
+      toast.error(error || "Login failed. Please try again.",{
+        style: { 
+          background: isDarkMode ? "#1f2937" : "#ffffff",
+          color: isDarkMode ? "#ffffff" : "#000000"
+        }
+      });
       setLoginState({
         isProcessing: false,
         step: "idle",
@@ -168,7 +186,12 @@ const LoginPage = () => {
   // Google login handler
   const handleGoogleLogin = async (credentialResponse) => {
     if (!credentialResponse?.credential) {
-      toast.error("Google login failed. No credential received.");
+      toast.error("Google login failed. No credential received.",{
+        style: { 
+          background: isDarkMode ? "#1f2937" : "#ffffff",
+          color: isDarkMode ? "#ffffff" : "#000000"
+        }
+      });
       return;
     }
     setLoginState({ isProcessing: true, step: "logging", error: null });
@@ -176,6 +199,14 @@ const LoginPage = () => {
       const result = await dispatch(
         googleLogin(credentialResponse.credential),
       ).unwrap();
+      
+      // Show SpaceToast for daily login if awarded
+      if (result.dailyLoginAwarded) {
+        toast.custom((t) => (
+          <SpaceToast amount={1} action="login" />
+        ));
+      }
+      
       // Fetch user data after Google login
       setLoginState((prev) => ({ ...prev, step: "fetching" }));
       const userResult = await dispatch(fetchUser()).unwrap();
@@ -187,6 +218,9 @@ const LoginPage = () => {
           user: userResult,
         }),
       );
+      
+
+      
       // Check profile completion
       const hasCompleteProfile = Boolean(
         userResult.branch &&
@@ -201,9 +235,19 @@ const LoginPage = () => {
       } else {
         navigate("/complete-profile", { replace: true });
       }
-      toast.success("Logged in with Google!");
+      toast.success("Logged in with Google!",{
+        style: { 
+          background: isDarkMode ? "#1f2937" : "#ffffff",
+          color: isDarkMode ? "#ffffff" : "#000000"
+        }
+      });
     } catch (error) {
-      toast.error(error || "Google login failed. Please try again.");
+      toast.error(error || "Google login failed. Please try again.",{
+        style: { 
+          background: isDarkMode ? "#1f2937" : "#ffffff",
+          color: isDarkMode ? "#ffffff" : "#000000"
+        }
+      });
       setLoginState({ isProcessing: false, step: "idle", error });
     }
   };
@@ -304,7 +348,12 @@ const LoginPage = () => {
             <div className="mb-6 flex items-center justify-center">
               <GoogleLogin
                 onSuccess={handleGoogleLogin}
-                onError={() => toast.error("Google login failed")}
+                onError={() => toast.error("Google login failed", {
+                  style: { 
+                    background: isDarkMode ? "#1f2937" : "#ffffff",
+                    color: isDarkMode ? "#ffffff" : "#000000"
+                  }
+                })}
                 useOneTap
                 render={({ onClick, disabled }) => (
                   <GoogleLoginButton

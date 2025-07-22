@@ -2,6 +2,7 @@ import Questions from "../models/Questions.js";
 import Answers from "../models/Answers.js";
 import cloudinary from "../utils/cloudinary.js";
 import FlashcardStatus from "../models/FlashcardStatus.js";
+import { updateStarDust } from "./starDustController.js";
 import { STREAK_ACTIVITY_TYPES, updateUserStreak } from "./streakController.js"; // Use this for new streak activities
 // When adding a new activity that should count toward streaks, add it to STREAK_ACTIVITY_TYPES in streakController.js
 
@@ -37,6 +38,7 @@ export const createQuestion = async (req, res) => {
       postedBy: req.user.id,
     });
 
+    // --- STREAK LOGIC FIRST ---
     try {
       const timezoneOffset = Number(req.body.timezoneOffset) || 0;
       const streakResult = await updateUserStreak(req.user.id, "question", timezoneOffset);
@@ -51,6 +53,21 @@ export const createQuestion = async (req, res) => {
       return res.status(500).json({ message: "Streak update failed", error: streakErr.message });
     }
     // --- END STREAK LOGIC ---
+
+    // --- STAR DUST LOGIC (FIRE-AND-FORGET) ---
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    updateStarDust({
+      userId: req.user.id,
+      points: 2,
+      action: "postQuestions",
+      relatedId: question._id,
+      refModel: "Questions",
+      date: today,
+    }).catch((err) => {
+      console.error("StarDust update failed:", err);
+    });
+    // --- END STAR DUST LOGIC ---
 
     res.status(201).json({ message: "Successfully created Question", question });
   } catch (error) {
@@ -286,6 +303,18 @@ export const deleteQuestion = async (req, res) => {
 
     // Delete the question itself
     await question.deleteOne();
+
+    // Subtract points for deleting a question
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    await updateStarDust({
+      userId: question.postedBy,
+      points: -2,
+      action: "deleteQuestions",
+      relatedId: questionId,
+      refModel: "Questions",
+      date: today,
+    });
 
     res.json({
       message: "Question and associated answers deleted successfully",

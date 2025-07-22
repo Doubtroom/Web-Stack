@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { OAuth2Client } from "google-auth-library";
+import { awardDailyLoginStarDust } from "./starDustController.js";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -409,7 +410,8 @@ export const authStatus = async (req, res) => {
         id: decoded.id,
         email: decoded.email,
       };
-      // Send response with user details and verification status
+      const awarded = await awardDailyLoginStarDust(user._id);
+
       return res.status(200).json({
         isAuthenticated: true,
         user: {
@@ -417,6 +419,7 @@ export const authStatus = async (req, res) => {
           email: user.email,
           isVerified: user.isVerified,
         },
+        dailyLoginAwarded:awarded
       });
     } else if (refreshToken) {
       // Access token expired, try to refresh
@@ -426,6 +429,7 @@ export const authStatus = async (req, res) => {
           refreshToken,
           process.env.REFRESH_TOKEN_SECRET,
         );
+
         // Find user and check if refresh token matches
         const user = await User.findById(decoded.id);
 
@@ -468,7 +472,8 @@ export const authStatus = async (req, res) => {
           email: user.email,
         };
 
-        // Send response with user details and verification status
+        const awarded = await awardDailyLoginStarDust(user._id);
+
         return res.status(200).json({
           isAuthenticated: true,
           user: {
@@ -476,6 +481,7 @@ export const authStatus = async (req, res) => {
             email: user.email,
             isVerified: user.isVerified,
           },
+          dailyLoginAwarded: awarded
         });
       } catch (refreshError) {
         return res.status(401).json({

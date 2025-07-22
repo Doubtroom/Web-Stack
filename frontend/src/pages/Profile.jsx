@@ -2,30 +2,24 @@ import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   User,
-  Calendar,
-  Building2,
-  GraduationCap,
-  Phone,
-  Briefcase,
-  Mail,
-  Edit2,
-  Save,
-  X,
-  Camera,
+  Settings,
+  Award,
+  BarChart3,
+  Paintbrush,
+  Bolt
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { logout, updateProfile } from "../store/authSlice";
+import { logout } from "../store/authSlice";
 import { motion, AnimatePresence } from "framer-motion";
-import { Switch } from "antd";
 import { userServices } from "../services/data.services";
 import LogoutLoader from "../components/LogoutLoader";
+import ProfileTab from "../components/ProfileTab";
 
 const Profile = () => {
   const userProfile = useSelector((state) => state?.auth?.user);
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
   const [userData, setUserData] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loading2, setLoading2] = useState(false);
   const [formData, setFormData] = useState({
@@ -70,7 +64,12 @@ const Profile = () => {
         setFeatures(userProfile?.features || { flashcards: true });
       } catch (error) {
         console.error("Error fetching user data:", error);
-        toast.error("Failed to load profile data");
+        toast.error("Failed to load profile data",{
+          style: { 
+            background: isDarkMode ? "#1f2937" : "#ffffff",
+            color: isDarkMode ? "#ffffff" : "#000000"
+          }
+        });
       } finally {
         setLoading(false);
       }
@@ -79,24 +78,26 @@ const Profile = () => {
     fetchUserData();
   }, [userProfile]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
   const handleLogoutConfirm = async () => {
     setLoading2(true);
     try {
       const result = await dispatch(logout()).unwrap();
       if (result) {
-        toast.success("Logged out successfully!");
+        toast.success("Logged out successfully!",{
+          style: { 
+            background: isDarkMode ? "#1f2937" : "#ffffff",
+            color: isDarkMode ? "#ffffff" : "#000000"
+          }
+        });
         navigate("/landing", { state: { fromLogout: true }, replace: true });
       }
     } catch (error) {
-      toast.error(error || "Logout failed. Please try again.");
+      toast.error(error || "Logout failed. Please try again.",{
+        style: { 
+          background: isDarkMode ? "#1f2937" : "#ffffff",
+          color: isDarkMode ? "#ffffff" : "#000000"
+        }
+      });
     } finally {
       setShowLogoutConfirm(false);
     }
@@ -116,40 +117,13 @@ const Profile = () => {
       // Optionally show a toast for success
     } catch (error) {
       setFeatures(features); // revert
-      toast.error("Failed to update features");
+      toast.error("Failed to update features",{
+        style: { 
+          background: isDarkMode ? "#1f2937" : "#ffffff",
+          color: isDarkMode ? "#ffffff" : "#000000"
+        }
+      });
     }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await dispatch(updateProfile({ ...formData, features })).unwrap();
-      setIsEditing(false);
-      toast.success("Profile updated successfully!");
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      toast.error(error.message || "Failed to update profile");
-    } finally {
-      setLoading(false);
-    }
-  };
-  const formatBranchName = (branch) => {
-    if (!branch) return "";
-    return branch
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "Not available";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
   };
 
   if (loading) {
@@ -213,7 +187,7 @@ const Profile = () => {
       <div className="max-w-4xl mx-auto mt-12 sm:mt-20">
         {/* Profile Header */}
         <div
-          className={`rounded-t-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? "bg-gradient-to-r from-gray-800 to-gray-700" : "bg-gradient-to-r from-[#1e6eab] to-[#02254b]"} text-white relative`}
+          className={`rounded-t-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? "bg-gradient-to-r from-[#14345c] to-[#0a1a33]" : "bg-gradient-to-r from-[#1e6eab] to-[#02254b]"} text-white relative`}
         >
           <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex items-center gap-2">
             <button
@@ -224,34 +198,6 @@ const Profile = () => {
             >
               <span>Logout</span>
             </button>
-            {!isEditing ? (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg bg-white/20 hover:bg-white/30 transition-all text-sm sm:text-base"
-              >
-                <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Edit Profile</span>
-                <span className="sm:hidden">Edit</span>
-              </button>
-            ) : (
-              <div className="flex gap-1 sm:gap-2">
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg bg-white/20 hover:bg-white/30 transition-all text-sm sm:text-base"
-                >
-                  <X className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">Cancel</span>
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg bg-white/20 hover:bg-white/30 transition-all text-sm sm:text-base"
-                >
-                  <Save className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">Save Changes</span>
-                  <span className="sm:hidden">Save</span>
-                </button>
-              </div>
-            )}
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 mt-8 sm:mt-0">
@@ -259,11 +205,6 @@ const Profile = () => {
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/20 flex items-center justify-center">
                 <User className="w-10 h-10 sm:w-12 sm:h-12" />
               </div>
-              {isEditing && (
-                <button className="absolute bottom-0 right-0 p-1.5 sm:p-2 rounded-full bg-white/20 hover:bg-white/30 transition-all">
-                  <Camera className="w-3 h-3 sm:w-4 sm:h-4" />
-                </button>
-              )}
             </div>
             <div className="text-center sm:text-left">
               <h1 className="text-2xl sm:text-3xl font-bold">
@@ -276,284 +217,40 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Features Section */}
-        <div className="w-full flex flex-col gap-2 sm:gap-4 mt-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-200 mt-8 mb-2 sm:mb-4 flex items-center gap-2">
-            <span>Features</span>
-          </h2>
-          <div
-            className={`rounded-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? "bg-blue-900/60" : "bg-blue-50"}`}
-          >
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-semibold text-blue-900 dark:text-blue-200">
-                    FlashCards
-                  </div>
-                  <div className="text-sm text-blue-800 dark:text-blue-300 opacity-80">
-                    Enable active recall and spaced repetition for better
-                    learning
-                  </div>
-                </div>
-                <Switch
-                  checked={features.flashcards}
-                  onChange={() => handleFeatureToggle("flashcards")}
-                  className={isDarkMode ? "bg-blue-900" : "bg-blue-200"}
-                />
-              </div>
-              {/* Add more features here as needed */}
-            </div>
+        {/* Settings Section */}
+        <h2 className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-200 mt-10 mb-4 sm:mb-6 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <Bolt className="w-5 h-5 text-white" />
           </div>
-        </div>
-
-        {/* Personal Details Section */}
-        <h2 className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-200 mt-10 mb-2 sm:mb-4 flex items-center gap-2">
-          <span>Personal Details</span>
+          <span>Settings</span>
         </h2>
-        <div
-          className={`rounded-b-xl shadow-lg p-4 sm:p-8 ${isDarkMode ? "bg-gray-800" : "bg-white"}`}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
-            <div className="space-y-4 sm:space-y-6">
-              <div
-                className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}
-              >
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    Email
-                  </span>
-                </div>
-                <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                  {userData?.email || "Not available"}
-                </p>
-              </div>
+        
+        <div className={`rounded-2xl shadow-xl overflow-hidden border border-blue-100 dark:border-blue-900/30 ${isDarkMode ? "bg-gradient-to-br from-gray-800/80 to-gray-900/80" : "bg-gradient-to-br from-white to-blue-50/50"}`}>
+          <div className="space-y-0">
+            <ProfileTab
+              icon={<Paintbrush className="w-6 h-6 text-blue-700 dark:text-blue-200" />}
+              title="Appearance"
+              description="Customize the look and feel of your experience."
+              onClick={() => navigate("/profile/appearance")}
+              rounded="rounded-t-xl"
+              borderBottom={true}
+            />
+            <ProfileTab
+              icon={<Award className="w-6 h-6 text-blue-700 dark:text-blue-200" />}
+              title="Features"
+              description="Enable or disable platform features."
+              onClick={() => navigate("/profile/features")}
+              borderBottom={true}
+            />
+            <ProfileTab
+              icon={<User className="w-6 h-6 text-blue-700 dark:text-blue-200" />}
+              title="Personal Details"
+              description="Manage your profile information and preferences"
+              onClick={() => navigate("/profile/personal-details")}
+              rounded="rounded-b-xl"
+              borderBottom={false}
+            />
 
-              <div
-                className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}
-              >
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    College
-                  </span>
-                </div>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    name="collegeName"
-                    value={formData.collegeName}
-                    onChange={handleInputChange}
-                    className={`ml-6 sm:ml-8 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border text-sm sm:text-base ${
-                      isDarkMode
-                        ? "bg-gray-700 border-gray-600 text-white"
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                  />
-                ) : (
-                  <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                    {userData?.collegeName || "Not available"}
-                  </p>
-                )}
-              </div>
-
-              <div
-                className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}
-              >
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    Branch
-                  </span>
-                </div>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    name="branch"
-                    value={formData.branch}
-                    onChange={handleInputChange}
-                    className={`ml-6 sm:ml-8 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border text-sm sm:text-base ${
-                      isDarkMode
-                        ? "bg-gray-700 border-gray-600 text-white"
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                  />
-                ) : (
-                  <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                    {formatBranchName(userData?.branch) || "Not available"}
-                  </p>
-                )}
-              </div>
-
-              <div
-                className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}
-              >
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    Role
-                  </span>
-                </div>
-                {isEditing ? (
-                  <select
-                    name="role"
-                    value={formData.role}
-                    onChange={handleInputChange}
-                    className={`ml-6 sm:ml-8 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border text-sm sm:text-base ${
-                      isDarkMode
-                        ? "bg-gray-700 border-gray-600 text-white"
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                  >
-                    <option value="">Select Role</option>
-                    <option value="student">Student</option>
-                    <option value="faculty">Faculty</option>
-                  </select>
-                ) : (
-                  <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                    {userData?.role || "Not available"}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-4 sm:space-y-6">
-              <div
-                className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}
-              >
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    Study Type
-                  </span>
-                </div>
-                {isEditing ? (
-                  <select
-                    name="studyType"
-                    value={formData.studyType}
-                    onChange={handleInputChange}
-                    className={`ml-6 sm:ml-8 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border text-sm sm:text-base ${
-                      isDarkMode
-                        ? "bg-gray-700 border-gray-600 text-white"
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                  >
-                    <option value="">Select Study Type</option>
-                    <option value="bachelor">Bachelor's Degree</option>
-                    <option value="master">Master's Degree</option>
-                    <option value="phd">PhD</option>
-                    <option value="diploma">Diploma</option>
-                    <option value="certification">Certification</option>
-                  </select>
-                ) : (
-                  <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                    {userData?.studyType || "Not available"}
-                  </p>
-                )}
-              </div>
-
-              <div
-                className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}
-              >
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    Phone
-                  </span>
-                </div>
-                {isEditing ? (
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className={`ml-6 sm:ml-8 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border text-sm sm:text-base ${
-                      isDarkMode
-                        ? "bg-gray-700 border-gray-600 text-white"
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                  />
-                ) : (
-                  <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                    {userData?.phone || "Not available"}
-                  </p>
-                )}
-              </div>
-
-              <div
-                className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}
-              >
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    Gender
-                  </span>
-                </div>
-                {isEditing ? (
-                  <select
-                    name="gender"
-                    value={formData.gender}
-                    onChange={handleInputChange}
-                    className={`ml-6 sm:ml-8 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border text-sm sm:text-base ${
-                      isDarkMode
-                        ? "bg-gray-700 border-gray-600 text-white"
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                  </select>
-                ) : (
-                  <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                    {userData?.gender || "Not available"}
-                  </p>
-                )}
-              </div>
-
-              <div
-                className={`p-3 sm:p-4 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}
-              >
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm sm:text-base">
-                    Date of Birth
-                  </span>
-                </div>
-                {isEditing ? (
-                  <input
-                    type="date"
-                    name="dob"
-                    value={formData.dob}
-                    onChange={handleInputChange}
-                    className={`ml-6 sm:ml-8 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md border text-sm sm:text-base ${
-                      isDarkMode
-                        ? "bg-gray-700 border-gray-600 text-white"
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                    max={
-                      new Date(
-                        new Date().setFullYear(new Date().getFullYear() - 13),
-                      )
-                        .toISOString()
-                        .split("T")[0]
-                    }
-                    min={
-                      new Date(
-                        new Date().setFullYear(new Date().getFullYear() - 100),
-                      )
-                        .toISOString()
-                        .split("T")[0]
-                    }
-                  />
-                ) : (
-                  <p className="ml-6 sm:ml-8 text-sm sm:text-base">
-                    {formatDate(userData?.dob) || "Not available"}
-                  </p>
-                )}
-              </div>
-            </div>
           </div>
         </div>
       </div>

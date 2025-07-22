@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchStreak } from "../store/streakSlice";
 import { Flame, AlertTriangle } from "lucide-react";
@@ -16,6 +16,14 @@ const StreakIcon = ({ className = "", refreshKey }) => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const isDarkMode = useSelector((state) => state.darkMode.isDarkMode);
   const [showTooltip, setShowTooltip] = useState(false);
+  const iconRef = useRef(null);
+
+  // Detect mobile
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
+
+  useEffect(()=>{
+    console.log("streakCompletedToday:",streakCompletedToday)
+  },[streakCompletedToday])
 
   useEffect(() => {
     if (isAuthenticated && !lastActiveDate) {
@@ -23,6 +31,18 @@ const StreakIcon = ({ className = "", refreshKey }) => {
     }
     // eslint-disable-next-line
   }, [dispatch, isAuthenticated]);
+
+  // Close tooltip on outside click (mobile only)
+  useEffect(() => {
+    if (!isMobile || !showTooltip) return;
+    const handleClick = (e) => {
+      if (iconRef.current && !iconRef.current.contains(e.target)) {
+        setShowTooltip(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showTooltip, isMobile]);
 
   if (!isAuthenticated) return null;
 
@@ -42,9 +62,11 @@ const StreakIcon = ({ className = "", refreshKey }) => {
     
   return (
     <div
+      ref={iconRef}
       className={`relative group cursor-pointer flex items-center gap-1.5 md:gap-2 rounded-full shadow-md px-2 md:px-3 h-8 md:h-10 ${className}`}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
+      onMouseEnter={!isMobile ? () => setShowTooltip(true) : undefined}
+      onMouseLeave={!isMobile ? () => setShowTooltip(false) : undefined}
+      onClick={isMobile ? () => setShowTooltip((v) => !v) : undefined}
     >
       {/* Icon */}
       <Flame

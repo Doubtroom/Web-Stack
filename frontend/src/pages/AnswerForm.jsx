@@ -5,8 +5,9 @@ import { useDispatch } from "react-redux";
 import { createAnswer, fetchQuestionById } from "../store/dataSlice";
 import { questionServices } from "../services/data.services";
 import { toast } from "sonner";
+import SpaceToast from "../components/SpaceToast";
 import Button from "../components/Button";
-import {updateStreak} from '../store/streakSlice.js'
+// import {updateStreak} from '../store/streakSlice.js'
 
 const AnswerForm = () => {
   const { id } = useParams();
@@ -115,8 +116,9 @@ const AnswerForm = () => {
         .unwrap()
         .then(() => {
           dispatch(updateStreak("answer"));
-          
-          toast.success("Answer posted successfully!");
+          toast.custom((t) => (
+            <SpaceToast amount={3} action="postAnswers" />
+          ));
           dispatch(fetchQuestionById(id));
           window.scrollTo(0, 0);
           navigate(`/question/${id}`);

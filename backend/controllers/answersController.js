@@ -1,8 +1,9 @@
 import Answers from "../models/Answers.js";
 import Questions from "../models/Questions.js";
 import cloudinary from "../utils/cloudinary.js";
+import { updateStarDust } from "./starDustController.js";
 import { STREAK_ACTIVITY_TYPES,updateUserStreak } from "./streakController.js"; // Use this for new streak activities
-// When adding a new activity that should count toward streaks, add it to STREAK_ACTIVITY_TYPES in streakController.js
+
 
 export const createAnswer = async (req, res) => {
   try {
@@ -52,7 +53,7 @@ export const createAnswer = async (req, res) => {
 
     await Questions.findByIdAndUpdate(questionId, { $inc: { noOfAnswers: 1 } });
 
-    // --- STREAK LOGIC MOVED TO DIRECT FUNCTION CALL ---
+    // --- STREAK LOGIC FIRST ---
     try {
       const timezoneOffset = Number(req.body.timezoneOffset) || 0;
       const streakResult = await updateUserStreak(req.user.id, "answer", timezoneOffset);
@@ -69,6 +70,21 @@ export const createAnswer = async (req, res) => {
       return res.status(500).json({ message: "Streak update failed", error: streakErr.message });
     }
     // --- END STREAK LOGIC ---
+
+    // --- STAR DUST LOGIC (FIRE-AND-FORGET) ---
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    updateStarDust({
+      userId: req.user.id,
+      points: 3,
+      action: "postAnswers",
+      relatedId: answer._id,
+      refModel: "Answers",
+      date: today,
+    }).catch((err) => {
+      console.error("StarDust update failed:", err);
+    });
+    // --- END STAR DUST LOGIC ---
 
     res.status(201).json({
       message: "Successfully created answer",
@@ -211,6 +227,18 @@ export const deleteAnswer = async (req, res) => {
       $inc: { noOfAnswers: -1 },
     });
 
+    // Subtract points for deleting an answer
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    await updateStarDust({
+      userId: answer.postedBy,
+      points: -3,
+      action: "deleteAnswers",
+      relatedId: answerId,
+      refModel: "Answers",
+      date: today,
+    });
+
     res.json({
       message: "Answer deleted successfully",
     });
@@ -338,7 +366,8 @@ export const upvoteAnswer = async (req, res) => {
     );
 
     let updatedAnswer;
-
+    let starDustChange = 0;
+    let direction = null;
     if (upvotedIndex === -1) {
       // User has not upvoted yet, so upvote
       updatedAnswer = await Answers.findOneAndUpdate(
@@ -352,6 +381,9 @@ export const upvoteAnswer = async (req, res) => {
           runValidators: true,
         },
       ).populate("postedBy", "displayName collegeName role _id");
+      // Award +1 StarDust to answer author
+      starDustChange = 1;
+      direction = "in";
     } else {
       // User has already upvoted, so remove upvote
       updatedAnswer = await Answers.findOneAndUpdate(
@@ -365,12 +397,28 @@ export const upvoteAnswer = async (req, res) => {
           runValidators: true,
         },
       ).populate("postedBy", "displayName collegeName role _id");
+      // Remove 1 StarDust from answer author
+      starDustChange = -1;
+      direction = "out";
     }
 
     // Ensure upvotes count is never negative
     if (updatedAnswer.upvotes < 0) {
       updatedAnswer.upvotes = 0;
       await updatedAnswer.save();
+    }
+    // Only update StarDust if the upvoter is not the answer author
+    if (userId !== String(answer.postedBy)) {
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      await updateStarDust({
+        userId: answer.postedBy,
+        points: starDustChange,
+        action: starDustChange > 0 ? "upvote" : "lostUpvote",
+        relatedId: answerId,
+        refModel: "Answers",
+        date: today,
+      });
     }
 
     res.json({
