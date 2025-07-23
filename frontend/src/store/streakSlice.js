@@ -84,7 +84,7 @@ const streakSlice = createSlice({
           state.longestStreakStartDate = s.longestStreakStartDate || null;
           state.longestStreakEndDate = s.longestStreakEndDate || null;
           state.updatedAt = s.updatedAt || null;
-          state.streakCompletedToday = isToday(s.lastActiveDate);
+          state.streakCompletedToday = state.currentStreak > 0 && isToday(s.lastActiveDate);
         } else {
           Object.assign(state, defaultStreak);
           state.streakCompletedToday = false;
@@ -115,7 +115,7 @@ const streakSlice = createSlice({
           state.longestStreakStartDate = s.longestStreakStartDate || null;
           state.longestStreakEndDate = s.longestStreakEndDate || null;
           state.updatedAt = s.updatedAt || null;
-          state.streakCompletedToday = isToday(s.lastActiveDate);
+          state.streakCompletedToday = state.currentStreak > 0 && isToday(s.lastActiveDate);
         } else {
           Object.assign(state, defaultStreak);
           state.streakCompletedToday = false;
