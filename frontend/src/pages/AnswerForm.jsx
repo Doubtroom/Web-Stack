@@ -7,7 +7,7 @@ import { questionServices } from "../services/data.services";
 import { toast } from "sonner";
 import SpaceToast from "../components/SpaceToast";
 import Button from "../components/Button";
-// import {updateStreak} from '../store/streakSlice.js'
+import { updateStreak } from "../store/streakSlice";
 
 const AnswerForm = () => {
   const { id } = useParams();

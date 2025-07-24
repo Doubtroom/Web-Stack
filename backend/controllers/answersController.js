@@ -57,8 +57,8 @@ export const createAnswer = async (req, res) => {
     try {
       const timezoneOffset = Number(req.body.timezoneOffset) || 0;
       const streakResult = await updateUserStreak(req.user.id, "answer", timezoneOffset);
+      console.log("StreakResult:",streakResult)
       if (!streakResult.success) {
-        // Rollback answer creation if streak update fails
         await Answers.findByIdAndDelete(answer._id);
         await Questions.findByIdAndUpdate(questionId, { $inc: { noOfAnswers: -1 } });
         return res.status(500).json({ message: "Streak update failed", error: streakResult.message });

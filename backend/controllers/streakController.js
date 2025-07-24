@@ -59,6 +59,27 @@ export const updateUserStreak = async (userId, activityType, timezoneOffset = 0)
           streak.lastActiveDate.getUTCDate()
         ))
       : null;
+
+    // PATCH: If streak is 0 but lastActiveDate is today, patch it to 1
+    if (
+      lastActiveDateLocal &&
+      lastActiveDateLocal.getTime() === todayLocal.getTime() &&
+      streak.currentStreak === 0
+    ) {
+      streak.currentStreak = 1;
+      streak.currentStreakStartDate = todayLocal;
+      streak.longestStreak = 1;
+      streak.longestStreakStartDate = todayLocal;
+      streak.longestStreakEndDate = todayLocal;
+      streak.updatedAt = now;
+      await streak.save({ session });
+
+      user.streak.currentStreak = 1;
+      user.streak.longestStreak = 1;
+      user.streak.lastStreakDate = todayLocal;
+      await user.save({ session });
+    }
+
     // Already updated today (rate limiting)
     if (lastActiveDateLocal && lastActiveDateLocal.getTime() === todayLocal.getTime()) {
       await session.commitTransaction();

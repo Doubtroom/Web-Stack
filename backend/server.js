@@ -47,7 +47,9 @@ app.use("/api/form-data", formDataRoutes);
 
 
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI,{
+    dbName: process.env.DB_NAME,
+  })
   .then(() => {
     app.listen(process.env.PORT, () => {
       console.log(`Server is running on port ${process.env.PORT}`);
