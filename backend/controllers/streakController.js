@@ -172,33 +172,62 @@ export const resetInactiveStreaks = async () => {
     const yesterdayUTC = new Date(todayUTC);
     yesterdayUTC.setUTCDate(todayUTC.getUTCDate() - 1);
 
-    const inactiveStreaks = await Streak.find({
-      lastActiveDate: { $lt: yesterdayUTC },
+    console.log(`[CRON] Current time: ${now.toISOString()}`);
+    console.log(`[CRON] Today UTC: ${todayUTC.toISOString()}`);
+    console.log(`[CRON] Yesterday UTC: ${yesterdayUTC.toISOString()}`);
+
+    // Find all streaks with currentStreak > 0
+    const allActiveStreaks = await Streak.find({
       currentStreak: { $gt: 0 }
-    }, '_id userId lastActiveDate');
+    }, '_id userId lastActiveDate currentStreak');
+
+    console.log(`[CRON] Found ${allActiveStreaks.length} total active streaks`);
+
+    // Filter streaks that are inactive (lastActiveDate < yesterdayUTC)
+    const inactiveStreaks = allActiveStreaks.filter(streak => {
+      const isInactive = streak.lastActiveDate < yesterdayUTC;
+      console.log(`[CRON] User ${streak.userId}: lastActiveDate=${streak.lastActiveDate.toISOString()}, currentStreak=${streak.currentStreak}, isInactive=${isInactive}`);
+      return isInactive;
+    });
+
+    console.log(`[CRON] Found ${inactiveStreaks.length} inactive streaks to reset`);
 
     if (inactiveStreaks.length === 0) {
-      console.log('No inactive streaks to reset.');
+      console.log('[CRON] No inactive streaks to reset.');
       return { success: true, message: 'No inactive streaks to reset.' };
     }
 
     const userIds = inactiveStreaks.map(s => s.userId);
     const streakIds = inactiveStreaks.map(s => s._id);
 
-    await Streak.updateMany(
+    // Reset streaks in the Streak collection
+    const streakUpdateResult = await Streak.updateMany(
       { _id: { $in: streakIds } },
       { $set: { currentStreak: 0 } }
     );
 
-    await User.updateMany(
+    // Reset streaks in the User collection (if they exist there)
+    const userUpdateResult = await User.updateMany(
       { _id: { $in: userIds }, 'streak.currentStreak': { $gt: 0 } },
       { $set: { 'streak.currentStreak': 0, 'streak.lastStreakDate': yesterdayUTC } }
     );
 
-    console.log(`Reset streaks for ${inactiveStreaks.length} inactive users:`, userIds.map(id => id.toString()));
-    return { success: true, message: `Reset streaks for ${inactiveStreaks.length} inactive users` };
+    console.log(`[CRON] Reset streaks for ${inactiveStreaks.length} inactive users:`, userIds.map(id => id.toString()));
+    console.log(`[CRON] Streak collection updates: ${streakUpdateResult.modifiedCount}`);
+    console.log(`[CRON] User collection updates: ${userUpdateResult.modifiedCount}`);
+    
+    return { 
+      success: true, 
+      message: `Reset streaks for ${inactiveStreaks.length} inactive users`,
+      details: {
+        totalActiveStreaks: allActiveStreaks.length,
+        inactiveStreaksReset: inactiveStreaks.length,
+        streakUpdates: streakUpdateResult.modifiedCount,
+        userUpdates: userUpdateResult.modifiedCount
+      }
+    };
   } catch (error) {
-    console.error('Error resetting inactive streaks:', error);
+    console.error('[CRON] Error resetting inactive streaks:', error);
     return { success: false, message: error.message };
   }
 };

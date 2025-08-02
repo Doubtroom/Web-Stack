@@ -80,6 +80,58 @@ app.post("/api/cron/streak-reset", async (req, res) => {
   }
 });
 
+// Add endpoint to check specific user's streak status (for debugging)
+app.get("/api/cron/check-streak/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const cronSecret = req.query.secret;
+  
+  const expectedSecret = process.env.CRON_SECRET || "your-secret-key";
+  
+  if (cronSecret !== expectedSecret) {
+    return res.status(401).json({ 
+      success: false, 
+      message: "Unauthorized access to cron endpoint" 
+    });
+  }
+  
+  try {
+    const streak = await Streak.findOne({ userId });
+    if (!streak) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Streak not found for user" 
+      });
+    }
+    
+    const now = new Date();
+    const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const yesterdayUTC = new Date(todayUTC);
+    yesterdayUTC.setUTCDate(todayUTC.getUTCDate() - 1);
+    
+    const isInactive = streak.lastActiveDate < yesterdayUTC;
+    
+    res.status(200).json({ 
+      success: true, 
+      streak,
+      analysis: {
+        currentTime: now.toISOString(),
+        todayUTC: todayUTC.toISOString(),
+        yesterdayUTC: yesterdayUTC.toISOString(),
+        lastActiveDate: streak.lastActiveDate.toISOString(),
+        isInactive,
+        shouldBeReset: isInactive && streak.currentStreak > 0
+      }
+    });
+  } catch (error) {
+    console.error("[CRON] Error checking streak:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to check streak",
+      error: error.message 
+    });
+  }
+});
+
 // Add GET endpoint for easier testing and services that prefer GET requests
 app.get("/api/cron/streak-reset", async (req, res) => {
   // Check for authorization query parameter
