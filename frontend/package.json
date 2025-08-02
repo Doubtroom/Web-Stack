@@ -9,8 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write .",
-    "test": "echo \"No tests yet\" && exit 0",
-    "mkcert": "mkdir cert 2> NUL & mkcert -key-file cert/localhost.key -cert-file cert/localhost.crt localhost"
+    "test": "echo \"No tests yet\" && exit 0"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",

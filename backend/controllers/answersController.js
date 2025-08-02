@@ -2,7 +2,7 @@ import Answers from "../models/Answers.js";
 import Questions from "../models/Questions.js";
 import cloudinary from "../utils/cloudinary.js";
 import { updateStarDust } from "./starDustController.js";
-import { STREAK_ACTIVITY_TYPES,updateUserStreak } from "./streakController.js"; // Use this for new streak activities
+import { STREAK_ACTIVITY_TYPES,updateUserStreak } from "./streakController.js";
 
 
 export const createAnswer = async (req, res) => {

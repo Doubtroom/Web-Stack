@@ -45,6 +45,75 @@ app.use("/api/data", dataRoutes);
 // app.use("/api/form-data", formDataLimiter, formDataRoutes);
 app.use("/api/form-data", formDataRoutes);
 
+// Add endpoint for external cron services to trigger streak reset
+app.post("/api/cron/streak-reset", async (req, res) => {
+  // Check for authorization header or query parameter
+  const authHeader = req.headers.authorization;
+  const cronSecret = req.query.secret || req.body.secret;
+  
+  // You can set this secret in your environment variables
+  const expectedSecret = process.env.CRON_SECRET || "your-secret-key";
+  
+  if (authHeader !== `Bearer ${expectedSecret}` && cronSecret !== expectedSecret) {
+    return res.status(401).json({ 
+      success: false, 
+      message: "Unauthorized access to cron endpoint" 
+    });
+  }
+  
+  try {
+    console.log("[CRON] External trigger received for streak reset job...");
+    const result = await resetInactiveStreaks();
+    console.log("[CRON] Streak reset job completed via external trigger.");
+    res.status(200).json({ 
+      success: true, 
+      message: "Streak reset job completed successfully",
+      result 
+    });
+  } catch (error) {
+    console.error("[CRON] Error in external streak reset trigger:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to execute streak reset job",
+      error: error.message 
+    });
+  }
+});
+
+// Add GET endpoint for easier testing and services that prefer GET requests
+app.get("/api/cron/streak-reset", async (req, res) => {
+  // Check for authorization query parameter
+  const cronSecret = req.query.secret;
+  
+  // You can set this secret in your environment variables
+  const expectedSecret = process.env.CRON_SECRET || "your-secret-key";
+  
+  if (cronSecret !== expectedSecret) {
+    return res.status(401).json({ 
+      success: false, 
+      message: "Unauthorized access to cron endpoint" 
+    });
+  }
+  
+  try {
+    console.log("[CRON] External GET trigger received for streak reset job...");
+    const result = await resetInactiveStreaks();
+    console.log("[CRON] Streak reset job completed via external GET trigger.");
+    res.status(200).json({ 
+      success: true, 
+      message: "Streak reset job completed successfully",
+      result 
+    });
+  } catch (error) {
+    console.error("[CRON] Error in external GET streak reset trigger:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to execute streak reset job",
+      error: error.message 
+    });
+  }
+});
+
 
 mongoose
   .connect(process.env.MONGO_URI,{
