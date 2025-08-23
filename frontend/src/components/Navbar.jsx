@@ -209,11 +209,7 @@ const Navbar = () => {
             icon={<HelpCircle className="w-4 h-4" />}
             label="My Content"
           />
-          <NavItem
-            to="/leaderboard"
-            icon={<Trophy className="w-4 h-4" />}
-            label="Leaderboard"
-          />
+          {/* Leaderboard link removed as per new requirements */}
           <NavItem
             to="/flashcards"
             icon={<Layers className="w-4 h-4" />}
@@ -283,6 +279,7 @@ const Navbar = () => {
                       <User className="w-5 h-5 mr-3" />
                       <span>Profile</span>
                     </NavLink>
+                    {/* Leaderboard link removed from mobile menu as per new requirements */}
                     <div
                       className="flex items-center text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md cursor-pointer p-3 transition-colors duration-200"
                       onClick={() => {

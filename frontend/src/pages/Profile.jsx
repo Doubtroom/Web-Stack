@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -20,6 +21,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Switch } from "antd";
 import { userServices } from "../services/data.services";
 import LogoutLoader from "../components/LogoutLoader";
+import { Trophy } from "lucide-react";
+import { leaderboardServices } from "../services/leaderboard.services";
 
 const Profile = () => {
   const userProfile = useSelector((state) => state?.auth?.user);
@@ -45,6 +48,22 @@ const Profile = () => {
   const [features, setFeatures] = useState(
     userProfile?.features || { flashcards: true },
   );
+  const [showLeaderboardDialog, setShowLeaderboardDialog] = useState(false);
+
+  // Check if leaderboard dialog should be shown (end of week)
+  useEffect(() => {
+    const checkLeaderboardDialog = async () => {
+      try {
+        const res = await leaderboardServices.getDialogStatus();
+        if (res.data.shouldShow) {
+          setShowLeaderboardDialog(true);
+        }
+      } catch (err) {
+        // ignore
+      }
+    };
+    checkLeaderboardDialog();
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -151,6 +170,37 @@ const Profile = () => {
       day: "numeric",
     });
   };
+
+  if (showLeaderboardDialog) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? "bg-gray-900" : "bg-gray-50"}`}>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-md w-full flex flex-col items-center">
+          <Trophy className="w-16 h-16 text-yellow-400 mb-4" />
+          <h2 className="text-2xl font-bold mb-2 text-blue-900 dark:text-blue-200">Check the Leaderboard!</h2>
+          <p className="text-gray-700 dark:text-gray-300 mb-6 text-center">See how you performed this week and check out the top performers.</p>
+          <button
+            className="px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold rounded-lg shadow-md transition-colors"
+            onClick={async () => {
+              setShowLeaderboardDialog(false);
+              await leaderboardServices.setDialogShown();
+              navigate("/leaderboard");
+            }}
+          >
+            View Leaderboard
+          </button>
+          <button
+            className="mt-4 px-4 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+            onClick={async () => {
+              setShowLeaderboardDialog(false);
+              await leaderboardServices.setDialogShown();
+            }}
+          >
+            Maybe Later
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -301,7 +351,25 @@ const Profile = () => {
                   className={isDarkMode ? "bg-blue-900" : "bg-blue-200"}
                 />
               </div>
-              {/* Add more features here as needed */}
+              {/* Leaderboard icon under Flashcards */}
+              <div className="flex items-center justify-between mt-4">
+                <div>
+                  <div className="font-semibold text-blue-900 dark:text-blue-200 flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-yellow-500" />
+                    Leaderboard
+                  </div>
+                  <div className="text-sm text-blue-800 dark:text-blue-300 opacity-80">
+                    See your weekly rank and top performers
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate("/leaderboard")}
+                  className="p-2 rounded-full bg-yellow-400 hover:bg-yellow-500 transition-colors shadow-md"
+                  title="View Leaderboard"
+                >
+                  <Trophy className="w-6 h-6 text-white" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

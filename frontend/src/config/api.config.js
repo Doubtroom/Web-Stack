@@ -75,5 +75,7 @@ export const API_ENDPOINTS = {
   },
   LEADERBOARD: {
     GET: "/leaderboard",
+    DIALOG_STATUS: "/leaderboard/dialog-status",
+    DIALOG_SHOWN: "/leaderboard/dialog-shown",
   },
 };

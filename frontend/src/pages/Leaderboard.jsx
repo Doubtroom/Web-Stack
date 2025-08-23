@@ -46,7 +46,7 @@ const Leaderboard = () => {
               <tr className="bg-white/20">
                 <th className="py-3 px-4 text-left text-lg font-bold text-white">Rank</th>
                 <th className="py-3 px-4 text-left text-lg font-bold text-white">Name</th>
-                <th className="py-3 px-4 text-left text-lg font-bold text-white">StarDust</th>
+                <th className="py-3 px-4 text-left text-lg font-bold text-white">Points(Based on answer, Upvotes)</th>
               </tr>
             </thead>
             <tbody>
@@ -76,7 +76,7 @@ const Leaderboard = () => {
                         <span className="ml-2 px-2 py-0.5 rounded bg-blue-400 text-white text-xs font-semibold">You</span>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-white font-bold text-lg rounded-r-xl">{entry.starDustPoints}</td>
+                    <td className="py-3 px-4 text-white font-bold text-lg rounded-r-xl">{entry.points}</td>
                   </tr>
                 );
               })}
