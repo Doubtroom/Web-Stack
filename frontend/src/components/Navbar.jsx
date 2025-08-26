@@ -143,11 +143,11 @@ const Navbar = () => {
         <div className="flex gap-4 sm:gap-5 md:gap-7">
           <div className="flex items-center space-x-3 gap-5">
             <div className="flex gap-2">
-              <NavLink to="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 sm:w-8 sm:h-8 rounded-md flex items-center justify-center">
-                  <img src={Logo} alt="Logo" />
+              <NavLink to="/" className="flex items-center gap-1 sm:gap-2">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-md flex items-center justify-center transition-all duration-200">
+                  <img src={Logo} alt="Logo" className="w-full h-full object-contain" />
                 </div>
-                <span className="text-xl sm:text-xl font-bold text-white">
+                <span className="text-sm sm:text-xl font-bold text-white transition-all duration-200">
                   Doubtroom
                 </span>
               </NavLink>
@@ -234,7 +234,7 @@ const Navbar = () => {
           <NavLink
             to="/profile"
             className={({ isActive }) =>
-              `group w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
+              `group w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
                 isActive
                   ? "ring-2 dark:ring-blue-400 ring-gray-600 bg-amber-100 dark:bg-gray-700"
                   : "bg-gray-200 dark:bg-gray-700 hover:ring-2 hover:ring-gray-600 dark:hover:ring-blue-300"
@@ -243,26 +243,26 @@ const Navbar = () => {
           >
             {({ isActive }) => (
               <User
-                className={`w-5 h-5 group-hover:dark:text-blue-400 ${isActive ? "dark:text-blue-400 text-gray-600" : "text-gray-600 dark:text-gray-300"}`}
+                className={`w-4 h-4 sm:w-5 sm:h-5 group-hover:dark:text-blue-400 ${isActive ? "dark:text-blue-400 text-gray-600" : "text-gray-600 dark:text-gray-300"}`}
               />
             )}
           </NavLink>
         </div>
 
         {/* Mobile Menu Items */}
-        <div className="lg:hidden flex items-center gap-4 sm:gap-4">
-          {!isDesktopOrLaptop && <StreakIcon className="mr-2" />}
+        <div className="lg:hidden flex items-center gap-2 sm:gap-4">
+          {!isDesktopOrLaptop && <StreakIcon className="mr-1 sm:mr-2" />}
           <div className="relative" ref={mobileMenuRef}>
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className={`group w-9 h-9 sm:w-9 sm:h-9 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
+              className={`group w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
                 isOpen
                   ? "ring-2 dark:ring-blue-400 ring-gray-600 bg-amber-100 dark:bg-gray-700"
                   : "bg-gray-200 dark:bg-gray-700 hover:ring-2 hover:ring-gray-600 dark:hover:ring-blue-300"
               }`}
             >
               <User
-                className={`w-5 h-5 sm:w-5 sm:h-5 group-hover:dark:text-blue-400 ${isOpen ? "dark:text-blue-400 text-gray-600" : "text-gray-600 dark:text-gray-300"}`}
+                className={`w-4 h-4 sm:w-5 sm:h-5 group-hover:dark:text-blue-400 ${isOpen ? "dark:text-blue-400 text-gray-600" : "text-gray-600 dark:text-gray-300"}`}
               />
             </button>
 
