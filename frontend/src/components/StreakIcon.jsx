@@ -106,7 +106,7 @@ const StreakIcon = ({ className = "", refreshKey }) => {
               <div className="text-xs">Best: {longestStreak} days</div>
               {currentStreak === 0 && (
                 <div className="text-xs text-gray-500 mt-1">
-                  Start your streak by being active today!
+                  Start your streak today!
                 </div>
               )}
             </div>

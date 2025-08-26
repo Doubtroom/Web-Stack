@@ -16,7 +16,7 @@ function MobileBottomNavbar() {
             }`
           }
         >
-          <Home className="w-5 h-5" />
+          <Home className="w-4 h-4" />
           <span className="text-xs mt-1">Home</span>
         </NavLink>
 
@@ -30,7 +30,7 @@ function MobileBottomNavbar() {
             }`
           }
         >
-          <HelpCircle className="w-5 h-5" />
+          <HelpCircle className="w-4 h-4" />
           <span className="text-xs mt-1">My Content</span>
         </NavLink>
 
@@ -44,7 +44,7 @@ function MobileBottomNavbar() {
             }`
           }
         >
-          <Layers className="w-5 h-5" />
+          <Layers className="w-4 h-4" />
           <span className="text-xs mt-1">Flashcards</span>
         </NavLink>
 
@@ -58,7 +58,7 @@ function MobileBottomNavbar() {
             }`
           }
         >
-          <School className="w-5 h-5" />
+          <School className="w-4 h-4" />
           <span className="text-xs mt-1">My College</span>
         </NavLink>
       </div>
