@@ -17,4 +17,6 @@ const questionSchema = new mongoose.Schema({
   isMigrated: { type: Boolean, default: false },
 });
 
+questionSchema.index({ branch: 1, topic: 1, collegeName: 1, createdAt: -1 });
+
 export default mongoose.model("Question", questionSchema);
