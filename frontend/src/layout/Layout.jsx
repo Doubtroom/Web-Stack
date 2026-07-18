@@ -12,8 +12,11 @@ import { Modal, ConfigProvider } from "antd";
 import { useNavigate } from "react-router-dom";
 import { flashcardServices } from "../services/data.services";
 import { theme } from "antd";
+import useNotificationSocket from "../hooks/useNotificationSocket";
 
 const Layout = () => {
+  // One live socket for the whole authenticated app (toasts + unread badge).
+  useNotificationSocket();
   const location = useLocation();
   const flashcards = useSelector((state) => state.flashcardStatus.flashcards);
   const [showReviewModal, setShowReviewModal] = useState(false);

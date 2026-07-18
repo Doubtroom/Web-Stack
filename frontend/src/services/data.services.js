@@ -3,10 +3,13 @@ import { API_ENDPOINTS } from "../config/api.config";
 
 // Questions Services
 export const questionServices = {
+  // Semantic duplicate check while the user types their draft
+  findSimilar: (text, branch) =>
+    apiClient.post("/data/questions/similar", { text, branch }),
   createQuestion: (formData) => {
     // Always append timezoneOffset
-    if (typeof window !== 'undefined' && formData instanceof FormData) {
-      formData.append('timezoneOffset', new Date().getTimezoneOffset());
+    if (typeof window !== "undefined" && formData instanceof FormData) {
+      formData.append("timezoneOffset", new Date().getTimezoneOffset());
     }
     return apiClient.post(API_ENDPOINTS.QUESTIONS.CREATE, formData);
   },
@@ -26,8 +29,8 @@ export const questionServices = {
 export const answerServices = {
   createAnswer: (questionId, formData) => {
     // Always append timezoneOffset
-    if (typeof window !== 'undefined' && formData instanceof FormData) {
-      formData.append('timezoneOffset', new Date().getTimezoneOffset());
+    if (typeof window !== "undefined" && formData instanceof FormData) {
+      formData.append("timezoneOffset", new Date().getTimezoneOffset());
     }
     return apiClient.post(API_ENDPOINTS.ANSWERS.CREATE(questionId), formData);
   },

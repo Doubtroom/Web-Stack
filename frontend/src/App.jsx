@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import {
   BrowserRouter as Router,
   Routes,
-  Route,   
+  Route,
   Navigate,
 } from "react-router-dom";
 import Layout from "./layout/Layout";
@@ -39,6 +39,7 @@ import ChangePassword from "./pages/ChangePasswordPage.jsx";
 import Appearance from "./pages/Appearance";
 import Features from "./pages/Features";
 import Redeem from "./pages/Redeem";
+import Leaderboard from "./pages/Leaderboard";
 
 (function deleteStaleLocalStorage() {
   let removed = false;
@@ -181,8 +182,12 @@ function App() {
                 <Route path=":cardIndex" element={<FlashCardsPage />} />
               </Route>
               <Route path="my-college" element={<MyCollege />} />
+              <Route path="leaderboard" element={<Leaderboard />} />
               <Route path="profile" element={<Profile />} />
-              <Route path="profile/personal-details" element={<PersonalDetails />} />
+              <Route
+                path="profile/personal-details"
+                element={<PersonalDetails />}
+              />
               <Route path="profile/appearance" element={<Appearance />} />
               <Route path="profile/features" element={<Features />} />
               <Route path="search/:query" element={<SearchResults />} />

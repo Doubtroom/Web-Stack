@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -28,6 +28,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { createQuestion } from "../store/dataSlice";
 import { questionServices } from "../services/data.services";
 import { updateStreak } from "../store/streakSlice";
+import SimilarQuestions from "../components/SimilarQuestions";
 // Styled components
 const StyledPaper = styled(Paper)(({ theme, isDarkMode }) => ({
   padding: theme.spacing(4),
@@ -213,7 +214,7 @@ const AskQuestion = () => {
 
   // Get user data from localStorage
   const userData = useSelector((state) => state?.auth?.user);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     question: "",
@@ -240,6 +241,30 @@ const AskQuestion = () => {
   const [isDragActive, setIsDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [similarQuestions, setSimilarQuestions] = useState([]);
+
+  // Semantic duplicate check: wait until the user pauses typing (800 ms),
+  // then ask the backend for already-answered questions that mean the same
+  // thing. Failures are silent — this panel is a bonus, never a blocker.
+  useEffect(() => {
+    const text = formData.question.trim();
+    if (text.length < 15) {
+      setSimilarQuestions([]);
+      return undefined;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await questionServices.findSimilar(
+          text,
+          formData.branch || undefined,
+        );
+        setSimilarQuestions(res.data.suggestions || []);
+      } catch {
+        setSimilarQuestions([]);
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [formData.question, formData.branch]);
 
   const suggestedTopics = [
     "Mathematics",
@@ -501,7 +526,7 @@ const AskQuestion = () => {
       if (createQuestion.fulfilled.match(resultAction)) {
         // Update streak when question is successfully submitted
         dispatch(updateStreak("question"));
-        
+
         setFormData({
           question: "",
           topic: "",
@@ -515,9 +540,7 @@ const AskQuestion = () => {
         setErrors({});
         setSelectedTopics([]);
 
-        toast.custom((t) => (
-          <SpaceToast amount={2} action="postQuestions" />
-        ));
+        toast.custom((t) => <SpaceToast amount={2} action="postQuestions" />);
         navigate("/my-content");
       } else {
         throw new Error(resultAction.payload || "Failed to submit question");
@@ -681,6 +704,11 @@ const AskQuestion = () => {
                   </p>
                 )}
               </div>
+
+              <SimilarQuestions
+                suggestions={similarQuestions}
+                isDarkMode={isDarkMode}
+              />
 
               <div>
                 <label

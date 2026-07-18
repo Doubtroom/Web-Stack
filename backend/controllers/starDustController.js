@@ -1,7 +1,16 @@
 import StarDust from "../models/StarDust.js";
 import User from "../models/User.js";
+import { recordPoints } from "../utils/leaderboard.js";
+import { checkAndAwardBadges } from "../utils/badges.js";
 
-export async function updateStarDust({ userId, points, action, relatedId, refModel, date }) {
+export async function updateStarDust({
+  userId,
+  points,
+  action,
+  relatedId,
+  refModel,
+  date,
+}) {
   if (!userId || !points || !action || !relatedId || !refModel || !date) {
     throw new Error("Missing required parameters for StarDust transaction");
   }
@@ -25,7 +34,19 @@ export async function updateStarDust({ userId, points, action, relatedId, refMod
     refModel,
     date,
   });
-  console.log(`[StarDust] Awarded ${points} points for action '${action}' to user ${userId} on ${date.toISOString()}`);
+  console.log(
+    `[StarDust] Awarded ${points} points for action '${action}' to user ${userId} on ${date.toISOString()}`,
+  );
+
+  // Every point movement flows through here, which makes this the one hook
+  // point for gamification side effects. Both are fire-and-forget: a
+  // leaderboard or badge hiccup must never fail the awarding action.
+  recordPoints(userId, user.collegeName, points).catch((err) => {
+    console.error("[Leaderboard] recordPoints failed:", err.message);
+  });
+  checkAndAwardBadges(userId).catch((err) => {
+    console.error("[Badges] check failed:", err.message);
+  });
 }
 
 export async function awardDailyLoginStarDust(userId) {
@@ -50,12 +71,16 @@ export async function awardDailyLoginStarDust(userId) {
       refModel: "User",
       date: today,
     });
-    console.log(`[StarDust] Daily login awarded for user ${userId} on ${today.toISOString()}`);
+    console.log(
+      `[StarDust] Daily login awarded for user ${userId} on ${today.toISOString()}`,
+    );
     return true;
   } catch (error) {
     if (error.code === 11000) {
       // Duplicate key error: already awarded today
-      console.log(`[StarDust] Duplicate daily login attempt for user ${userId} on ${today.toISOString()}`);
+      console.log(
+        `[StarDust] Duplicate daily login attempt for user ${userId} on ${today.toISOString()}`,
+      );
       return false;
     }
     console.error("Error in awardDailyLoginStarDust:", error);

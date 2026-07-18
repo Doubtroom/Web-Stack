@@ -15,6 +15,10 @@ const questionSchema = new mongoose.Schema({
   },
   createdAt: { type: Date, default: Date.now },
   isMigrated: { type: Boolean, default: false },
+  // Text embedding for semantic similarity search. select:false keeps the
+  // (large) vector out of every normal query — it must be asked for
+  // explicitly with .select("+embedding").
+  embedding: { type: [Number], default: undefined, select: false },
 });
 
 questionSchema.index({ branch: 1, topic: 1, collegeName: 1, createdAt: -1 });

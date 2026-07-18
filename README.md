@@ -19,17 +19,10 @@
 
 ## 🎥 Demo
 
-Here is a live demo of the project, and some GIFs showcasing its features.
-
 **[Link to Live Site](https://www.doubtroom.com/)**
 
-
-| Feature | '' |
-| --- | --- |
-| **User Authentication** | ![Auth GIF](https://cdn.dribbble.com/users/846207/screenshots/17484538/media/32de5311b18501ff62be3ca5c0724ec2.gif) |
-| **Asking a Question** | ![Ask Question GIF](https://media.tenor.com/uaTT7uIRkzkAAAAM/minions-confuse.gif) |
-| **Answering a Question** | ![Answer GIF](https://media.tenor.com/aRFty3sf7DkAAAAM/tell-me-answer-me.gif) |
-| **Real-time Comments** | ![Comments GIF](https://data.textstudio.com/output/sample/animated/8/4/1/5/comment-3-5148.gif) |
+<!-- TODO: add real screen recordings/screenshots of the deployed app here
+     (auth flow, asking a question, answering, streaks/flashcards). -->
 
 
 ---
@@ -39,7 +32,7 @@ Here is a live demo of the project, and some GIFs showcasing its features.
 DoubtRoom is packed with features to facilitate a seamless learning experience:
 
 *   **🙋‍♀️ Ask & Answer:** Users can post questions with rich text, images, and tags. Others can provide detailed answers.
-*   **💬 Real-time Comments:** Engage in discussions on questions and answers.
+*   **💬 Comments & Discussions:** Engage in discussions on questions and answers.
 *   **🔼/🔽 Upvote/Downvote:** Vote on the quality of answers to highlight the best solutions.
 *   **🔍 Powerful Search:** Easily find questions on specific topics.
 *   **👤 User Profiles:** View user activity, including questions asked and answered.
@@ -128,6 +121,18 @@ EMAIL_USER=your_gmail_address
 EMAIL_PASS=your_gmail_app_password
 GOOGLE_CLIENT_ID=your_google_oauth_client_id
 NODE_ENV=development
+CRON_SECRET=your_cron_endpoint_secret
+
+# Redis leaderboards (optional — Mongo fallback used without it)
+# See docs/understanding/04-leaderboard-badges.md
+# REDIS_URL=rediss://default:password@host:port
+
+# Semantic duplicate detection (optional — feature stays off without a key)
+# See docs/understanding/03-semantic-duplicate-detection.md
+EMBEDDINGS_PROVIDER=voyage            # voyage | openai
+EMBEDDINGS_API_KEY=your_embeddings_api_key
+# EMBEDDINGS_MODEL=voyage-3-lite      # optional override
+# SIMILARITY_THRESHOLD=0.75           # optional tuning
 ```
 
 #### Frontend (`/frontend/.env`)

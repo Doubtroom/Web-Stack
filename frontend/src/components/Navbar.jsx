@@ -10,15 +10,17 @@ import {
   Menu,
   X,
   Layers,
-  Sparkles
+  Sparkles,
+  Trophy,
 } from "lucide-react";
 import SearchBar from "./SearchBar";
 import NavItem from "./NavItem";
-import { NavLink,Link } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import Logo from "../assets/logoWhite.png";
 import { motion, AnimatePresence } from "framer-motion";
 import SliderSwitch from "../components/SliderSwitch";
 import StreakIcon from "./StreakIcon";
+import NotificationBell from "./NotificationBell";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
@@ -145,7 +147,11 @@ const Navbar = () => {
             <div className="flex gap-2">
               <NavLink to="/" className="flex items-center gap-1 sm:gap-2">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-md flex items-center justify-center transition-all duration-200">
-                  <img src={Logo} alt="Logo" className="w-full h-full object-contain" />
+                  <img
+                    src={Logo}
+                    alt="Logo"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <span className="text-sm sm:text-xl font-bold text-white transition-all duration-200">
                   Doubtroom
@@ -228,8 +234,16 @@ const Navbar = () => {
             label={<span className="text-sm">My College</span>}
             className="px-2 py-1"
           />
+          <NavItem
+            to="/leaderboard"
+            icon={<Trophy className="w-4 h-4" />}
+            label={<span className="text-sm">Leaderboard</span>}
+            className="px-2 py-1"
+          />
 
           {isDesktopOrLaptop && <StreakIcon className="mr-2" />}
+
+          <NotificationBell />
 
           <NavLink
             to="/profile"
@@ -252,6 +266,7 @@ const Navbar = () => {
         {/* Mobile Menu Items */}
         <div className="lg:hidden flex items-center gap-2 sm:gap-4">
           {!isDesktopOrLaptop && <StreakIcon className="mr-1 sm:mr-2" />}
+          <NotificationBell />
           <div className="relative" ref={mobileMenuRef}>
             <button
               onClick={() => setIsOpen(!isOpen)}

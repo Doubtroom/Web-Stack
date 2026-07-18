@@ -21,7 +21,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version-file: .nvmrc
+
+      - name: Cache MongoDB test binaries
+        if: ${{ matrix.dir == 'backend' }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}
 
       - name: Install dependencies
         run: npm install

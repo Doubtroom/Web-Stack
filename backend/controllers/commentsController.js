@@ -1,4 +1,6 @@
 import Comments from "../models/Comments.js";
+import Answers from "../models/Answers.js";
+import { notify } from "../utils/notify.js";
 
 export const createComment = async (req, res) => {
   try {
@@ -14,6 +16,22 @@ export const createComment = async (req, res) => {
       answerId,
       postedBy: req.user.id,
     });
+
+    // Notify the answer's author (fire-and-forget; skips self inside notify)
+    Answers.findById(answerId)
+      .then((answer) => {
+        if (!answer) return null;
+        return notify({
+          recipientId: answer.postedBy,
+          actorId: req.user.id,
+          type: "comment",
+          questionId: answer.questionId,
+          answerId,
+        });
+      })
+      .catch((err) => {
+        console.error("Notification failed:", err);
+      });
 
     const populatedComment = await Comments.findById(comment._id).populate(
       "postedBy",

@@ -2,8 +2,8 @@ import Answers from "../models/Answers.js";
 import Questions from "../models/Questions.js";
 import cloudinary from "../utils/cloudinary.js";
 import { updateStarDust } from "./starDustController.js";
-import { STREAK_ACTIVITY_TYPES,updateUserStreak } from "./streakController.js";
-
+import { STREAK_ACTIVITY_TYPES, updateUserStreak } from "./streakController.js";
+import { notify } from "../utils/notify.js";
 
 export const createAnswer = async (req, res) => {
   try {
@@ -51,23 +51,40 @@ export const createAnswer = async (req, res) => {
       postedBy: req.user.id,
     });
 
-    await Questions.findByIdAndUpdate(questionId, { $inc: { noOfAnswers: 1 } });
+    const parentQuestion = await Questions.findByIdAndUpdate(questionId, {
+      $inc: { noOfAnswers: 1 },
+    });
 
     // --- STREAK LOGIC FIRST ---
     try {
       const timezoneOffset = Number(req.body.timezoneOffset) || 0;
-      const streakResult = await updateUserStreak(req.user.id, "answer", timezoneOffset);
-      console.log("StreakResult:",streakResult)
+      const streakResult = await updateUserStreak(
+        req.user.id,
+        "answer",
+        timezoneOffset,
+      );
+      console.log("StreakResult:", streakResult);
       if (!streakResult.success) {
         await Answers.findByIdAndDelete(answer._id);
-        await Questions.findByIdAndUpdate(questionId, { $inc: { noOfAnswers: -1 } });
-        return res.status(500).json({ message: "Streak update failed", error: streakResult.message });
+        await Questions.findByIdAndUpdate(questionId, {
+          $inc: { noOfAnswers: -1 },
+        });
+        return res
+          .status(500)
+          .json({
+            message: "Streak update failed",
+            error: streakResult.message,
+          });
       }
     } catch (streakErr) {
       // Rollback answer creation if streak update throws
       await Answers.findByIdAndDelete(answer._id);
-      await Questions.findByIdAndUpdate(questionId, { $inc: { noOfAnswers: -1 } });
-      return res.status(500).json({ message: "Streak update failed", error: streakErr.message });
+      await Questions.findByIdAndUpdate(questionId, {
+        $inc: { noOfAnswers: -1 },
+      });
+      return res
+        .status(500)
+        .json({ message: "Streak update failed", error: streakErr.message });
     }
     // --- END STREAK LOGIC ---
 
@@ -85,6 +102,19 @@ export const createAnswer = async (req, res) => {
       console.error("StarDust update failed:", err);
     });
     // --- END STAR DUST LOGIC ---
+
+    // Notify the question owner (fire-and-forget; skips self inside notify)
+    if (parentQuestion) {
+      notify({
+        recipientId: parentQuestion.postedBy,
+        actorId: req.user.id,
+        type: "answer",
+        questionId,
+        answerId: answer._id,
+      }).catch((err) => {
+        console.error("Notification failed:", err);
+      });
+    }
 
     res.status(201).json({
       message: "Successfully created answer",
@@ -418,6 +448,19 @@ export const upvoteAnswer = async (req, res) => {
         relatedId: answerId,
         refModel: "Answers",
         date: today,
+      });
+    }
+
+    // Only a fresh upvote pings the author — taking a vote back doesn't.
+    if (direction === "in") {
+      notify({
+        recipientId: answer.postedBy,
+        actorId: userId,
+        type: "upvote",
+        questionId: answer.questionId,
+        answerId,
+      }).catch((err) => {
+        console.error("Notification failed:", err);
       });
     }
 

@@ -4,6 +4,11 @@ import cloudinary from "../utils/cloudinary.js";
 import FlashcardStatus from "../models/FlashcardStatus.js";
 import { updateStarDust } from "./starDustController.js";
 import { STREAK_ACTIVITY_TYPES, updateUserStreak } from "./streakController.js"; // Use this for new streak activities
+import {
+  embed,
+  isEmbeddingsEnabled,
+  cosineSimilarity,
+} from "../utils/embeddings.js";
 // When adding a new activity that should count toward streaks, add it to STREAK_ACTIVITY_TYPES in streakController.js
 
 export const createQuestion = async (req, res) => {
@@ -41,16 +46,27 @@ export const createQuestion = async (req, res) => {
     // --- STREAK LOGIC FIRST ---
     try {
       const timezoneOffset = Number(req.body.timezoneOffset) || 0;
-      const streakResult = await updateUserStreak(req.user.id, "question", timezoneOffset);
+      const streakResult = await updateUserStreak(
+        req.user.id,
+        "question",
+        timezoneOffset,
+      );
       if (!streakResult.success) {
         // Rollback question creation if streak update fails
         await Questions.findByIdAndDelete(question._id);
-        return res.status(500).json({ message: "Streak update failed", error: streakResult.message });
+        return res
+          .status(500)
+          .json({
+            message: "Streak update failed",
+            error: streakResult.message,
+          });
       }
     } catch (streakErr) {
       // Rollback question creation if streak update throws
       await Questions.findByIdAndDelete(question._id);
-      return res.status(500).json({ message: "Streak update failed", error: streakErr.message });
+      return res
+        .status(500)
+        .json({ message: "Streak update failed", error: streakErr.message });
     }
     // --- END STREAK LOGIC ---
 
@@ -69,10 +85,34 @@ export const createQuestion = async (req, res) => {
     });
     // --- END STAR DUST LOGIC ---
 
-    res.status(201).json({ message: "Successfully created Question", question });
+    // --- EMBEDDING (FIRE-AND-FORGET) ---
+    // Vectorize topic + text for semantic duplicate detection. Failures are
+    // logged and ignored: a question must never fail to post because an
+    // external embeddings API hiccuped.
+    if (isEmbeddingsEnabled()) {
+      embed(`${topic || ""} ${text || ""}`.trim())
+        .then((vector) => {
+          if (vector) {
+            return Questions.updateOne(
+              { _id: question._id },
+              { $set: { embedding: vector } },
+            );
+          }
+        })
+        .catch((err) => {
+          console.error("Embedding failed:", err.message);
+        });
+    }
+    // --- END EMBEDDING ---
+
+    res
+      .status(201)
+      .json({ message: "Successfully created Question", question });
   } catch (error) {
     console.error("Error creating question:", error);
-    res.status(500).json({ message: "Error creating question", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error creating question", error: error.message });
   }
 };
 
@@ -203,6 +243,109 @@ export const getFilteredQuestions = async (req, res) => {
     console.error("Error fetching filtered questions:", error);
     res.status(500).json({
       message: "Error fetching filtered questions",
+      error: error.message,
+    });
+  }
+};
+
+// Atlas Vector Search reports cosine scores mapped to [0, 1] via (1+cos)/2;
+// the fallback below converts raw cosine to the same scale so one threshold
+// works for both paths.
+const SIMILAR_LIMIT = 5;
+const similarityThreshold = () =>
+  Number(process.env.SIMILARITY_THRESHOLD) || 0.75;
+
+const vectorSearch = async (vector, branch) => {
+  const results = await Questions.aggregate([
+    {
+      $vectorSearch: {
+        index: "question_embeddings",
+        path: "embedding",
+        queryVector: vector,
+        numCandidates: 100,
+        limit: SIMILAR_LIMIT,
+        ...(branch ? { filter: { branch } } : {}),
+      },
+    },
+    {
+      $project: {
+        text: 1,
+        topic: 1,
+        branch: 1,
+        collegeName: 1,
+        noOfAnswers: 1,
+        createdAt: 1,
+        postedBy: 1,
+        score: { $meta: "vectorSearchScore" },
+      },
+    },
+  ]);
+  return results.filter((r) => r.score >= similarityThreshold());
+};
+
+// Plan B when $vectorSearch is unavailable (local mongod, missing Atlas
+// index): score recent questions in-process. Fine at this corpus size; the
+// Atlas index is the scalable path.
+const cosineFallback = async (vector, branch) => {
+  const filter = {
+    embedding: { $exists: true, $type: "array" },
+    ...(branch ? { branch } : {}),
+  };
+
+  const candidates = await Questions.find(filter)
+    .select(
+      "+embedding text topic branch collegeName noOfAnswers createdAt postedBy",
+    )
+    .sort({ createdAt: -1 })
+    .limit(500)
+    .lean();
+
+  return candidates
+    .map((candidate) => {
+      const score = (1 + cosineSimilarity(vector, candidate.embedding)) / 2;
+      const { embedding, ...rest } = candidate;
+      return { ...rest, score };
+    })
+    .filter((c) => c.score >= similarityThreshold())
+    .sort((a, b) => b.score - a.score)
+    .slice(0, SIMILAR_LIMIT);
+};
+
+export const findSimilarQuestions = async (req, res) => {
+  try {
+    const { text, branch } = req.body;
+
+    if (!isEmbeddingsEnabled()) {
+      return res.json({ suggestions: [], enabled: false });
+    }
+
+    // Too little text to embed meaningfully.
+    if (!text || text.trim().length < 15) {
+      return res.json({ suggestions: [], enabled: true });
+    }
+
+    const vector = await embed(text.trim());
+    if (!vector) {
+      return res.json({ suggestions: [], enabled: false });
+    }
+
+    let suggestions;
+    try {
+      suggestions = await vectorSearch(vector, branch);
+    } catch {
+      suggestions = await cosineFallback(vector, branch);
+    }
+
+    await Questions.populate(suggestions, {
+      path: "postedBy",
+      select: "displayName",
+    });
+
+    res.json({ suggestions, enabled: true });
+  } catch (error) {
+    console.error("Error finding similar questions:", error);
+    res.status(500).json({
+      message: "Error finding similar questions",
       error: error.message,
     });
   }

@@ -6,7 +6,7 @@ import {
   Award,
   BarChart3,
   Paintbrush,
-  Bolt
+  Bolt,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { userServices } from "../services/data.services";
 import LogoutLoader from "../components/LogoutLoader";
 import ProfileTab from "../components/ProfileTab";
+import BadgeGrid from "../components/BadgeGrid";
 
 const Profile = () => {
   const userProfile = useSelector((state) => state?.auth?.user);
@@ -64,11 +65,11 @@ const Profile = () => {
         setFeatures(userProfile?.features || { flashcards: true });
       } catch (error) {
         console.error("Error fetching user data:", error);
-        toast.error("Failed to load profile data",{
-          style: { 
+        toast.error("Failed to load profile data", {
+          style: {
             background: isDarkMode ? "#1f2937" : "#ffffff",
-            color: isDarkMode ? "#ffffff" : "#000000"
-          }
+            color: isDarkMode ? "#ffffff" : "#000000",
+          },
         });
       } finally {
         setLoading(false);
@@ -83,20 +84,20 @@ const Profile = () => {
     try {
       const result = await dispatch(logout()).unwrap();
       if (result) {
-        toast.success("Logged out successfully!",{
-          style: { 
+        toast.success("Logged out successfully!", {
+          style: {
             background: isDarkMode ? "#1f2937" : "#ffffff",
-            color: isDarkMode ? "#ffffff" : "#000000"
-          }
+            color: isDarkMode ? "#ffffff" : "#000000",
+          },
         });
         navigate("/landing", { state: { fromLogout: true }, replace: true });
       }
     } catch (error) {
-      toast.error(error || "Logout failed. Please try again.",{
-        style: { 
+      toast.error(error || "Logout failed. Please try again.", {
+        style: {
           background: isDarkMode ? "#1f2937" : "#ffffff",
-          color: isDarkMode ? "#ffffff" : "#000000"
-        }
+          color: isDarkMode ? "#ffffff" : "#000000",
+        },
       });
     } finally {
       setShowLogoutConfirm(false);
@@ -117,11 +118,11 @@ const Profile = () => {
       // Optionally show a toast for success
     } catch (error) {
       setFeatures(features); // revert
-      toast.error("Failed to update features",{
-        style: { 
+      toast.error("Failed to update features", {
+        style: {
           background: isDarkMode ? "#1f2937" : "#ffffff",
-          color: isDarkMode ? "#ffffff" : "#000000"
-        }
+          color: isDarkMode ? "#ffffff" : "#000000",
+        },
       });
     }
   };
@@ -217,6 +218,15 @@ const Profile = () => {
           </div>
         </div>
 
+        {/* Badges Section */}
+        <h2 className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-200 mt-10 mb-4 sm:mb-6 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+            <Award className="w-5 h-5 text-white" />
+          </div>
+          <span>Badges</span>
+        </h2>
+        <BadgeGrid />
+
         {/* Settings Section */}
         <h2 className="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-200 mt-10 mb-4 sm:mb-6 flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
@@ -224,11 +234,15 @@ const Profile = () => {
           </div>
           <span>Settings</span>
         </h2>
-        
-        <div className={`rounded-2xl shadow-xl overflow-hidden border border-blue-100 dark:border-blue-900/30 ${isDarkMode ? "bg-gradient-to-br from-gray-800/80 to-gray-900/80" : "bg-gradient-to-br from-white to-blue-50/50"}`}>
+
+        <div
+          className={`rounded-2xl shadow-xl overflow-hidden border border-blue-100 dark:border-blue-900/30 ${isDarkMode ? "bg-gradient-to-br from-gray-800/80 to-gray-900/80" : "bg-gradient-to-br from-white to-blue-50/50"}`}
+        >
           <div className="space-y-0">
             <ProfileTab
-              icon={<Paintbrush className="w-6 h-6 text-blue-700 dark:text-blue-200" />}
+              icon={
+                <Paintbrush className="w-6 h-6 text-blue-700 dark:text-blue-200" />
+              }
               title="Appearance"
               description="Customize the look and feel of your experience."
               onClick={() => navigate("/profile/appearance")}
@@ -236,21 +250,24 @@ const Profile = () => {
               borderBottom={true}
             />
             <ProfileTab
-              icon={<Award className="w-6 h-6 text-blue-700 dark:text-blue-200" />}
+              icon={
+                <Award className="w-6 h-6 text-blue-700 dark:text-blue-200" />
+              }
               title="Features"
               description="Enable or disable platform features."
               onClick={() => navigate("/profile/features")}
               borderBottom={true}
             />
             <ProfileTab
-              icon={<User className="w-6 h-6 text-blue-700 dark:text-blue-200" />}
+              icon={
+                <User className="w-6 h-6 text-blue-700 dark:text-blue-200" />
+              }
               title="Personal Details"
               description="Manage your profile information and preferences"
               onClick={() => navigate("/profile/personal-details")}
               rounded="rounded-b-xl"
               borderBottom={false}
             />
-
           </div>
         </div>
       </div>

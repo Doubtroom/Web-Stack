@@ -8,6 +8,7 @@ import {
   deleteQuestion,
   getQuestion,
   getUserQuestions,
+  findSimilarQuestions,
 } from "../controllers/questionsController.js";
 import {
   createAnswer,
@@ -40,11 +41,27 @@ import {
   upsertFlashcardStatus,
   getFlashcards,
 } from "../controllers/flashcardController.js";
-import { updateStreak, getStreak, manualStreakReset } from "../controllers/streakController.js";
+import {
+  updateStreak,
+  getStreak,
+  manualStreakReset,
+} from "../controllers/streakController.js";
+import {
+  getNotifications,
+  getUnreadCount,
+  markNotificationsRead,
+} from "../controllers/notificationsController.js";
+import {
+  getLeaderboardHandler,
+  getBadgeCatalog,
+  getUserBadgesHandler,
+} from "../controllers/leaderboardController.js";
 
 const router = express.Router();
 
 router.post("/questions", verifyToken, upload, createQuestion);
+// POST because it carries draft text (not yet a stored question)
+router.post("/questions/similar", verifyToken, findSimilarQuestions);
 router.get("/questions/filter", verifyToken, getFilteredQuestions);
 router.get("/questions/user", verifyToken, getUserQuestions);
 router.get("/questions", verifyToken, getAllQuestions);
@@ -88,7 +105,14 @@ router.get("/streak", verifyToken, getStreak);
 router.post("/streak/update", verifyToken, updateStreak);
 
 // POST manual reset for a user (admin only)
-router.post("/streak/reset/:userId", verifyToken,manualStreakReset);
+router.post("/streak/reset/:userId", verifyToken, manualStreakReset);
 
+router.get("/notifications", verifyToken, getNotifications);
+router.get("/notifications/unread-count", verifyToken, getUnreadCount);
+router.patch("/notifications/read", verifyToken, markNotificationsRead);
+
+router.get("/leaderboard", verifyToken, getLeaderboardHandler);
+router.get("/badges", verifyToken, getBadgeCatalog);
+router.get("/users/:id/badges", verifyToken, getUserBadgesHandler);
 
 export default router;
