@@ -54,12 +54,10 @@ export const createQuestion = async (req, res) => {
       if (!streakResult.success) {
         // Rollback question creation if streak update fails
         await Questions.findByIdAndDelete(question._id);
-        return res
-          .status(500)
-          .json({
-            message: "Streak update failed",
-            error: streakResult.message,
-          });
+        return res.status(500).json({
+          message: "Streak update failed",
+          error: streakResult.message,
+        });
       }
     } catch (streakErr) {
       // Rollback question creation if streak update throws
@@ -181,12 +179,114 @@ export const getAllQuestions = async (req, res) => {
   }
 };
 
+// Atlas Search query shared by the search path and its count. Fuzzy allows
+// one typo (edit distance 1) once the first 2 characters match; topic
+// matches score double so subject-level hits rank above passing mentions.
+const atlasCompound = (search) => ({
+  must: [
+    {
+      text: {
+        query: search,
+        path: ["text", "topic", "branch", "collegeName"],
+        fuzzy: { maxEdits: 1, prefixLength: 2 },
+      },
+    },
+  ],
+  should: [
+    {
+      text: { query: search, path: "topic", score: { boost: { value: 2 } } },
+    },
+  ],
+});
+
+const atlasSearchQuestions = async ({ search, skip, limit }) => {
+  const compound = atlasCompound(search);
+
+  const [questions, meta] = await Promise.all([
+    Questions.aggregate([
+      { $search: { index: "question_search", compound } },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: "users",
+          localField: "postedBy",
+          foreignField: "_id",
+          as: "postedBy",
+        },
+      },
+      { $unwind: "$postedBy" },
+      {
+        $project: {
+          text: 1,
+          topic: 1,
+          branch: 1,
+          collegeName: 1,
+          photoUrl: 1,
+          noOfAnswers: 1,
+          createdAt: 1,
+          "postedBy._id": 1,
+          "postedBy.displayName": 1,
+          "postedBy.collegeName": 1,
+          "postedBy.role": 1,
+          score: { $meta: "searchScore" },
+        },
+      },
+    ]),
+    Questions.aggregate([
+      {
+        $searchMeta: {
+          index: "question_search",
+          compound,
+          count: { type: "total" },
+        },
+      },
+    ]),
+  ]);
+
+  return { questions, total: meta[0]?.count?.total ?? questions.length };
+};
+
 export const getFilteredQuestions = async (req, res) => {
   try {
     const { branch, topic, search, collegeName } = req.query;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+
+    // Fast path: Atlas Search (inverted index, relevance-ranked, typo
+    // tolerant). Falls through to the regex scan below if the index doesn't
+    // exist — e.g. local mongod or before the Atlas index is created.
+    if (search) {
+      try {
+        const { questions, total } = await atlasSearchQuestions({
+          search,
+          skip,
+          limit,
+        });
+        const totalPages = Math.ceil(total / limit);
+        return res.json({
+          questions,
+          pagination: {
+            currentPage: page,
+            totalPages,
+            totalItems: total,
+            itemsPerPage: limit,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1,
+          },
+          filters: {
+            branch: branch || "all",
+            topic: topic || "all",
+            search,
+            collegeName: collegeName || "all",
+          },
+          engine: "atlas",
+        });
+      } catch {
+        // Index unavailable — regex fallback below.
+      }
+    }
 
     const filter = {};
 
@@ -238,11 +338,69 @@ export const getFilteredQuestions = async (req, res) => {
         search: search || "",
         collegeName: collegeName || "all",
       },
+      engine: search ? "regex" : "filter",
     });
   } catch (error) {
     console.error("Error fetching filtered questions:", error);
     res.status(500).json({
       message: "Error fetching filtered questions",
+      error: error.message,
+    });
+  }
+};
+
+// Search-bar suggestions: prefix-matching ("thermo" → "thermodynamics") with
+// a tiny payload — no user populate, few fields, hard cap on results.
+export const autocompleteQuestions = async (req, res) => {
+  try {
+    const q = (req.query.q || "").trim();
+    if (q.length < 2) {
+      return res.json({ suggestions: [], engine: "none" });
+    }
+
+    const LIMIT = 6;
+    const fields = {
+      text: 1,
+      topic: 1,
+      branch: 1,
+      collegeName: 1,
+      createdAt: 1,
+    };
+
+    try {
+      const suggestions = await Questions.aggregate([
+        {
+          $search: {
+            index: "question_search",
+            autocomplete: {
+              query: q,
+              path: "text",
+              fuzzy: { maxEdits: 1, prefixLength: 2 },
+            },
+          },
+        },
+        { $limit: LIMIT },
+        { $project: fields },
+      ]);
+      return res.json({ suggestions, engine: "atlas" });
+    } catch {
+      // No Atlas index — substring regex over recent questions.
+      const suggestions = await Questions.find({
+        $or: [
+          { text: { $regex: q, $options: "i" } },
+          { topic: { $regex: q, $options: "i" } },
+        ],
+      })
+        .select(fields)
+        .sort({ createdAt: -1 })
+        .limit(LIMIT)
+        .lean();
+      return res.json({ suggestions, engine: "regex" });
+    }
+  } catch (error) {
+    console.error("Error autocompleting questions:", error);
+    res.status(500).json({
+      message: "Error autocompleting questions",
       error: error.message,
     });
   }

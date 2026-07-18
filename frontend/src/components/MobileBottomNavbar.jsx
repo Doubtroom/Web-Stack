@@ -31,7 +31,7 @@ function MobileBottomNavbar() {
           }
         >
           <HelpCircle className="w-4 h-4" />
-          <span className="text-xs mt-1">My Content</span>
+          <span className="text-xs mt-1">Content</span>
         </NavLink>
 
         <NavLink
@@ -45,7 +45,7 @@ function MobileBottomNavbar() {
           }
         >
           <Layers className="w-4 h-4" />
-          <span className="text-xs mt-1">Flashcards</span>
+          <span className="text-xs mt-1">Cards</span>
         </NavLink>
 
         <NavLink
@@ -59,7 +59,7 @@ function MobileBottomNavbar() {
           }
         >
           <School className="w-4 h-4" />
-          <span className="text-xs mt-1">My College</span>
+          <span className="text-xs mt-1">College</span>
         </NavLink>
 
         <NavLink

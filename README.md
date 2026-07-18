@@ -72,6 +72,25 @@ This project is a full-stack application built with the MERN stack and other mod
 
 ## 🚀 Local Setup
 
+### Quickstart with Docker (recommended)
+
+With [Docker](https://docs.docker.com/get-docker/) installed, the whole backend stack (API + MongoDB replica set + Redis) is one command:
+
+```bash
+docker compose up --build
+# API on http://localhost:5000 — verify with: curl localhost:5000/health
+```
+
+Then start the frontend as usual:
+
+```bash
+cd frontend && npm install && npm run dev
+```
+
+See [docs/understanding/06-docker-observability.md](docs/understanding/06-docker-observability.md) for how it works.
+
+### Manual setup
+
 Follow these instructions to set up the project locally on your machine.
 
 ### Prerequisites
@@ -133,6 +152,10 @@ EMBEDDINGS_PROVIDER=voyage            # voyage | openai
 EMBEDDINGS_API_KEY=your_embeddings_api_key
 # EMBEDDINGS_MODEL=voyage-3-lite      # optional override
 # SIMILARITY_THRESHOLD=0.75           # optional tuning
+
+# Observability (optional)
+# SENTRY_DSN=your_sentry_dsn          # error tracking; off when unset
+# LOG_LEVEL=info                      # pino log level
 ```
 
 #### Frontend (`/frontend/.env`)

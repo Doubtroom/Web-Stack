@@ -6,6 +6,9 @@ export const questionServices = {
   // Semantic duplicate check while the user types their draft
   findSimilar: (text, branch) =>
     apiClient.post("/data/questions/similar", { text, branch }),
+  // Lightweight search-bar suggestions (prefix matching, tiny payload)
+  autocomplete: (q) =>
+    apiClient.get("/data/questions/autocomplete", { params: { q } }),
   createQuestion: (formData) => {
     // Always append timezoneOffset
     if (typeof window !== "undefined" && formData instanceof FormData) {

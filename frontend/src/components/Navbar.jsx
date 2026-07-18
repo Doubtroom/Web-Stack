@@ -208,45 +208,54 @@ const Navbar = () => {
 
         <PointsButton />
 
-        {/* Desktop Menu */}
-        <div className="hidden lg:flex items-center space-x-2 xl:space-x-3 2xl:space-x-6 3xl:space-x-10">
+        {/* Desktop Menu: labels appear from xl up; below that the items are
+            icon-only so the row never overflows and hides the profile. */}
+        <div className="hidden lg:flex items-center gap-1 xl:gap-2 2xl:gap-4">
           <NavItem
             to="/home"
             icon={<Home className="w-4 h-4" />}
-            label={<span className="text-sm">Home</span>}
-            className="px-2 py-1"
+            label={<span className="hidden xl:inline text-sm">Home</span>}
           />
           <NavItem
             to="/my-content"
             icon={<HelpCircle className="w-4 h-4" />}
-            label={<span className="text-sm">My Content</span>}
-            className="px-2 py-1"
+            label={<span className="hidden xl:inline text-sm">Content</span>}
           />
           <NavItem
             to="/flashcards"
             icon={<Layers className="w-4 h-4" />}
-            label={<span className="text-sm">Flashcards</span>}
-            className="px-2 py-1"
+            label={<span className="hidden xl:inline text-sm">Cards</span>}
           />
           <NavItem
             to="/my-college"
             icon={<School className="w-4 h-4" />}
-            label={<span className="text-sm">My College</span>}
-            className="px-2 py-1"
-          />
-          <NavItem
-            to="/leaderboard"
-            icon={<Trophy className="w-4 h-4" />}
-            label={<span className="text-sm">Leaderboard</span>}
-            className="px-2 py-1"
+            label={<span className="hidden xl:inline text-sm">College</span>}
           />
 
-          {isDesktopOrLaptop && <StreakIcon className="mr-2" />}
+          {/* Divider between navigation and the personal icon cluster */}
+          <div className="w-px h-6 bg-white/20 mx-1 xl:mx-2" />
+
+          {isDesktopOrLaptop && <StreakIcon className="mr-1" />}
+
+          <NavLink
+            to="/leaderboard"
+            title="Leaderboard"
+            className={({ isActive }) =>
+              `group w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
+                isActive
+                  ? "ring-2 dark:ring-blue-400 ring-gray-600 bg-amber-100 dark:bg-gray-700"
+                  : "bg-gray-200 dark:bg-gray-700 hover:ring-2 hover:ring-gray-600 dark:hover:ring-blue-300"
+              }`
+            }
+          >
+            <Trophy className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+          </NavLink>
 
           <NotificationBell />
 
           <NavLink
             to="/profile"
+            title="Profile"
             className={({ isActive }) =>
               `group w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
                 isActive

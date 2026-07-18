@@ -1,8 +1,14 @@
+import crypto from "crypto";
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
+import mongoose from "mongoose";
+import pinoHttp from "pino-http";
+import * as Sentry from "@sentry/node";
+import logger from "./utils/logger.js";
+import { getRedis, isRedisEnabled } from "./utils/redis.js";
 import authRoutes from "./routes/authRoutes.js";
 import dataRoutes from "./routes/dataRoutes.js";
 import formDataRoutes from "./routes/formDataRoutes.js";
@@ -18,7 +24,28 @@ import {
 
 dotenv.config();
 
+// Error tracking is opt-in via SENTRY_DSN, like every other integration.
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || "development",
+  });
+}
+
 const app = express();
+
+// One log line per request (method, url, status, latency) with a request id
+// that also lands on any log written while handling it — the thread that
+// lets you trace a single user action through the logs.
+app.use(
+  pinoHttp({
+    logger,
+    genReqId: () => crypto.randomUUID(),
+    autoLogging: {
+      ignore: (req) => req.url === "/health",
+    },
+  }),
+);
 
 // Trust the first proxy (important for rate limiting and correct IP detection)
 app.set("trust proxy", 1);
@@ -42,6 +69,30 @@ app.use(
 app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
+
+// Liveness/readiness probe for load balancers, uptime monitors, and Docker
+// healthchecks — machine-readable, no auth. Mongo down means we can't serve;
+// Redis is an optional fast path so it's reported but never fails the check.
+app.get("/health", async (req, res) => {
+  const mongoUp = mongoose.connection.readyState === 1;
+
+  let redis = "disabled";
+  if (isRedisEnabled()) {
+    try {
+      await getRedis().ping();
+      redis = "up";
+    } catch {
+      redis = "down";
+    }
+  }
+
+  res.status(mongoUp ? 200 : 503).json({
+    status: mongoUp ? "ok" : "degraded",
+    mongo: mongoUp ? "up" : "down",
+    redis,
+    uptime: Math.round(process.uptime()),
+  });
+});
 
 // Rate limiters are skipped under NODE_ENV=test: the suite fires far more
 // requests from one IP than any real client, and limiter state is per-process.
@@ -157,5 +208,19 @@ app.get(
     }
   },
 );
+
+// Report unhandled route errors to Sentry (when configured) before our own
+// handler runs.
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
+}
+
+// Last-resort error handler: log with the request id, return a clean 500
+// instead of Express's default HTML stack trace page.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  (req.log || logger).error({ err }, "Unhandled error");
+  res.status(500).json({ message: "Internal server error" });
+});
 
 export default app;

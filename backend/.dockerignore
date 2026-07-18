@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+.env
+cert
+coverage
+tests
+vitest.config.js
+eslint.config.js
+Dockerfile
+.dockerignore

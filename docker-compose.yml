@@ -1,0 +1,83 @@
+# One-command local backend stack: API + MongoDB + Redis.
+#
+#   docker compose up --build
+#
+# API on http://localhost:5000 (check http://localhost:5000/health).
+# Run the frontend as usual (cd frontend && npm run dev) — its default
+# VITE_API_BASE_URL already points at localhost:5000.
+#
+# Dev-only secrets are baked in below so it works out of the box; override
+# any of them with real values via environment variables or an .env file at
+# the repo root (compose reads ${VAR:-default}).
+
+services:
+  api:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      NODE_ENV: development
+      CLIENT_URL: http://localhost:5173
+      # Mongo runs as a single-node replica set (streak updates use
+      # transactions, which MongoDB only supports on replica sets).
+      MONGO_URI: mongodb://mongo:27017/doubtroom?replicaSet=rs0&directConnection=true
+      DB_NAME: ${DB_NAME:-doubtroom}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-me}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-dev-refresh-secret-change-me}
+      CRON_SECRET: ${CRON_SECRET:-dev-cron-secret-change-me}
+      # Optional integrations — features stay dark without them:
+      EMBEDDINGS_API_KEY: ${EMBEDDINGS_API_KEY:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      CLOUD_NAME: ${CLOUD_NAME:-}
+      CLOUD_API_KEY: ${CLOUD_API_KEY:-}
+      CLOUD_API_SECRET: ${CLOUD_API_SECRET:-}
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASS: ${EMAIL_PASS:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:5000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  mongo:
+    image: mongo:7
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    # The healthcheck doubles as replica-set bootstrap: first run initiates
+    # rs0, later runs are a cheap status ping. Initiating with the stable
+    # service DNS name (mongo:27017) — not the container's auto hostname —
+    # keeps the persisted config valid when the container is recreated.
+    healthcheck:
+      test: |
+        mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'mongo:27017' }] }).ok }"
+      interval: 5s
+      timeout: 10s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  mongo-data:
+  redis-data:

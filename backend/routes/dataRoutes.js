@@ -9,6 +9,7 @@ import {
   getQuestion,
   getUserQuestions,
   findSimilarQuestions,
+  autocompleteQuestions,
 } from "../controllers/questionsController.js";
 import {
   createAnswer,
@@ -62,6 +63,7 @@ const router = express.Router();
 router.post("/questions", verifyToken, upload, createQuestion);
 // POST because it carries draft text (not yet a stored question)
 router.post("/questions/similar", verifyToken, findSimilarQuestions);
+router.get("/questions/autocomplete", verifyToken, autocompleteQuestions);
 router.get("/questions/filter", verifyToken, getFilteredQuestions);
 router.get("/questions/user", verifyToken, getUserQuestions);
 router.get("/questions", verifyToken, getAllQuestions);

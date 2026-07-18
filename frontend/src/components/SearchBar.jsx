@@ -59,12 +59,13 @@ const SearchBar = ({ isMobile = false, onClose, isOpen, onSearchComplete }) => {
 
       setIsLoading(true);
       try {
-        const response = await questionServices.getFilteredQuestions({
-          search: searchTerm,
-        });
-        const formattedResults = response.data.questions.map((q) => ({
+        // Dedicated autocomplete endpoint: prefix-matches as you type and
+        // returns only the handful of fields the dropdown shows.
+        const response = await questionServices.autocomplete(searchTerm);
+        const formattedResults = response.data.suggestions.map((q) => ({
           ...q,
           id: q._id,
+          college: q.collegeName,
         }));
 
         setResults(formattedResults);

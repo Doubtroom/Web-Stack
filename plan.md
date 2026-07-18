@@ -26,8 +26,8 @@
 | 2 | ✅ **DONE** — Real-time notifications ([explainer](docs/understanding/02-realtime-notifications.md)) | ~1–2 weeks | 1 | "Real-time notification system over WebSockets" |
 | 3 | ✅ **DONE** — Semantic duplicate detection ([explainer](docs/understanding/03-semantic-duplicate-detection.md)) | ~1 week | 1 | "Embedding-based duplicate-question detection" |
 | 4 | ✅ **DONE** — Leaderboard + badges ([explainer](docs/understanding/04-leaderboard-badges.md)) | ~1 week | 1, 2 | "Redis ZSET leaderboards, O(log N) rank queries" |
-| 5 | Real search (Atlas Search) | ~3–4 days | 1 | "Cut search latency by replacing regex scans with full-text index" |
-| 6 | Docker + observability | ~3–4 days | — (do anytime) | "Containerized, structured logging, error tracking" |
+| 5 | ✅ **DONE** — Real search ([explainer](docs/understanding/05-search.md)) | ~3–4 days | 1 | "Cut search latency by replacing regex scans with full-text index" |
+| 6 | ✅ **DONE** — Docker + observability ([explainer](docs/understanding/06-docker-observability.md)) | ~3–4 days | — (do anytime) | "Containerized, structured logging, error tracking" |
 
 Rule of thumb: **1 → 2 → 3** is the minimum set that changes how the project reads.
 4–6 are compounding bonuses.
